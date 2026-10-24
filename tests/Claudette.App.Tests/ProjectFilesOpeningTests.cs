@@ -15,6 +15,19 @@ public class ProjectFilesOpeningTests
     private static LinkClickedEventArgs Click(string address) =>
         new(MarkdownTextBlock.LinkClickEvent, new object(), new Uri(address, UriKind.RelativeOrAbsolute));
 
+    /// <summary>
+    /// A click on a link in a reply, on the UI thread as in the app. A Files tab it opens lists its folder there too, in one
+    /// step once the folder is read: that's waited for, so what the test does next from its own thread can't land in it.
+    /// </summary>
+    private static async Task OpenLinkAsync(TabTestHarness h, TabViewModel tab, string address)
+    {
+        await InlineDispatcher.RunAsync(() => tab.OpenLinkCommand.ExecuteAsync(Click(address)));
+        if (h.Shell.Groups.Single().Files is { } files)
+        {
+            await TabTestHarness.Eventually(() => files.Rows.Count > 0, "the explorer");
+        }
+    }
+
     private static string Write(string path, string text = "")
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -31,7 +44,7 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         var spec = Write(Path.Combine(h.WorkFolder, "docs", "weapons.md"), FiftyLines);
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("docs/weapons.md#L12-L14"));
+        await OpenLinkAsync(h, tab, "docs/weapons.md#L12-L14");
 
         var files = h.Shell.Groups.Single().Files!;
         Assert.Equal([tab, (IShellTab)files], h.Shell.Panes);
@@ -51,7 +64,7 @@ public class ProjectFilesOpeningTests
         Write(Path.Combine(h.WorkFolder, "a.txt"));
         Write(Path.Combine(h.WorkFolder, "b.txt"));
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("a.txt"));
+        await OpenLinkAsync(h, tab, "a.txt");
 
         var files = h.Shell.Groups.Single().Files!;
         Assert.False(files.IsExplorerShown);
@@ -67,7 +80,7 @@ public class ProjectFilesOpeningTests
         // Not its first file: the explorer stays as it is.
         h.Shell.SelectedTab = tab;
         files.ClosePaneCommand.Execute(null);
-        await tab.OpenLinkCommand.ExecuteAsync(Click("b.txt"));
+        await OpenLinkAsync(h, tab, "b.txt");
 
         Assert.Equal([tab, (IShellTab)files], h.Shell.Panes);
         Assert.True(files.IsExplorerShown);
@@ -79,7 +92,7 @@ public class ProjectFilesOpeningTests
         await using var h = new TabTestHarness();
         var tab = await h.OpenTabAsync();
         Write(Path.Combine(h.WorkFolder, "a.txt"));
-        await tab.OpenLinkCommand.ExecuteAsync(Click("a.txt"));
+        await OpenLinkAsync(h, tab, "a.txt");
         var group = h.Shell.Groups.Single();
         var files = group.Files!;
         Assert.False(files.IsExplorerShown);
@@ -105,7 +118,7 @@ public class ProjectFilesOpeningTests
         await using var h = new TabTestHarness();
         var tab = await h.OpenTabAsync();
         Write(Path.Combine(h.WorkFolder, "a.txt"));
-        await tab.OpenLinkCommand.ExecuteAsync(Click("a.txt"));
+        await OpenLinkAsync(h, tab, "a.txt");
         var files = h.Shell.Groups.Single().Files!;
 
         files.StartFindCommand.Execute(null);
@@ -127,8 +140,8 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         Write(Path.Combine(h.WorkFolder, "a.txt"));
         Write(Path.Combine(h.WorkFolder, "b.txt"));
-        await tab.OpenLinkCommand.ExecuteAsync(Click("a.txt"));
-        await tab.OpenLinkCommand.ExecuteAsync(Click("b.txt"));
+        await OpenLinkAsync(h, tab, "a.txt");
+        await OpenLinkAsync(h, tab, "b.txt");
         var group = h.Shell.Groups.Single();
         var files = group.Files!;
 
@@ -151,7 +164,7 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         Write(Path.Combine(h.WorkFolder, "a.txt"));
         var b = Write(Path.Combine(h.WorkFolder, "b.txt"));
-        await tab.OpenLinkCommand.ExecuteAsync(Click("a.txt"));
+        await OpenLinkAsync(h, tab, "a.txt");
         var group = h.Shell.Groups.Single();
         var files = group.Files!;
         files.ToggleExplorerCommand.Execute(null);
@@ -181,7 +194,7 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         Write(Path.Combine(h.WorkFolder, "a.txt"));
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("a.txt"));
+        await OpenLinkAsync(h, tab, "a.txt");
 
         Assert.True(h.Shell.Groups.Single().Files!.IsExplorerShown);
     }
@@ -193,7 +206,7 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         Write(Path.Combine(h.WorkFolder, "Player.cpp"), FiftyLines);
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("Player.cpp:42:7"));
+        await OpenLinkAsync(h, tab, "Player.cpp:42:7");
 
         var files = h.Shell.Groups.Single().Files!;
         Assert.Equal([(IShellTab)files], h.Shell.Panes);
@@ -209,10 +222,10 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         var a = Write(Path.Combine(h.WorkFolder, "a.txt"));
         var b = Write(Path.Combine(h.WorkFolder, "b.txt"));
-        await tab.OpenLinkCommand.ExecuteAsync(Click("a.txt"));
+        await OpenLinkAsync(h, tab, "a.txt");
         h.Shell.SelectedTab = tab;
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("b.txt"));
+        await OpenLinkAsync(h, tab, "b.txt");
 
         var files = h.Shell.Groups.Single().Files!;
         Assert.Equal([tab, (IShellTab)files], h.Shell.Panes);
@@ -229,8 +242,8 @@ public class ProjectFilesOpeningTests
         await File.WriteAllBytesAsync(image, [0x89, 0x50, 0x4E, 0x47, 0, 0, 0, 0x0D], TestContext.Current.CancellationToken);
         Write(Path.Combine(h.WorkFolder, "bin", "game.exe"));
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("icon.png"));
-        await tab.OpenLinkCommand.ExecuteAsync(Click("bin/game.exe"));
+        await OpenLinkAsync(h, tab, "icon.png");
+        await OpenLinkAsync(h, tab, "bin/game.exe");
 
         Assert.Equal([image], h.Platform.OpenedFiles);
         Assert.Equal([Path.Combine(h.WorkFolder, "bin")], h.Platform.RevealedFolders);
@@ -244,7 +257,7 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         var script = Write(Path.Combine(h.WorkFolder, "tools", "build.bat"), "@echo off\r\n");
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("tools/build.bat"));
+        await OpenLinkAsync(h, tab, "tools/build.bat");
 
         Assert.Equal(script, h.Shell.Groups.Single().Files!.Showing?.Path);
         Assert.Empty(h.Platform.OpenedFiles);
@@ -258,7 +271,7 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         Write(Path.Combine(h.WorkFolder, "Source", "Player", "Player.cpp"));
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("Source/Player/"));
+        await OpenLinkAsync(h, tab, "Source/Player/");
 
         var files = h.Shell.Groups.Single().Files!;
         Assert.Equal("Source/Player", files.SelectedRow?.RelativePath);
@@ -274,8 +287,8 @@ public class ProjectFilesOpeningTests
         var tab = await h.OpenTabAsync();
         var spec = Write(Path.Combine(h.WorkFolder, "docs", "weapons.md"));
 
-        await tab.OpenLinkCommand.ExecuteAsync(Click("docs/weapons.md"));
-        await tab.OpenLinkCommand.ExecuteAsync(Click("docs/"));
+        await OpenLinkAsync(h, tab, "docs/weapons.md");
+        await OpenLinkAsync(h, tab, "docs/");
 
         Assert.Equal([spec], h.Platform.OpenedFiles);
         Assert.Equal([Path.Combine(h.WorkFolder, "docs")], h.Platform.RevealedFolders);
@@ -288,7 +301,7 @@ public class ProjectFilesOpeningTests
         await using var h = new TabTestHarness();
         var tab = await h.OpenTabAsync();
 
-        h.Shell.GoToFileCommand.Execute(null);
+        InlineDispatcher.Run(() => h.Shell.GoToFileCommand.Execute(null));
 
         var files = h.Shell.Groups.Single().Files!;
         Assert.True(files.IsFinding);
@@ -302,9 +315,9 @@ public class ProjectFilesOpeningTests
         await using var h = new TabTestHarness();
         var tab = await h.OpenTabAsync();
         var path = Write(Path.Combine(h.WorkFolder, "a.txt"));
-        h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single());
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single()));
         var files = h.Shell.Groups.Single().Files!;
-        await files.OpenFileAsync(path, preview: false);
+        await InlineDispatcher.RunAsync(() => files.OpenFileAsync(path, preview: false));
         h.Shell.SelectedTab = tab;
 
         h.Shell.OpenBesideCommand.Execute(files);

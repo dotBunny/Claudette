@@ -71,6 +71,7 @@ public sealed class EditorLogService : IDisposable
     /// </summary>
     public void Follow(IReadOnlyList<FollowedProject> projects, IReadOnlyList<EditorLogTab> tabs)
     {
+        ITimer? start = null;
         lock (_lock)
         {
             if (_disposed)
@@ -85,10 +86,20 @@ public sealed class EditorLogService : IDisposable
                 // A look straight away, so an editor that's open already shows.
                 _checkSoon = true;
             }
-            if (projects.Count > 0 || _logs.Count > 0 || wasFollowing)
+            if ((projects.Count > 0 || _logs.Count > 0 || wasFollowing) && _timer is null)
             {
-                _timer ??= _services.Time.CreateTimer(_ => Tick(), null, TimeSpan.Zero, ReadInterval);
+                start = _timer = _services.Time.CreateTimer(_ => Tick(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
             }
+        }
+        // Started once the lock is let go: a clock can run the first read at once, on this thread, and what it finds goes
+        // to the UI thread, which may be waiting here to follow other projects.
+        try
+        {
+            start?.Change(TimeSpan.Zero, ReadInterval);
+        }
+        catch (ObjectDisposedException)
+        {
+            // Disposed meanwhile: Claudette is closing.
         }
     }
 

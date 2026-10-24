@@ -225,7 +225,7 @@ public class ImageOpeningTests
         Write(Path.Combine(h.WorkFolder, "menu.png"), TestImages.Png);
         var tab = await h.OpenTabAsync();
         var group = h.Shell.Groups.Single();
-        h.Shell.OpenProjectFilesCommand.Execute(group);
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(group));
         var files = group.Files!;
         await TabTestHarness.Eventually(() => files.Rows.Any(r => r.Name == "menu.png"), "the files");
         var row = files.Rows.Single(r => r.Name == "menu.png");
@@ -260,11 +260,12 @@ public class ImageOpeningTests
         Write(Path.Combine(h.WorkFolder, "data.bin"), [0, 1, 2]);
         await h.OpenTabAsync();
         var group = h.Shell.Groups.Single();
-        h.Shell.OpenProjectFilesCommand.Execute(group);
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(group));
         var files = group.Files!;
 
-        var gif = await files.OpenFileAsync(Path.Combine(h.WorkFolder, "huge.gif"), preview: false);
-        var bin = await files.OpenFileAsync(Path.Combine(h.WorkFolder, "data.bin"), preview: false);
+        // Opened on the UI thread, where the explorer may still be listing the folder: both watch it.
+        var gif = await InlineDispatcher.RunAsync(() => files.OpenFileAsync(Path.Combine(h.WorkFolder, "huge.gif"), preview: false));
+        var bin = await InlineDispatcher.RunAsync(() => files.OpenFileAsync(Path.Combine(h.WorkFolder, "data.bin"), preview: false));
         await TabTestHarness.Eventually(() => gif.IsLoaded && bin.IsLoaded, "the files");
 
         // Over 10 MB but named as an image: the window may still show it, and checks its bytes on the click.

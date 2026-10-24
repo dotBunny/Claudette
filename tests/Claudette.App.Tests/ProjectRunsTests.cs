@@ -424,9 +424,10 @@ public class ProjectRunsTests
         await Waiting.NeverAsync(() => found > 1, "a path that isn't there to be found");
         Assert.Empty(build.LinksIn(Missing));
 
-        // A click opens the file in the project's Files tab, beside the log, at the line named.
+        // A click opens the file in the project's Files tab, beside the log, at the line named: on the UI thread, as in the
+        // app, so the explorer the tab opens with lists its folder there too.
         build.OpenCommand.Execute(null);
-        await build.OpenLinkCommand.ExecuteAsync(link);
+        await InlineDispatcher.RunAsync(() => build.OpenLinkCommand.ExecuteAsync(link));
         var files = h.Shell.Groups.Single(g => g.Tabs.Contains(tab)).Files!;
         await TabTestHarness.Eventually(() => files.Showing?.Path == source, "the file");
         Assert.Equal([build, (IShellTab)files], h.Shell.Panes);

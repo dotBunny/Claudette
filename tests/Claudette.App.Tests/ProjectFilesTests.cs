@@ -27,10 +27,10 @@ public class ProjectFilesTests
     {
         var tab = await h.OpenTabAsync();
         var group = h.Shell.Groups.Single();
-        h.Shell.OpenProjectFilesCommand.Execute(group);
+        // Opened on the UI thread, as its button does, the explorer lists the folder there too, adding the rows and then
+        // watching the folder, which a change on disk needs: the watch says the listing is done.
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(group));
         var files = group.Files!;
-        // The explorer lists the folder off the test's thread, adding the rows one by one and then watching the folder,
-        // which a change on disk needs: the watch says the listing is done.
         await TabTestHarness.Eventually(() => h.FolderWatcher.Folders.Contains(files.Folder), "the explorer");
         return (tab, files);
     }
@@ -92,7 +92,7 @@ public class ProjectFilesTests
         h.Factory.ProcessPerSession = true;
         var first = await h.OpenTabAsync();
         var second = await h.OpenTabAsync();
-        h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single());
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single()));
 
         h.Shell.SelectNextCommand.Execute(null);
         Assert.Same(first, h.Shell.Selected);
@@ -273,7 +273,8 @@ public class ProjectFilesTests
         Assert.Contains(row, files.Rows);
         Assert.DoesNotContain(files.Rows, r => r.Name == "c.txt");
 
-        files.CancelNewEntryCommand.Execute(null);
+        // Esc on the UI thread, as in the app: the reading it starts finishes there, so the wait can't see it halfway.
+        InlineDispatcher.Run(() => files.CancelNewEntryCommand.Execute(null));
 
         Assert.Null(files.NamingRow);
         await TabTestHarness.Eventually(() => files.Rows.Any(r => r.Name == "c.txt"), "the file added meanwhile");
@@ -662,6 +663,9 @@ public class ProjectFilesTests
         Assert.False(file.IsPreview);
         Assert.Equal(42, file.CaretLine);
         Assert.False(files.IsFinding);
+        // The tree comes back with the file selected, expanding its folders off the test's thread: it's waited for, so
+        // the rows aren't still being added while the tab is saved.
+        await TabTestHarness.Eventually(() => files.SelectedRow?.RelativePath == "Source/Player/PlayerController.cpp", "the file revealed in the tree");
     }
 
     // ---- Kept and brought back ---------------------------------------------------------------------------------------
@@ -682,7 +686,8 @@ public class ProjectFilesTests
         h.Services.State.ProjectFiles = [saved];
         h.Services.State.SelectedTabId = saved.Id;
 
-        h.Shell.Restore(null);
+        // Restored on the UI thread, as at launch, so the explorer lists and expands there too.
+        InlineDispatcher.Run(() => h.Shell.Restore(null));
 
         var files = Assert.IsType<ProjectFilesViewModel>(h.Shell.Selected);
         Assert.Same(files, Assert.Single(h.Shell.Groups).Files);
@@ -690,8 +695,8 @@ public class ProjectFilesTests
         Assert.Equal(["a.txt", "b.txt"], files.OpenFiles.Select(f => f.Name));
         Assert.True(files.OpenFiles[0].IsPinned);
         Assert.Equal(b, files.Showing?.Path);
-        // The explorer lists and expands off the test's thread, adding rows as it goes: watching the folder it expanded
-        // comes after its rows, so it's waited for before they're read.
+        // The explorer adds rows as it lists and expands: watching the folder it expanded comes after its rows, so it's
+        // waited for before they're read.
         await TabTestHarness.Eventually(() => h.FolderWatcher.Folders.Contains(Path.GetDirectoryName(b)), "the folder expanded again");
         Assert.Contains(files.Rows, r => r.Name == "b.txt" && r.Depth == 1);
         await TabTestHarness.Eventually(() => files.OpenFiles.All(f => f.IsLoaded), "the files read");
@@ -708,7 +713,7 @@ public class ProjectFilesTests
 
         var snapshot = h.Shell.CaptureForRestart();
         await h.Shell.CloseTabsForRestartAsync();
-        h.Shell.Restore(null, snapshot);
+        InlineDispatcher.Run(() => h.Shell.Restore(null, snapshot));
 
         var back = Assert.IsType<ProjectFilesViewModel>(h.Shell.Selected);
         Assert.NotSame(files, back);
@@ -732,7 +737,7 @@ public class ProjectFilesTests
         var snapshot = h.Shell.CaptureForRestart();
         await h.Shell.CloseTabsForRestartAsync();
         await File.WriteAllTextAsync(path, "changed\n", Token);
-        h.Shell.Restore(null, snapshot);
+        InlineDispatcher.Run(() => h.Shell.Restore(null, snapshot));
 
         var reopened = Assert.Single(Assert.IsType<ProjectFilesViewModel>(h.Shell.Selected).OpenFiles);
         await TabTestHarness.Eventually(() => reopened.IsLoaded, "the file read");
@@ -751,7 +756,7 @@ public class ProjectFilesTests
         h.Services.State.Tabs = [new TabState { Folder = other, IsPinned = true }];
         h.Services.State.GroupOrder = [h.WorkFolder, other];
 
-        h.Shell.Restore(null);
+        InlineDispatcher.Run(() => h.Shell.Restore(null));
 
         Assert.Equal([h.WorkFolder, other], h.Shell.Groups.Select(g => g.Folder));
         Assert.NotNull(h.Shell.Groups[0].Files);
