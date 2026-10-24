@@ -9,7 +9,6 @@ using Claudette.Core.Protocol;
 using Claudette.Core.Sessions;
 using Claudette.Core.Settings;
 using Claudette.Platform.Processes;
-using Microsoft.Extensions.Time.Testing;
 
 namespace Claudette.App.Tests.Support;
 
@@ -707,7 +706,7 @@ internal sealed class TabTestHarness : IAsyncDisposable
         return path;
     }
 
-    public FakeTimeProvider Time { get; } = new(DateTimeOffset.Parse("2026-09-28T12:00:00Z"));
+    public HarnessClock Time { get; } = new(DateTimeOffset.Parse("2026-09-28T12:00:00Z"));
 
     public ScriptedTransport Transport { get; } = new();
 

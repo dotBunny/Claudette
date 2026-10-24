@@ -323,6 +323,17 @@ public class EditorLogsTests
         Assert.StartsWith("Unreal editor crashed", log.Status, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Settings → Project tools → Show editor logs under the tab, changed on the UI thread as the Settings window does:
+    /// saving follows the logs again there, and so does the project's refresh it starts, which would otherwise race it for
+    /// the same rows.
+    /// </summary>
+    private static void ShowEditorLogs(Fixture f, bool show) => InlineDispatcher.Run(() =>
+    {
+        f.H.Services.Settings.ProjectTools.ShowEditorLogs = show;
+        f.H.Services.SaveSettings();
+    });
+
     [Fact]
     public async Task With_the_setting_off_there_are_no_logs_and_turning_it_off_takes_them_away()
     {
@@ -334,8 +345,7 @@ public class EditorLogsTests
         var log = Assert.Single(Logs(tab));
         log.OpenCommand.Execute(null);
 
-        f.H.Services.Settings.ProjectTools.ShowEditorLogs = false;
-        f.H.Services.SaveSettings();
+        ShowEditorLogs(f, false);
 
         Assert.Empty(Logs(tab));
         Assert.DoesNotContain(log, f.H.Shell.OpenTabs);
@@ -343,8 +353,7 @@ public class EditorLogsTests
         f.Look();
         Assert.Empty(Logs(tab));
 
-        f.H.Services.Settings.ProjectTools.ShowEditorLogs = true;
-        f.H.Services.SaveSettings();
+        ShowEditorLogs(f, true);
         f.Look();
         Assert.Single(Logs(tab));
     }
