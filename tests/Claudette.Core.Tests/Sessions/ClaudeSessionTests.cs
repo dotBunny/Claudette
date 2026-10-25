@@ -483,6 +483,47 @@ public class ClaudeSessionTests
         Assert.Equal(StartupFailureFix.None, ex.StartupFailure.Fix);
     }
 
+    [Fact]
+    public async Task A_start_whose_request_finds_Claude_Code_gone_says_why_it_stopped()
+    {
+        // Signed out, Claude Code can exit before it reads initialize: the write breaks the pipe, and its exit says why.
+        _transport.FailSends = new IOException("Broken pipe");
+        await using var session = new ClaudeSession(_transport, _time);
+        var starting = session.InitializeAsync(TestContext.Current.CancellationToken);
+
+        _transport.Exit(1, "Invalid API key · Please run /login");
+
+        var ex = await Assert.ThrowsAsync<ClaudeSessionExitedException>(() => starting);
+        Assert.Equal("Invalid API key · Please run /login", ex.Exit.StandardErrorTail);
+    }
+
+    [Fact]
+    public async Task A_request_after_the_exit_fails_with_it_at_once()
+    {
+        await using var session = await StartAsync();
+        _transport.Exit(1, "boom");
+        await session.Completion;
+        _transport.FailSends = new IOException("Broken pipe");
+
+        var ex = await Assert.ThrowsAsync<ClaudeSessionExitedException>(() => session.InterruptAsync(TestContext.Current.CancellationToken));
+
+        Assert.Equal("boom", ex.Exit.StandardErrorTail);
+        Assert.DoesNotContain(_transport.Sent, m => Type(m) == "control_request" && Subtype(m["request"]!) == "interrupt");
+    }
+
+    [Fact]
+    public async Task A_request_that_cant_be_sent_to_a_running_Claude_Code_says_so_by_its_deadline()
+    {
+        await using var session = await StartAsync();
+        _transport.FailSends = new IOException("Broken pipe");
+        var pending = session.InterruptAsync(TestContext.Current.CancellationToken);
+
+        _time.Advance(ClaudeSession.DefaultControlTimeout + TimeSpan.FromSeconds(1));
+
+        var ex = await Assert.ThrowsAsync<IOException>(() => pending);
+        Assert.Contains("Broken pipe", ex.Message, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("cwd_unavailable", StartupFailureFix.ChooseFolder, "The tab's folder was deleted or moved, or can't be read.")]
     [InlineData("bypass_root", StartupFailureFix.None, "Bypass permissions mode can't be used while running as root. Choose another permission mode in Tab settings, then restart the tab.")]

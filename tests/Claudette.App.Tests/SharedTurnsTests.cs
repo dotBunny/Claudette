@@ -36,7 +36,7 @@ public class SharedTurnsTests
         lap.Tracker.TurnsImported += _ => imported.TrySetResult();
 
         await lap.Tracker.ShareAsync();
-        await imported.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        await imported.Task.WaitAsync(Waiting.Timeout, TestContext.Current.CancellationToken);
         using var header = new UsageViewModel(lap.Harness.Services, lap.Tracker);
         var panel = new UsagePanelViewModel(lap.Harness.Services, lap.Tracker, header, id => id == lapTab.Id ? "Laptop tab" : null);
         await panel.RefreshAsync();

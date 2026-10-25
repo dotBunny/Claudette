@@ -370,7 +370,7 @@ public sealed class GitWorkingTreeTests : IDisposable
     private async Task GitAsync(params string[] arguments)
     {
         var result = await ProcessRunner.RunAsync(
-            _launcher, new ProcessStartSpec("git", arguments) { WorkingDirectory = _repo }, TimeSpan.FromSeconds(30), TimeProvider.System, Token);
+            _launcher, new ProcessStartSpec("git", arguments) { WorkingDirectory = _repo }, Waiting.Timeout, TimeProvider.System, Token);
         Assert.True(result.ExitCode == 0, $"git {string.Join(' ', arguments)} failed: {result.StandardError}");
     }
 }

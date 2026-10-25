@@ -65,7 +65,7 @@ public sealed class SourceCheckoutTests : IDisposable
 
     private async Task<string> HeadAsync(string folder)
     {
-        var result = await ProcessRunner.RunAsync(_launcher, new ProcessStartSpec("git", ["rev-parse", "HEAD"]) { WorkingDirectory = folder }, TimeSpan.FromSeconds(30),
+        var result = await ProcessRunner.RunAsync(_launcher, new ProcessStartSpec("git", ["rev-parse", "HEAD"]) { WorkingDirectory = folder }, Waiting.Timeout,
             TimeProvider.System, Token);
         return result.StandardOutput.Trim();
     }

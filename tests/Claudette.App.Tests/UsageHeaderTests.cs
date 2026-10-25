@@ -346,7 +346,7 @@ public class UsageHeaderTests
         tracker.TurnRecorded += id => recorded.TrySetResult(id);
 
         tracker.OnTurnCompleted("tab-1", "api", Result(100, 20), "/work/api");
-        Assert.Equal("tab-1", await recorded.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken));
+        Assert.Equal("tab-1", await recorded.Task.WaitAsync(Waiting.Timeout, TestContext.Current.CancellationToken));
 
         var sum = Assert.Single(tracker.Store.GetTokensByTab(h.Time.GetUtcNow().AddHours(-1)));
         Assert.Equal(("tab-1", "api"), (sum.TabId, sum.Name));

@@ -605,7 +605,7 @@ public class SidePanelTests
         Assert.SkipWhen(FileProbe.Instance.FindOnPath(OperatingSystem.IsWindows() ? "git.exe" : "git") is null, "git isn't on PATH.");
         await using var h = new TabTestHarness();
         var init = await ProcessRunner.RunAsync(new ProcessLauncher(), new ProcessStartSpec("git", ["init", "-q"]) { WorkingDirectory = h.WorkFolder },
-            TimeSpan.FromSeconds(30), TimeProvider.System, TestContext.Current.CancellationToken);
+            Waiting.Timeout, TimeProvider.System, TestContext.Current.CancellationToken);
         Assert.Equal(0, init.ExitCode);
         var tab = await h.OpenTabAsync();
         var (claudes, yours) = (Path.Combine(h.WorkFolder, "a.cs"), Path.Combine(h.WorkFolder, "notes.md"));

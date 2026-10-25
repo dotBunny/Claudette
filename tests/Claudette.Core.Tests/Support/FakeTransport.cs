@@ -32,6 +32,9 @@ internal sealed class FakeTransport : IClaudeTransport
     /// <summary>While set, sends don't complete until it does: a write still under way as Claude Code answers.</summary>
     public TaskCompletionSource? HoldSends { get; set; }
 
+    /// <summary>While set, sends fail with it and go nowhere, as a write to a Claude Code that has exited does.</summary>
+    public Exception? FailSends { get; set; }
+
     public bool InputClosed { get; private set; }
 
     public bool Terminated { get; private set; }
@@ -53,6 +56,10 @@ internal sealed class FakeTransport : IClaudeTransport
 
     public ValueTask SendAsync(string line, CancellationToken cancellationToken = default)
     {
+        if (FailSends is { } failure)
+        {
+            return ValueTask.FromException(failure);
+        }
         var obj = JsonNode.Parse(line)!.AsObject();
         List<TaskCompletionSource<JsonObject>> matched = [];
         lock (_sent)

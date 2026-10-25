@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Fixed
+
+- A tab whose Claude Code stopped as it started, because it isn't signed in say, could say *Couldn't start Claude Code: Broken pipe*. It now says why Claude Code stopped, and shows the sign-in screen when signing in is what it needs.
+
 ## [0.6.0] - 2026-10-24
 
 ### Added

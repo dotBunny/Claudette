@@ -332,6 +332,11 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
             {
                 tab.MarkFolderMissing();
             }
+            // Before the panes show it: showing a tab starts it, and the start reads this.
+            if (snapshot?.InterruptedTabIds.Contains(tab.Id) == true)
+            {
+                tab.CarryOnInterruptedTurn();
+            }
         }
         // The Project Files tabs come back every time, as pinned tabs do (DESIGN.md §18, "Project files").
         RestoreProjectFiles();
@@ -343,10 +348,6 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         SaveTabs();
         foreach (var tab in AllTabs.Where(t => snapshot?.RunningTabIds.Contains(t.Id) == true))
         {
-            if (snapshot!.InterruptedTabIds.Contains(tab.Id))
-            {
-                tab.CarryOnInterruptedTurn();
-            }
             _ = tab.EnsureStartedAsync();
         }
         // Library retention, now and once a day (DESIGN.md §9, "Keeping sessions"). It keeps the sessions of open tabs that

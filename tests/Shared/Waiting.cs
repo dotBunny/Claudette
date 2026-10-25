@@ -8,8 +8,11 @@ namespace Claudette.Tests;
 /// </summary>
 internal static class Waiting
 {
-    /// <summary>Long enough for a busy CI machine to start a process.</summary>
-    public static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
+    /// <summary>
+    /// Long enough for a busy CI machine, whose disk can stall writes for a minute or more. It's how long a hung test
+    /// takes to fail, not how long the work may take: what normally takes a second has taken 50 on Windows runners.
+    /// </summary>
+    public static readonly TimeSpan Timeout = TimeSpan.FromSeconds(90);
 
     private static readonly TimeSpan Interval = TimeSpan.FromMilliseconds(10);
 

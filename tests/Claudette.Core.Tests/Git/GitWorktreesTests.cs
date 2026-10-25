@@ -220,7 +220,7 @@ public sealed class GitWorktreesTests : IDisposable
     private async Task<string> BranchesAsync()
     {
         var result = await Core.Processes.ProcessRunner.RunAsync(_launcher, new Core.Processes.ProcessStartSpec("git", ["branch", "--list"]) { WorkingDirectory = _repo },
-            TimeSpan.FromSeconds(30), TimeProvider.System, Token);
+            Waiting.Timeout, TimeProvider.System, Token);
         return result.StandardOutput;
     }
 }

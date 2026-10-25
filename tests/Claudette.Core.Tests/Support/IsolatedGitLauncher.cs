@@ -38,7 +38,7 @@ internal sealed class IsolatedGitLauncher : IProcessLauncher
     public async Task RunAsync(string folder, params string[] arguments)
     {
         var result = await ProcessRunner.RunAsync(
-            this, new ProcessStartSpec("git", arguments) { WorkingDirectory = folder }, TimeSpan.FromSeconds(30), TimeProvider.System, TestContext.Current.CancellationToken);
+            this, new ProcessStartSpec("git", arguments) { WorkingDirectory = folder }, Waiting.Timeout, TimeProvider.System, TestContext.Current.CancellationToken);
         Assert.True(result.ExitCode == 0, $"git {string.Join(' ', arguments)} failed: {result.StandardError}");
     }
 }

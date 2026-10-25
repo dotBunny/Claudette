@@ -351,7 +351,7 @@ public sealed class ScratchPadTests
     {
         var result = await ProcessRunner.RunAsync(new ProcessLauncher(),
             new ProcessStartSpec("git", ["-c", "user.email=t@example.com", "-c", "user.name=t", "-c", "commit.gpgsign=false", .. arguments]) { WorkingDirectory = folder },
-            TimeSpan.FromSeconds(30), TimeProvider.System, TestContext.Current.CancellationToken);
+            Waiting.Timeout, TimeProvider.System, TestContext.Current.CancellationToken);
         Assert.True(result.ExitCode == 0, $"git {string.Join(' ', arguments)} failed: {result.StandardError}");
     }
 }

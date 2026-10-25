@@ -20,6 +20,7 @@ internal sealed class ControlChannel(Func<string, CancellationToken, ValueTask> 
 {
     private readonly ConcurrentDictionary<string, Pending> _pending = new();
     private int _nextId;
+    private Exception? _failure;
 
     public async Task<JsonObject> RequestAsync(JsonObject request, TimeSpan timeout, CancellationToken cancellationToken)
     {
@@ -32,7 +33,25 @@ internal sealed class ControlChannel(Func<string, CancellationToken, ValueTask> 
         using var timeoutSource = new CancellationTokenSource(timeout, timeProvider);
         try
         {
-            await sendLine(OutgoingMessages.ControlRequest(requestId, request).ToJsonString(), cancellationToken).ConfigureAwait(false);
+            IOException? unsent = null;
+            if (Volatile.Read(ref _failure) is { } failure)
+            {
+                // Asked after the process has gone: it fails as the requests waiting then did, rather than waiting it out.
+                pending.Completion.TrySetException(failure);
+            }
+            else
+            {
+                try
+                {
+                    await sendLine(OutgoingMessages.ControlRequest(requestId, request).ToJsonString(), cancellationToken).ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                {
+                    // Its input closed because it's exiting, say having found no sign-in: its exit fails the request
+                    // with why it stopped, which the broken pipe doesn't say.
+                    unsent = ex;
+                }
+            }
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
             try
             {
@@ -40,6 +59,10 @@ internal sealed class ControlChannel(Func<string, CancellationToken, ValueTask> 
             }
             catch (OperationCanceledException) when (timeoutSource.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
             {
+                if (unsent is not null)
+                {
+                    throw new IOException($"Couldn't send the '{subtype}' control request to Claude Code: {unsent.Message}", unsent);
+                }
                 throw new TimeoutException($"Claude Code didn't answer the '{subtype}' control request within {timeout}.");
             }
         }
@@ -67,9 +90,11 @@ internal sealed class ControlChannel(Func<string, CancellationToken, ValueTask> 
         return true;
     }
 
-    /// <summary>Fails every outstanding request, for example because the process exited.</summary>
+    /// <summary>Fails every outstanding request, and every later one, because the process exited.</summary>
     public void FailAll(Exception exception)
     {
+        // Set before the requests are failed, so a request made meanwhile sees one or the other.
+        Volatile.Write(ref _failure, exception);
         foreach (var requestId in _pending.Keys)
         {
             if (_pending.TryRemove(requestId, out var pending))
