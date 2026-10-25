@@ -47,6 +47,7 @@ search_exclude: true
     <li>{% include icon.html name="shield" %} <strong>No analytics</strong></li>
     <li>{% include icon.html name="code" %} MIT licensed</li>
     <li>{% include icon.html name="monitor" %} Windows, macOS and Linux</li>
+    <li>{% include icon.html name="gamepad" %} Made for Unreal, Unity and Godot</li>
   </ul>
 </section>
 
@@ -56,6 +57,68 @@ search_exclude: true
   </div>
 </div>
 
+<section class="band gamedev" id="game-dev" aria-labelledby="gamedev-title">
+  <div class="section-head" data-reveal>
+    <p class="kicker">{% include icon.html name="gamepad" %} For game developers</p>
+    <h2 id="gamedev-title">Made by game developers.<br><span class="gradient-text">For game developers.</span></h2>
+    <p>Claudette knows the engines, editors and depots games are made with. Open a project's folder, and its tab knows what's in it: the engine and its version, how to build and launch it, and where the editor writes its log.</p>
+  </div>
+
+  <div class="engines">
+    <article class="engine" data-reveal>
+      <div class="engine-head">
+        {% include icon.html name="cog" %}
+        <div>
+          <h3>Unreal Engine</h3>
+          <p>UE 4 and 5, from the launcher or built from source</p>
+        </div>
+      </div>
+      <ul>
+        <li>Launch the editor, generate project files and build, in Development or DebugGame</li>
+        <li>Open the solution, or the project in Rider</li>
+        <li>Its log in tidy columns of time, category and verbosity</li>
+      </ul>
+      <a class="more" href="{{ '/project-tools/unreal-engine/' | relative_url }}">Unreal Engine {% include icon.html name="arrow-right" %}</a>
+    </article>
+    <article class="engine" data-reveal>
+      <div class="engine-head">
+        {% include icon.html name="box" %}
+        <div>
+          <h3>Unity</h3>
+          <p>The exact editor the project names, found through Unity Hub</p>
+        </div>
+      </div>
+      <ul>
+        <li>Open the project, with Release or Debug code optimization</li>
+        <li>Run the EditMode tests, and see how many passed</li>
+        <li>Regenerate the C# solution, and clean Library when it's time</li>
+      </ul>
+      <a class="more" href="{{ '/project-tools/unity/' | relative_url }}">Unity {% include icon.html name="arrow-right" %}</a>
+    </article>
+    <article class="engine" data-reveal>
+      <div class="engine-head">
+        {% include icon.html name="bot" %}
+        <div>
+          <h3>Godot</h3>
+          <p>Godot 3 and 4, C# projects too</p>
+        </div>
+      </div>
+      <ul>
+        <li>Open the editor, or run the main scene</li>
+        <li>Build C# with <code>dotnet</code>, and open the solution</li>
+        <li>Clean <code>.godot</code>, or Godot 3's <code>.import</code>, for a fresh import</li>
+      </ul>
+      <a class="more" href="{{ '/project-tools/godot/' | relative_url }}">Godot {% include icon.html name="arrow-right" %}</a>
+    </article>
+  </div>
+
+  <div class="cards cards-3">
+    <a class="card" href="{{ '/project-tools/editor-logs/' | relative_url }}" data-reveal>{% include icon.html name="scroll" %}<strong>Editor logs</strong><span>The editor's log under the tab as it's written, its errors counted, and still there when the editor crashes.</span></a>
+    <a class="card" href="{{ '/project-tools/perforce/' | relative_url }}" data-reveal>{% include icon.html name="key" %}<strong>Perforce</strong><span>Tickets renewed before they run out, so a long task never stops at <code>p4 login</code>, and each tab's changelist.</span></a>
+    <a class="card" href="{{ '/project-tools/actions-and-links/' | relative_url }}" data-reveal>{% include icon.html name="terminal" %}<strong>Your pipeline</strong><span>Your own actions in <code>claudette.json</code>, committed for the whole team: cook, package, run the tests.</span></a>
+  </div>
+</section>
+
 <section class="tour" id="tour" aria-labelledby="tour-title">
   <div class="section-head" data-reveal>
     <p class="kicker">See it in action</p>
@@ -64,16 +127,18 @@ search_exclude: true
   </div>
 
   <nav class="story-index" aria-label="The tour">
-    <a href="#tabs"><span>01</span> Tabs</a>
-    <a href="#plans"><span>02</span> Plans</a>
-    <a href="#agents"><span>03</span> Agents</a>
-    <a href="#usage"><span>04</span> Usage</a>
-    <a href="#review"><span>05</span> Review</a>
-    <a href="#files"><span>06</span> Files</a>
-    <a href="#logs"><span>07</span> Logs</a>
-    <a href="#accounts"><span>08</span> Accounts</a>
-    <a href="#anywhere"><span>09</span> Anywhere</a>
-    <a href="#settings"><span>10</span> Settings</a>
+    <div class="story-index-track">
+      <a href="#tabs"><span>01</span> Tabs</a>
+      <a href="#plans"><span>02</span> Plans</a>
+      <a href="#agents"><span>03</span> Agents</a>
+      <a href="#usage"><span>04</span> Usage</a>
+      <a href="#review"><span>05</span> Review</a>
+      <a href="#files"><span>06</span> Files</a>
+      <a href="#logs"><span>07</span> Logs</a>
+      <a href="#accounts"><span>08</span> Accounts</a>
+      <a href="#anywhere"><span>09</span> Anywhere</a>
+      <a href="#settings"><span>10</span> Settings</a>
+    </div>
   </nav>
 
   <div class="story">
@@ -242,11 +307,11 @@ search_exclude: true
   </div>
   <div class="cards">
     <a class="card" href="{{ '/tabs/worktree-tabs/' | relative_url }}" data-reveal>{% include icon.html name="branch" %}<strong>Worktree tabs</strong><span>Parallel tabs in one repository, each on its own branch.</span></a>
-    <a class="card" href="{{ '/project-tools/' | relative_url }}" data-reveal>{% include icon.html name="gamepad" %}<strong>Project tools</strong><span>Unreal Engine, Unity and Godot: build, launch, open the solution.</span></a>
+    <a class="card" href="{{ '/tabs/split-panes/' | relative_url }}" data-reveal>{% include icon.html name="columns" %}<strong>Split panes</strong><span>Up to three tabs side by side, each with its own composer.</span></a>
     <a class="card" href="{{ '/away/the-claude-app/' | relative_url }}" data-reveal>{% include icon.html name="phone" %}<strong>The Claude app</strong><span>Keep a conversation going from your phone.</span></a>
     <a class="card" href="{{ '/tabs/the-command-palette/' | relative_url }}" data-reveal>{% include icon.html name="command" %}<strong>Command palette</strong><span>Everything Claudette can do, a few keystrokes away.</span></a>
     <a class="card" href="{{ '/conversation/the-scratch-pad/' | relative_url }}" data-reveal>{% include icon.html name="note" %}<strong>Scratch pad</strong><span>A pad per project for commands, notes and snippets.</span></a>
-    <a class="card" href="{{ '/project-tools/perforce/' | relative_url }}" data-reveal>{% include icon.html name="key" %}<strong>Perforce</strong><span>Tickets kept fresh, and each tab's changelist.</span></a>
+    <a class="card" href="{{ '/conversation/rewind-and-branch/' | relative_url }}" data-reveal>{% include icon.html name="rewind" %}<strong>Rewind and branch</strong><span>Edit an earlier message, branch a new tab from it, or put the files back.</span></a>
     <a class="card" href="{{ '/away/notifications/' | relative_url }}" data-reveal>{% include icon.html name="bell" %}<strong>Notifications</strong><span>Know when a tab needs you, wherever you are.</span></a>
     <a class="card" href="{{ '/settings/accessibility/' | relative_url }}" data-reveal>{% include icon.html name="eye" %}<strong>Accessibility</strong><span>Zoom, reduced motion and screen readers.</span></a>
   </div>

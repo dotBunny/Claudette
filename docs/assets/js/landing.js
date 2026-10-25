@@ -20,13 +20,31 @@
     rising.forEach(function (element) { reveal.observe(element); });
   }
 
+  // The tour's index: where its steps don't all fit, its ends fade where there's more to scroll to, and the current
+  // step's link is scrolled to the middle of it (the index's own scroll, never the page's).
+  var index = document.querySelector('.story-index');
+  var track = document.querySelector('.story-index-track');
   var links = document.querySelectorAll('.story-index a');
+  if (index && track) {
+    var ends = function () {
+      var more = track.scrollWidth - track.clientWidth;
+      index.classList.toggle('more-before', track.scrollLeft > 1);
+      index.classList.toggle('more-after', track.scrollLeft < more - 1);
+    };
+    track.addEventListener('scroll', ends, { passive: true });
+    window.addEventListener('resize', ends);
+    ends();
+  }
   if (watch && links.length) {
     var current = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
         links.forEach(function (link) {
-          link.classList.toggle('is-current', link.getAttribute('href') === '#' + entry.target.id);
+          var isCurrent = link.getAttribute('href') === '#' + entry.target.id;
+          link.classList.toggle('is-current', isCurrent);
+          if (isCurrent && track) {
+            track.scrollTo({ left: link.offsetLeft - (track.clientWidth - link.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' });
+          }
         });
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
