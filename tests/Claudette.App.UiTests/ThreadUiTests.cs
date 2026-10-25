@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
-using Avalonia.Input;
 using Avalonia.VisualTree;
 using Claudette.App.Controls;
 using Claudette.App.Services;
@@ -112,7 +111,7 @@ public class ThreadUiTests
         Button Row(TabViewModel tab) => window.GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("tabrow") && b.DataContext == tab);
         Assert.Equal(Row(other).Bounds.Height, Row(plan).Bounds.Height);
         // Clicking it reaches it, though it's outside the row.
-        Assert.Contains(fold, (window.InputHitTest(Middle(fold)) as Visual)?.GetSelfAndVisualAncestors() ?? []);
+        Assert.Contains(fold, (UiText.HitTest(window, Middle(fold)) as Visual)?.GetSelfAndVisualAncestors() ?? []);
 
         // A sub-thread's, 12 further in, is on the same line.
         h.Transport.EmitTo(2, ThreadScript.Init());

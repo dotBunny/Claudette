@@ -112,7 +112,7 @@ public class MascotUiTests
         Assert.Contains(scene.Director.Frame.Props, p => p.Name == "bang");
         // The layer itself lets clicks through: beside her, the conversation is what's there.
         var beside = new Point(her.Right + 40, her.Center.Y);
-        Assert.Null((scene.Window.InputHitTest(beside) as Visual)?.FindAncestorOfType<MascotLayer>(includeSelf: true));
+        Assert.Null((UiText.HitTest(scene.Window, beside) as Visual)?.FindAncestorOfType<MascotLayer>(includeSelf: true));
     }
 
     [AvaloniaFact]

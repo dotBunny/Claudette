@@ -4,6 +4,8 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvaloniaEdit;
@@ -41,6 +43,25 @@ public static class UiText
     /// </summary>
     public static Task SettleUntilAsync(Window window, Func<bool> condition, string what) =>
         Waiting.UntilAsync(condition, what, poll: () => Settle(window));
+
+    /// <summary>
+    /// What a click at <paramref name="point"/> in the window reaches. Hit testing goes by where the last rendered frame put
+    /// each control, and the headless platform renders on a real-time timer, which <see cref="Settle"/> doesn't wait for, so
+    /// this renders the window first: a window only laid out may not have been rendered at all.
+    /// </summary>
+    public static IInputElement? HitTest(Window window, Point point)
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            Settle(window);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            if (!Dispatcher.UIThread.HasJobsWithPriority(DispatcherPriority.SystemIdle))
+            {
+                break;
+            }
+        }
+        return window.InputHitTest(point);
+    }
 
     public static string Describe(Visual root, params (string From, string To)[] replacements)
     {
