@@ -29,16 +29,27 @@ a fixed delay (CLAUDE.md, "Tests").
   session's own, not the version `compat/surface.yaml` names (`lastTested`), and the session's `CLAUDE_*` variables
   pass through to it as user configuration.
 
-## 3. Tell a slow runner from a bug
+## 3. Tell which kind it is
 
-Each `UnitTestResult` has a `startTime` and a `duration`. Sort a run's results by `startTime`, and compare what ran
-alongside the failure with the same tests in another run:
+About fifty failures have been fixed since September, and nearly all were one of these. Each kind's rule is in
+CLAUDE.md, "Tests" and "Rules that keep the code testable".
 
-- **The runner stalled** when unrelated tests in the same minutes took 10 to 100 times as long too. If only the tests
-  that write to disk slowed (SQLite, git, the library, atomic writes) and the ones that only compute didn't, it was the
-  disk. The fix is the ceiling: the wait uses `Waiting.Timeout`.
-- **It's a race or a wrong wait** when the failure came fast (a missing key after 60 ms, an assertion straight after a
-  wait), or when only that test was slow. Read the code between the wait and the assertion.
+- **A wait for the wrong state**, half of them: the assertion fails straight after a wait that passed. The wait was for
+  something that comes first (stored before applied, Idle before the turn), stands in for the thing checked, or was
+  still true from the step before. Read the code between the wait and the assertion, and what sets each.
+- **Work on the wrong thread**: *Collection was modified*, a list or event caught half filled, a test's own command
+  resuming outside the harness's UI lock. Look for work the test started off the UI thread, and fakes written to from
+  sessions' threads.
+- **A race in the app**, a fifth of them: a missing key or a wrong value with nothing slow about the run. Look for
+  state set after the work that reads it can start, a check and its record in two steps, an older result landing after
+  a newer one, a lock held while starting a callback.
+- **One system's difference**: it fails on one system every time, or nearly, and passes on the others. Check the list
+  under "Write each test for all three systems".
+- **A runner that stalled**: a ceiling ran out. Each `UnitTestResult` has a `startTime` and a `duration`: sort a run's
+  results by `startTime` and compare what ran alongside the failure with the same tests in another run. When unrelated
+  tests in the same minutes took 10 to 100 times as long too, the runner stalled; when only the tests that write to disk
+  (SQLite, git, the library, atomic writes) slowed and the ones that only compute didn't, it was the disk. The fix is the
+  ceiling: the wait uses `Waiting.Timeout`.
 
 ## 4. Reproduce it
 
@@ -56,8 +67,8 @@ alongside the failure with the same tests in another run:
 In this order of preference:
 
 1. **The order of the code.** Set what asynchronous work reads before anything can start that work, rather than
-   counting on the UI thread to queue it (CLAUDE.md, "Rules that keep the code testable"). A race the tests see can be
-   one people hit on a slow machine.
+   counting on the UI thread to queue it (CLAUDE.md, "Rules that keep the code testable"). Read the app's code before
+   the test's: a race the tests see can be one people hit on a slow machine, as a fifth of these were.
 2. **What the test waits for.** The state the next step reads, not one that comes before it or is already true.
 3. **The ceiling.** Real work is bounded by `Waiting.Timeout`, not a shorter time picked for the case.
 

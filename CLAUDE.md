@@ -58,7 +58,14 @@ The backlog is the open GitHub issues on `dotBunny/Claudette` assigned to `reapa
 - Talk to Claude Code only through `IClaudeTransport`.
 - Start processes only through `IProcessLauncher`.
 - Use the injected `TimeProvider` for anything time-based. Never use `DateTime.Now`, `DateTime.UtcNow` or real delays in logic.
-- Don't count on the UI thread to order work. Set what asynchronous work reads before anything that can start it: showing or selecting a tab starts it, so a flag set after the panes show the tab can come too late. View-model tests run continuations on the thread pool, so code like this races there first.
+- Order work so no other thread can see it half done, and don't count on the UI thread to queue it in order. Each of these was a race a flaky test found:
+  - Set what work reads before anything can start or see it: a flag before the tab is shown (showing a tab starts it), a request's deadline before the request goes out, Working before the message is written.
+  - Check and record in one locked step, never two.
+  - Let the latest result win: a refresh that a later one has overtaken drops its rows instead of replacing them.
+  - Don't start a timer or callback while holding a lock it takes: a clock can run it at once, on the same thread.
+  - A stopped process isn't gone until the OS says so; wait for it before reporting it ended.
+
+  View-model tests run continuations on the thread pool, so races like these show up there first.
 - Never hard-code paths to the app data folder, the session library or `~/.claude`. Inject them.
 - Secrets (Perforce passwords, accounts' API keys) go only to the OS credential store (`ICredentialStore`) and to child processes on standard input (`ProcessRunner`'s `inputLine`). An API key also reaches `claude` through Claudette's own key helper, which prints it for the `claude` that ran it (`Accounts/ApiKeyHelper`, DESIGN.md §4, "Accounts"). Never in arguments, settings, state, the environment or logs.
 - The build enforces these: `src/BannedSymbols.txt` bans the clock, sleeps, timeouts without a `TimeProvider`, `Process.Start`, `new HttpClient` and `Environment.SetEnvironmentVariable` under `src/`. Don't add a `#pragma warning disable RS0030` unless the code is the one place that has to (like `ProcessLauncher`), and say why on the same line.
@@ -104,10 +111,22 @@ The backlog is the open GitHub issues on `dotBunny/Claudette` assigned to `reapa
 - Never use a real Perforce server or real Perforce credentials: use `FakeP4` (`tests/Claudette.Core.Tests/Support/`). The macOS Keychain round trip runs only with `CLAUDETTE_TEST_KEYCHAIN=1`.
 - UI snapshots: a changed view writes `*.received.txt` next to its `*.verified.txt` in `tests/Claudette.App.UiTests`. Read the difference; if the change is intended, rename the received file over the verified one. In a UI test, `await Verify(...)` resumes off the UI thread, so make it the last step.
 - Test time-based behavior with `FakeTimeProvider`, not sleeps. To wait for real work (a process, a background thread, rendering), use `Waiting.UntilAsync` (`tests/Shared/`, in every test project) or `TabTestHarness.Eventually`, which go by the clock; never a loop count or a fixed delay. Where something must not happen, wait for the moment it would have; only when nothing marks that moment, use `Waiting.NeverAsync`.
-- Wait for the state the next step reads, not one that comes before it or is already true. A tab is idle before a turn arrives as well as after it (wait for the turn's footer), its status says Working a moment after `IsInTurn`, a turn's end and the Idle after it are two events (`IsSettled` waits for both), and a laid-out window isn't rendered yet (`UiText.HitTest` renders it first). Each of these has turned CI red.
-- Bound real work with `Waiting.Timeout`, never a shorter time picked for the case: it's how long a hung test takes to fail, not how long the work may take. A Windows runner's disk has stalled writes for two minutes.
-- View-model tests have no UI thread. Start work as a click does (`InlineDispatcher.RunAsync`), so it doesn't resume on the pool outside the harness's UI lock, and collect what other threads raise (property changes, events) in a thread-safe collection such as `ConcurrentQueue`.
-- Set files up as each system does. Development is on Windows, so a test passing there says nothing yet about macOS and Linux: git takes a file's executable bit from the file there (`File.SetUnixFileMode`) but only from the index on Windows, and case, line endings and the order a folder lists its entries in differ too.
+- Wait for the state the next step reads, not one that comes before it, stands in for it, or is still true from the step before. Half the flaky tests fixed so far were this:
+  - A tab is idle before a turn arrives as well as after it, and the last item is still the turn before's footer: count the footers.
+  - Its status says Working a moment after `IsInTurn`, and a turn's end and the Idle after it are two events (`IsSettled` waits for both).
+  - A setting that's stored isn't yet applied, and a request that's started isn't yet answered or written.
+  - A settled tab's changed-file rows come later, read off the UI thread.
+  - Markdown parses and lays out in the background, and a laid-out window isn't rendered (`UiText.HitTest` renders it first).
+- Bound real work with `Waiting.Timeout`, never a shorter time picked for the case: it's how long a hung test takes to fail, not how long the work may take. A Windows runner's disk has stalled writes for two minutes. A bound on how fast something runs is an order of magnitude above what it takes: CI runs every test project at once on a few cores, where a 10 ms diff has taken 104 ms.
+- View-model tests have no UI thread. Start work as a click does (`InlineDispatcher.RunAsync`), so it doesn't resume on the pool outside the harness's UI lock. Fakes and lists that sessions write to from their own threads use locks or concurrent collections, and are read as copies. Blocking work goes on a thread of its own (`TaskCreationOptions.LongRunning`), not one a busy pool may not hand out for seconds.
+- Write each test for all three systems. Development is on Windows, so a test passing there says nothing yet about macOS and Linux. What has differed:
+  - macOS's temporary folder is a link (`/var` is `/private/var`), which git resolves: compare paths through `RealPath`.
+  - Windows won't rename over, or delete, a file that's open or read-only (`FileRetry`; the harness clears git's read-only objects).
+  - git takes a file's executable bit from the file on macOS and Linux (`File.SetUnixFileMode`), but only from the index on Windows.
+  - macOS writes Esc as ⎋: take shortcut text from `ShortcutTips`, as the app does.
+  - The macOS runner is arm64, and `Path.Combine` builds a path with the running system's separator, so another system's path is written out.
+  - .NET's file patterns follow Windows' rules everywhere: `settings.json.*` matches `settings.json`.
+  - Case, line endings and the order a folder lists its entries in differ too.
 - Run `tests/Claudette.App.UiTests` before pushing a change to a view, a style or a color token: a snapshot left stale fails CI on every system.
 - When CI is red or a test is flaky, the `ci-failures` skill (`.claude/skills/ci-failures/SKILL.md`) finds the cause: collect the failures, tell a slow runner from a race, reproduce it, fix it, prove it.
 - Recorded protocol fixtures live in `tests/Claudette.Core.Tests/Fixtures/protocol/<claude-version>/`. Remove paths, emails and account details before checking one in: record them with `ProtocolRecordingTests` (`CLAUDETTE_RECORD_FIXTURES=<folder>`, against the mock) or convert a protocol log with `tools/Claudette.Fixtures`, both of which clean them, then read the result before committing.
