@@ -13,7 +13,7 @@ Claudette puts [Claude Code](https://code.claude.com/docs) in a real desktop win
 
 ## Where to start
 
-- New to Claudette? [Getting started](../getting-started/) takes you from installing it to your first tab, with [a tour of the window](../getting-started/a-tour-of-the-window.md).
+- New to Claudette? [Getting started](../getting-started/) takes you from installing it to your first tab, with [a tour of the window](../getting-started/a-tour-of-the-window.md). On Linux, start with [Installing on Linux](../getting-started/installing-on-linux.md).
 - Running a lot of sessions? [Tabs and sessions](../tabs/) and [Threads](../threads/).
 - Want to know what Claude did? [The conversation](../conversation/) and [Reviewing changes](../changes/).
 - Watching your plan? [Usage and limits](../usage/).

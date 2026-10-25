@@ -1,13 +1,13 @@
 ---
 title: Running from source
 parent: Getting started
-nav_order: 8
+nav_order: 9
 summary: "You can build and run Claudette from a checkout of its repository."
 ---
 
 # Running from source
 
-You can build and run Claudette from a checkout of its [repository](https://github.com/dotBunny/Claudette). It's the way to run it on Linux, where there is no package, and the way to try changes. It works on Windows and macOS too.
+You can build and run Claudette from a checkout of its [repository](https://github.com/dotBunny/Claudette). It's the way to run it on Linux, where there is no package, and the way to try changes. It works on Windows and macOS too. On Linux, [Installing on Linux](installing-on-linux.md) goes step by step, from installing .NET to a launcher in your app menu.
 
 You need Claude Code installed ([What you need](what-you-need.md)) and the .NET SDK version the repository's `global.json` names. If `dotnet` says it can't find that SDK, install the one `global.json` asks for.
 
@@ -98,9 +98,15 @@ Set those, then run Claudette as above. In PowerShell, set each one like this:
 $env:CLAUDETTE_HOME = "C:\demo\home"
 ```
 
+In bash or zsh, on macOS and Linux, `export` each one:
+
+```sh
+export CLAUDETTE_HOME=~/demo/home
+```
+
 The conversations show the projects' paths. `--projects <folder>` puts the projects somewhere else, so you can choose a path that says nothing about you.
 
 ## See also
 
-- [Installing](installing.md), for the packages.
+- [Installing](installing.md), for the packages, and [Installing on Linux](installing-on-linux.md).
 - [Windows, macOS and Linux](../reference/windows-macos-and-linux.md).

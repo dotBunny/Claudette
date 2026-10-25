@@ -13,16 +13,16 @@ Claudette runs on all three, and almost everything works the same. This page col
 
 - **Windows**: an MSIX package for x64 or Arm64.
 - **macOS**: a `.dmg` for Apple silicon or Intel, on macOS 12 or later.
-- **Linux**: there's no package yet, so you run Claudette from source. Every change to Claudette is built and tested on Linux, as on Windows and macOS.
+- **Linux**: a desktop on x64, with X11 or Wayland. There's no package yet, so you build Claudette from source, in a few commands. Every change to Claudette is built and tested on Linux, as on Windows and macOS.
 - **Everywhere**: [Claude Code](https://code.claude.com/docs), installed first.
 
-See [What you need](../getting-started/what-you-need.md), [Installing](../getting-started/installing.md) and [Running from source](../getting-started/running-from-source.md).
+See [What you need](../getting-started/what-you-need.md), [Installing](../getting-started/installing.md), [Installing on Linux](../getting-started/installing-on-linux.md) and [Running from source](../getting-started/running-from-source.md).
 
 ## Installing and updating
 
 - **Windows**: the MSIX installs like any app, and Claudette can install its own updates. A copy that isn't the MSIX can't.
 - **macOS**: drag `Claudette.app` from the `.dmg` to Applications. macOS runs an app opened straight from Downloads from a temporary read-only copy, which can't update itself, so move it to Applications first.
-- **Linux**: a copy that isn't a package can't install updates. It still hears about each release, with a link to its page. A copy run from source offers to restart into each new build instead.
+- **Linux**: a build from source keeps up with the branch its checkout tracks instead of releases: it offers to pull, build and restart into new commits, and to restart into each build you make yourself. See [Installing on Linux](../getting-started/installing-on-linux.md#keeping-it-current). A copy that isn't a package and isn't run from its checkout can't install updates, but still hears about each release, with a link to its page.
 
 Updating restarts Claudette with every tab as it was. See [Claudette's updates](../updates/claudettes-updates.md) and [When an update fails](../updates/when-an-update-fails.md).
 
@@ -30,6 +30,7 @@ Updating restarts Claudette with every tab as it was. See [Claudette's updates](
 
 - **Windows 11** shows its Mica backdrop in the title bar, header and sidebar in the Standard style. The Claude style is solid.
 - **macOS** has the native title bar and traffic lights, and a menu bar with **File → New Tab**, **Open Recent**, **History…** and **Close Tab**, **Help → User Guide**, **Ask on Discord** and **Report an Issue**, and **Settings…** in the app menu. Each command with a shortcut shows it, from Settings → Keyboard.
+- **Linux** draws Claudette's window through X11, and through XWayland on a Wayland desktop, with your window manager's title bar. Its menu entry is a desktop entry you add ([Installing on Linux](../getting-started/installing-on-linux.md#add-it-to-your-app-menu)).
 - In the Claude style, Claude's replies are set in a serif: Charter on macOS, Georgia or Cambria on Windows, and Charter, Noto Serif or DejaVu Serif on Linux.
 
 See [Styles and themes](../settings/styles-and-themes.md).

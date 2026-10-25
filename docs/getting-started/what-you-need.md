@@ -15,9 +15,9 @@ Claudette runs Claude Code in every tab, so Claude Code has to be installed firs
 |---|---|---|
 | Windows | Windows 10 (version 2004 or later) and Windows 11, on x64 and Arm64 processors | Installed from an MSIX package. |
 | macOS | macOS 12 or later, on Apple silicon and Intel | Installed from a `.dmg`. |
-| Linux | From source | Every change to Claudette is built and tested on Linux, as on Windows and macOS. There's no package yet. |
+| Linux | A desktop on x64, with X11 or Wayland, built from source | Every change to Claudette is built and tested on Linux, as on Windows and macOS. There's no package yet: [Installing on Linux](installing-on-linux.md) builds it in a few commands. |
 
-You don't need to install .NET to use a package from the [Downloads page](../downloads.md). Running from source does need it: see [Running from source](running-from-source.md).
+You don't need to install .NET to use a package from the [Downloads page](../downloads.md). Running from source does need it: see [Installing on Linux](installing-on-linux.md) or [Running from source](running-from-source.md).
 
 A few features need extra programs on Linux, such as `notify-send` for notifications. [Something missing on Linux](../troubleshooting/something-missing-on-linux.md) lists them.
 
@@ -41,4 +41,4 @@ The usage meters in the header show a subscription plan's limits. An account bil
 
 ## Next
 
-[Installing](installing.md) covers the packages.
+[Installing](installing.md) covers the packages, and [Installing on Linux](installing-on-linux.md) building it on Linux.

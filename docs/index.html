@@ -31,9 +31,10 @@ search_exclude: true
       <div class="get-buttons">
         <a class="pill pill-primary" href="{% if windows %}{{ windows.browser_download_url }}{% else %}{{ '/downloads/' | relative_url }}{% endif %}">{% include icon.html name="monitor" %}<span>Windows <small>x64</small></span></a>
         <a class="pill pill-primary" href="{% if mac %}{{ mac.browser_download_url }}{% else %}{{ '/downloads/' | relative_url }}{% endif %}">{% include icon.html name="laptop" %}<span>macOS <small>Apple silicon</small></span></a>
+        <a class="pill pill-outline get-wide" href="{{ '/getting-started/installing-on-linux/' | relative_url }}">{% include icon.html name="terminal" %}<span>Linux <small>build from source</small></span></a>
       </div>
     </div>
-    <p class="get-note">Needs <a href="https://code.claude.com/docs/en/setup">Claude Code</a> · Windows 10 and 11, macOS 12 or later · <a href="{{ '/downloads/' | relative_url }}">Every package</a><br>On Linux, <a href="{{ '/getting-started/running-from-source/' | relative_url }}">run it from source</a>: every change is built and tested there too.</p>
+    <p class="get-note">Needs <a href="https://code.claude.com/docs/en/setup">Claude Code</a> · Windows 10 and 11, macOS 12 or later, Linux on x64 · <a href="{{ '/downloads/' | relative_url }}">Every package</a></p>
   </div>
 
   <div class="hero-actions">
@@ -46,7 +47,7 @@ search_exclude: true
     <li>{% include icon.html name="terminal" %} Runs the real <code>claude</code></li>
     <li>{% include icon.html name="shield" %} <strong>No analytics</strong></li>
     <li>{% include icon.html name="code" %} MIT licensed</li>
-    <li>{% include icon.html name="monitor" %} Windows, macOS and Linux</li>
+    <li><a href="#platforms">{% include icon.html name="monitor" %} Windows, macOS and Linux</a></li>
     <li>{% include icon.html name="gamepad" %} Made for Unreal, Unity and Godot</li>
   </ul>
 </section>
@@ -315,6 +316,77 @@ search_exclude: true
     <a class="card" href="{{ '/away/notifications/' | relative_url }}" data-reveal>{% include icon.html name="bell" %}<strong>Notifications</strong><span>Know when a tab needs you, wherever you are.</span></a>
     <a class="card" href="{{ '/settings/accessibility/' | relative_url }}" data-reveal>{% include icon.html name="eye" %}<strong>Accessibility</strong><span>Zoom, reduced motion and screen readers.</span></a>
   </div>
+</section>
+
+<section class="band platforms-band" id="platforms" aria-labelledby="platforms-title">
+  <div class="section-head" data-reveal>
+    <p class="kicker">{% include icon.html name="monitor" %} Where it runs</p>
+    <h2 id="platforms-title">Windows, macOS, Linux.<br><span class="gradient-text">Same Claudette.</span></h2>
+    <p>One Claudette for all three, built and tested on each with every change. Your tabs, settings and shortcuts work the same on every one, and your sessions and settings can follow you from one to another.</p>
+  </div>
+
+  <div class="platforms">
+    <article class="platform" data-reveal>
+      <div class="platform-head">
+        {% include icon.html name="monitor" %}
+        <div>
+          <h3>Windows</h3>
+          <p>Windows 10 and 11, on x64 and Arm64</p>
+        </div>
+      </div>
+      <ul>
+        <li>A signed MSIX that installs in a click and keeps itself up to date</li>
+        <li>Claude Code's settings and sign-in shared with the <code>claude</code> in your terminal</li>
+        <li>Toasts, a badge and a flash on the taskbar, and your folders in its jump list</li>
+      </ul>
+      <a class="more" href="{{ '/getting-started/installing/#on-windows' | relative_url }}">Installing on Windows {% include icon.html name="arrow-right" %}</a>
+    </article>
+    <article class="platform" data-reveal>
+      <div class="platform-head">
+        {% include icon.html name="laptop" %}
+        <div>
+          <h3>macOS</h3>
+          <p>macOS 12 or later, on Apple silicon and Intel</p>
+        </div>
+      </div>
+      <ul>
+        <li>A signed, notarized <code>.dmg</code>, and an app that keeps itself up to date</li>
+        <li>A menu bar, and a badge on the Dock icon, where Claudette types, waves and waits</li>
+        <li>Your login shell's <code>PATH</code>, so Homebrew's tools are found from the Dock</li>
+      </ul>
+      <a class="more" href="{{ '/getting-started/installing/#on-macos' | relative_url }}">Installing on macOS {% include icon.html name="arrow-right" %}</a>
+    </article>
+    <article class="platform" data-reveal>
+      <div class="platform-head">
+        {% include icon.html name="terminal" %}
+        <div>
+          <h3>Linux</h3>
+          <p>Built from source, on x64, under X11 or Wayland</p>
+        </div>
+      </div>
+      <ul>
+        <li>Tested with every change, the only system where the tests drive the real Claude Code</li>
+        <li>New commits on <code>main</code> pulled, built and restarted into, with your tabs kept</li>
+        <li>Notifications, the Secret Service for keys and <code>systemd-inhibit</code> to stay awake</li>
+      </ul>
+      <a class="more" href="{{ '/getting-started/installing-on-linux/' | relative_url }}">Installing on Linux {% include icon.html name="arrow-right" %}</a>
+    </article>
+  </div>
+
+  <figure class="terminal" data-reveal>
+    <figcaption class="terminal-title">{% include icon.html name="terminal" %} Claudette on Linux, from nothing</figcaption>
+<pre><code><span class="comment"># Claude Code</span>
+<span class="cmd">curl -fsSL https://claude.ai/install.sh | bash</span>
+<span class="comment"># Claudette's source, and the .NET SDK it names</span>
+<span class="cmd">git clone https://github.com/dotBunny/Claudette.git ~/Claudette &amp;&amp; cd ~/Claudette</span>
+<span class="cmd">curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --jsonfile global.json --install-dir ~/.dotnet</span>
+<span class="cmd">export PATH="$HOME/.dotnet:$PATH"</span>
+<span class="comment"># Build it and run it</span>
+<span class="cmd">dotnet run --project src/Claudette.App -c Release</span></code></pre>
+    <p class="terminal-foot">Then keep .NET on your <code>PATH</code> and put Claudette in your app menu: <a href="{{ '/getting-started/installing-on-linux/' | relative_url }}">Installing on Linux</a> takes you through it.</p>
+  </figure>
+
+  <p class="band-more" data-reveal><a class="more" href="{{ '/reference/windows-macos-and-linux/' | relative_url }}">What differs on each system {% include icon.html name="arrow-right" %}</a></p>
 </section>
 
 <section class="closing" data-reveal aria-labelledby="closing-title">

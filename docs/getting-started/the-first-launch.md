@@ -1,7 +1,7 @@
 ---
 title: The first launch
 parent: Getting started
-nav_order: 3
+nav_order: 4
 summary: "When Claudette starts it shows Looking for Claude Code… while it finds claude and asks it for its version."
 ---
 

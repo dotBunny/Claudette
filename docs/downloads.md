@@ -1,12 +1,12 @@
 ---
 title: Downloads
 nav_order: 2
-description: Download Claudette for Windows or macOS.
+description: Download Claudette for Windows or macOS, or build it on Linux.
 ---
 
 # Downloads
 
-Claudette comes as an MSIX package for Windows and a `.dmg` for macOS, each for two kinds of processor. On Linux, run it from source. Install [Claude Code](https://code.claude.com/docs) first: Claudette runs it in every tab.
+Claudette comes as an MSIX package for Windows and a `.dmg` for macOS, each for two kinds of processor. On Linux, build it from source: [Installing on Linux](getting-started/installing-on-linux.md) takes a few commands. Install [Claude Code](https://code.claude.com/docs) first: Claudette runs it in every tab.
 
 {% comment %}
   GitHub Pages builds this page with the repository's releases (site.github, from jekyll-github-metadata), newest first.
@@ -25,7 +25,7 @@ Released {{ latest.published_at | date: "%-d %B %Y" }}. [What's new]({{ latest.h
 
 - **Windows:** **x64** for most PCs with an Intel or AMD processor, **Arm64** for a Snapdragon or other Arm processor. Settings → System → About → **System type** says which yours is.
 - **macOS:** **Apple silicon** for a Mac with an M-series chip, **Intel** for the rest. Apple menu → **About This Mac** → **Chip** (or **Processor**) says which.
-- **Linux:** there's no package yet. [Run it from source](getting-started/running-from-source.md): every change is built and tested on Linux too.
+- **Linux:** there's no package yet. [Build it from source](getting-started/installing-on-linux.md), which takes a few commands, and it keeps itself current from there. Every change is built and tested on Linux too.
 
 The SHA-256 digest is there for anyone who wants to check a file: `Get-FileHash <file>` in PowerShell, `shasum -a 256 <file>` on a Mac. Claudette checks its own updates' files itself.
 
@@ -65,10 +65,10 @@ Released {{ release.published_at | date: "%-d %B %Y" }}. [Its notes]({{ release.
 {% include release.html release=release %}
 {% endfor %}
 {% else %}
-The packages are on [Claudette's Releases page on GitHub](https://github.com/dotBunny/Claudette/releases): the `.msix` files are for Windows and the `.dmg` files for macOS, `x64` for Intel and AMD processors and `arm64` for Arm ones, including Apple silicon.
+The packages are on [Claudette's Releases page on GitHub](https://github.com/dotBunny/Claudette/releases): the `.msix` files are for Windows and the `.dmg` files for macOS, `x64` for Intel and AMD processors and `arm64` for Arm ones, including Apple silicon. On Linux, [build it from source](getting-started/installing-on-linux.md).
 {% endif %}
 
 ## Next
 
-- [What you need](getting-started/what-you-need.md) and [Installing](getting-started/installing.md).
+- [What you need](getting-started/what-you-need.md), [Installing](getting-started/installing.md) and [Installing on Linux](getting-started/installing-on-linux.md).
 - Once it's installed, Claudette [updates itself](updates/claudettes-updates.md).

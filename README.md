@@ -82,6 +82,7 @@ You need [Claude Code](https://code.claude.com/docs) installed. Claudette finds 
 
 - **Windows:** the MSIX from the [Downloads page](https://claudette.dotbunny.com/downloads/).
 - **macOS:** the `.dmg` from the [Downloads page](https://claudette.dotbunny.com/downloads/).
+- **Linux:** build it from source, as below. [Installing on Linux](https://claudette.dotbunny.com/getting-started/installing-on-linux/) goes step by step, from installing .NET to a launcher in your app menu.
 - **From source** (Windows, macOS or Linux), with the .NET SDK that `global.json` names:
 
   ```sh

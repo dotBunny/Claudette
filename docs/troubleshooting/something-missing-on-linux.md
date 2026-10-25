@@ -2,16 +2,16 @@
 title: Something missing on Linux
 parent: Troubleshooting
 nav_order: 6
-summary: "Claudette builds and runs on Linux, but only Windows and macOS are tested and packaged, so it's less polished there."
+summary: "A few features rely on programs a Linux desktop may not have. Without one, the feature is off, and Claudette says why."
 ---
 
 # Something missing on Linux
 
-Claudette builds and runs on Linux, but only Windows and macOS are tested and packaged, so it's less polished there. A few features rely on programs a Linux desktop may not have. Without them the feature is off, and Claudette says why.
+Every change to Claudette is built and tested on Linux, but a few of its features rely on programs a Linux desktop may not have. Without one, the feature is off, and Claudette says why. [Installing on Linux](../getting-started/installing-on-linux.md#what-you-need) installs them all in one command.
 
 ## Notifications: `notify-send`
 
-Claudette shows notifications through `notify-send`, which also reports a click on one. Without it there are no notifications. Settings → Notifications says *Notifications aren't available here* and mentions `notify-send`. Install it, usually with your distribution's libnotify tools package, and restart Claudette.
+Claudette shows notifications through `notify-send`, which also reports a click on one. Without it there are no notifications. Settings → Notifications says *Notifications aren't available here* and mentions `notify-send`. Install it, from `libnotify-bin` on Debian and Ubuntu or `libnotify` on Fedora and Arch, and restart Claudette.
 
 ## Keeping the computer awake: `systemd-inhibit`
 
@@ -21,7 +21,7 @@ Claudette shows notifications through `notify-send`, which also reports a click 
 
 Claudette keeps a Perforce password in the desktop's Secret Service, through `secret-tool`. Without it, Settings says *Install secret-tool (the libsecret-tools package) to keep passwords and API keys in the Secret Service*, and Perforce passwords can only be asked for each time. See [Perforce](../project-tools/perforce.md).
 
-Install the `libsecret-tools` package, then restart Claudette.
+Install it, from `libsecret-tools` on Debian and Ubuntu or `libsecret` on Fedora and Arch, then restart Claudette.
 
 ## API keys for accounts: `secret-tool`
 
@@ -38,4 +38,5 @@ This one isn't Linux, but it looks the same. macOS notifications need Claudette'
 ## See also
 
 - [Windows, macOS and Linux](../reference/windows-macos-and-linux.md)
+- [Installing on Linux](../getting-started/installing-on-linux.md)
 - [Running from source](../getting-started/running-from-source.md)

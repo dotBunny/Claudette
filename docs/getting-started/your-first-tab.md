@@ -1,7 +1,7 @@
 ---
 title: Your first tab
 parent: Getting started
-nav_order: 5
+nav_order: 6
 summary: "A tab is one Claude Code session, run as its own claude in a folder you pick."
 ---
 

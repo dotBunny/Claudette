@@ -189,10 +189,13 @@ h1, h2, h3 { color: var(--heading); line-height: 1.12; margin: 0; }
 }
 .get-label { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin: 0 0 0.9rem; font-size: 0.88rem; font-weight: 650; color: var(--muted); }
 .get-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+/* Linux, which has no package to download, under the two that do. */
+.get-buttons .get-wide { grid-column: 1 / -1; }
 .get-note { margin: 0.8rem 0 0; font-size: 0.85rem; color: var(--muted); }
 
 .trust { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem 1.6rem; margin: 2rem 0 0; padding: 0; list-style: none; font-size: 0.9rem; color: var(--muted); }
-.trust li { display: inline-flex; align-items: center; gap: 0.45rem; }
+.trust li, .trust a { display: inline-flex; align-items: center; gap: 0.45rem; }
+.trust a { color: inherit; }
 .trust .icon { color: var(--coral); }
 .trust strong { color: var(--text); font-weight: 650; }
 
@@ -203,10 +206,11 @@ h1, h2, h3 { color: var(--heading); line-height: 1.12; margin: 0; }
 .hero-shot { max-width: 68rem; margin: 1rem auto 0; padding: 0 1.5rem; perspective: 2000px; }
 .frame-hero { border-radius: 1.2rem; }
 
-/* For game developers: a card for each engine Claudette knows, then what else a game's day needs. */
+/* For game developers: a card for each engine Claudette knows, then what else a game's day needs. The systems it runs
+   on have cards of the same kind, further down. */
 .band.gamedev { padding-top: 7rem; padding-bottom: 0; }
-.engines { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-.engine {
+.engines, .platforms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.engine, .platform {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -218,17 +222,30 @@ h1, h2, h3 { color: var(--heading); line-height: 1.12; margin: 0; }
   box-shadow: var(--card-shadow);
 }
 /* Her colors along its top, as along the page's. */
-.engine::before { position: absolute; inset: 0 0 auto; height: 3px; content: ""; background: var(--gradient); }
-.engine-head { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.1rem; }
-.engine-head .icon { width: 2.8rem; height: 2.8rem; padding: 0.6rem; border-radius: 0.85rem; color: #fff; background: var(--gradient-deep); box-shadow: 0 0.5rem 1.2rem rgba(217, 119, 87, 0.28); }
-.engine h3 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
-.engine-head p { margin: 0.2rem 0 0; font-size: 0.86rem; line-height: 1.4; color: var(--muted); }
-.engine ul { display: grid; gap: 0.6rem; margin: 0 0 1.3rem; padding: 0; list-style: none; font-size: 0.95rem; color: var(--muted); }
+.engine::before, .platform::before { position: absolute; inset: 0 0 auto; height: 3px; content: ""; background: var(--gradient); }
+.engine-head, .platform-head { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.1rem; }
+.engine-head .icon, .platform-head .icon { width: 2.8rem; height: 2.8rem; padding: 0.6rem; border-radius: 0.85rem; color: #fff; background: var(--gradient-deep); box-shadow: 0 0.5rem 1.2rem rgba(217, 119, 87, 0.28); }
+.engine h3, .platform h3 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
+.engine-head p, .platform-head p { margin: 0.2rem 0 0; font-size: 0.86rem; line-height: 1.4; color: var(--muted); }
+.engine ul, .platform ul { display: grid; gap: 0.6rem; margin: 0 0 1.3rem; padding: 0; list-style: none; font-size: 0.95rem; color: var(--muted); }
 /* Each point is a pixel, as she's drawn in them. */
-.engine li { position: relative; padding-left: 1.3rem; }
-.engine li::before { position: absolute; top: 0.6em; left: 0; width: 0.45rem; height: 0.45rem; content: ""; background: var(--coral); }
-.engine .more { margin-top: auto; }
+.engine li, .platform li { position: relative; padding-left: 1.3rem; }
+.engine li::before, .platform li::before { position: absolute; top: 0.6em; left: 0; width: 0.45rem; height: 0.45rem; content: ""; background: var(--coral); }
+.engine .more, .platform .more { margin-top: auto; }
 .cards.cards-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* Linux from nothing, as a terminal shows it, dark in either theme. Each command's prompt is drawn, so copying takes the
+   commands alone, and a line too long for a phone scrolls inside the box. */
+.terminal { max-width: 60rem; margin: 2.4rem auto 0; overflow: hidden; border: 1px solid var(--border-strong); border-radius: 1rem; background: #1d1c1a; box-shadow: var(--card-shadow); }
+.terminal-title { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.86rem; font-weight: 650; color: #a39e94; background: #242320; }
+.terminal-title .icon { color: var(--coral); }
+.terminal pre { margin: 0; padding: 1rem 1.1rem; overflow-x: auto; font-size: 0.84rem; line-height: 1.75; color: #e2ded5; }
+.terminal pre code { padding: 0; border: 0; background: none; font-size: inherit; }
+.terminal .cmd::before { content: "$ "; color: var(--coral); user-select: none; }
+.terminal .comment { color: #a39e94; }
+.terminal-foot { margin: 0; padding: 0.85rem 1.1rem 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.92rem; color: #a39e94; }
+.terminal-foot a { color: #ef9b7b; }
+.terminal-foot code { color: #e2ded5; border-color: rgba(255, 255, 255, 0.08); background: #242320; }
 
 /* The tour: a step a feature, its words beside its picture, sides alternating. */
 .tour { max-width: var(--width); margin: 0 auto; padding: 7rem 1.5rem 3rem; }
@@ -368,7 +385,7 @@ h1, h2, h3 { color: var(--heading); line-height: 1.12; margin: 0; }
 /* Narrower windows. */
 @media (max-width: 960px) {
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .engines { grid-template-columns: minmax(0, 1fr); max-width: 40rem; margin-inline: auto; }
+  .engines, .platforms { grid-template-columns: minmax(0, 1fr); max-width: 40rem; margin-inline: auto; }
   .story-step, .story-step:nth-child(even), .mascot { grid-template-columns: minmax(0, 1fr); }
   .story-step:nth-child(even) .story-copy { order: 0; }
   .story-copy { text-align: center; }
