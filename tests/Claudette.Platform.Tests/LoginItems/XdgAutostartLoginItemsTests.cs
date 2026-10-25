@@ -17,12 +17,15 @@ public sealed class XdgAutostartLoginItemsTests : IDisposable
 
     private string Autostart => Path.Combine(_root, "autostart");
 
+    /// <summary>A .NET a build's program finds by itself, so the file doesn't depend on where this machine's is.</summary>
+    private static readonly LoginDotnet UsualDotnet = new("/usr/share/dotnet/dotnet", FoundByProgram: true);
+
     [Fact]
     public void The_file_runs_the_build_with_login_and_is_removed_when_turned_off()
     {
         var build = Directory.CreateDirectory(Path.Combine(_root, "My Apps", "Claudette")).FullName;
         File.WriteAllText(Path.Combine(build, "Claudette"), "");
-        var items = new XdgAutostartLoginItems(new FakeLauncher(), Autostart);
+        var items = new XdgAutostartLoginItems(new FakeLauncher(), Autostart, UsualDotnet);
         Assert.Equal(LoginEntryState.Missing, items.ReadEntry());
 
         items.WriteEntry(new ClaudetteCopy(AppInstallKind.Other, build, "0.3.0"));
@@ -39,12 +42,30 @@ public sealed class XdgAutostartLoginItemsTests : IDisposable
         Assert.Equal(LoginEntryState.Missing, items.ReadEntry());
     }
 
+    [Fact]
+    public void A_build_on_a_dotnet_its_program_wouldnt_find_runs_with_that_dotnet()
+    {
+        var build = Directory.CreateDirectory(Path.Combine(_root, "Claudette", "bin")).FullName;
+        File.WriteAllText(Path.Combine(build, "Claudette"), "");
+        var launcher = new FakeLauncher();
+        var items = new XdgAutostartLoginItems(launcher, Autostart, new LoginDotnet("/home/me/.dotnet/dotnet", FoundByProgram: false));
+        var copy = new ClaudetteCopy(AppInstallKind.SourceBuild, build, "0.3.0");
+
+        items.WriteEntry(copy);
+        items.Start(copy);
+
+        Assert.Contains($"Exec=/home/me/.dotnet/dotnet {XdgAutostartLoginItems.ExecArgument(Path.Combine(build, "Claudette.dll"))} --login", File.ReadAllLines(items.FilePath));
+        var spec = Assert.Single(launcher.Specs);
+        Assert.Equal("/home/me/.dotnet/dotnet", spec.FileName);
+        Assert.Equal([Path.Combine(build, "Claudette.dll"), "--login"], spec.Arguments);
+    }
+
     [Theory]
     [InlineData("Hidden=true")]
     [InlineData("X-GNOME-Autostart-enabled=false")]
     public void A_file_the_desktop_turned_off_is_off(string line)
     {
-        var items = new XdgAutostartLoginItems(new FakeLauncher(), Autostart);
+        var items = new XdgAutostartLoginItems(new FakeLauncher(), Autostart, UsualDotnet);
         Directory.CreateDirectory(Autostart);
         File.WriteAllText(items.FilePath, $"[Desktop Entry]\nType=Application\nExec=claudette --login\n{line}\n");
 
@@ -69,7 +90,7 @@ public sealed class XdgAutostartLoginItemsTests : IDisposable
     public void Handing_over_at_login_starts_the_copy_detached()
     {
         var launcher = new FakeLauncher();
-        var items = new XdgAutostartLoginItems(launcher, Autostart);
+        var items = new XdgAutostartLoginItems(launcher, Autostart, UsualDotnet);
 
         items.Start(new ClaudetteCopy(AppInstallKind.Other, _root, "0.3.0"));
 

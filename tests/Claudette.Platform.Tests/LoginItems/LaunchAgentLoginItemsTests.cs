@@ -19,10 +19,13 @@ public sealed class LaunchAgentLoginItemsTests : IDisposable
 
     private string LaunchAgents => Path.Combine(_root, "LaunchAgents");
 
+    /// <summary>A .NET a build's program finds by itself, so the agent doesn't depend on where this machine's is.</summary>
+    private static readonly LoginDotnet UsualDotnet = new("/usr/local/share/dotnet/dotnet", FoundByProgram: true);
+
     [Fact]
     public void The_agent_opens_the_app_with_login_once_at_login()
     {
-        var items = new LaunchAgentLoginItems(new FakeLauncher(), LaunchAgents);
+        var items = new LaunchAgentLoginItems(new FakeLauncher(), LaunchAgents, UsualDotnet);
         Assert.Equal(LoginEntryState.Missing, items.ReadEntry());
 
         items.WriteEntry(new ClaudetteCopy(AppInstallKind.MacApp, "/Applications/R&D/Claudette.app", "0.3.0"));
@@ -47,12 +50,25 @@ public sealed class LaunchAgentLoginItemsTests : IDisposable
     {
         var build = Directory.CreateDirectory(Path.Combine(_root, "bin")).FullName;
         File.WriteAllText(Path.Combine(build, "Claudette"), "");
-        var items = new LaunchAgentLoginItems(new FakeLauncher(), LaunchAgents);
+        var items = new LaunchAgentLoginItems(new FakeLauncher(), LaunchAgents, UsualDotnet);
 
         items.WriteEntry(new ClaudetteCopy(AppInstallKind.SourceBuild, build, "0.3.0"));
 
         var agent = ReadPlist(items.AgentPath);
         Assert.Equal([Path.Combine(build, "Claudette"), "--login"], agent["ProgramArguments"].Elements("string").Select(s => s.Value));
+    }
+
+    [Fact]
+    public void A_build_on_a_dotnet_its_program_wouldnt_find_is_started_with_that_dotnet()
+    {
+        var build = Directory.CreateDirectory(Path.Combine(_root, "bin")).FullName;
+        File.WriteAllText(Path.Combine(build, "Claudette"), "");
+        var items = new LaunchAgentLoginItems(new FakeLauncher(), LaunchAgents, new LoginDotnet("/Users/me/.dotnet/dotnet", FoundByProgram: false));
+
+        items.WriteEntry(new ClaudetteCopy(AppInstallKind.SourceBuild, build, "0.3.0"));
+
+        var agent = ReadPlist(items.AgentPath);
+        Assert.Equal(["/Users/me/.dotnet/dotnet", Path.Combine(build, "Claudette.dll"), "--login"], agent["ProgramArguments"].Elements("string").Select(s => s.Value));
     }
 
     /// <summary>The plist's dictionary, each key's value element by the key's name.</summary>

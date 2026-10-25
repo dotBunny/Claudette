@@ -8,16 +8,19 @@ namespace Claudette.Platform.LoginItems.Mac;
 /// <summary>
 /// Starting Claudette at login on macOS (DESIGN.md §9, "Starting at login"): a LaunchAgent in
 /// <c>~/Library/LaunchAgents</c>, which launchd runs when the user logs in. It runs <c>open -a Claudette.app --args
-/// --login</c> for the app, and a build's own program otherwise. A LaunchAgent works on macOS 12, which the app still
-/// supports, and for a source build, which has no bundle; <c>SMAppService</c> needs macOS 13 and a bundle. Only file
-/// work, so it's tested on every OS.
+/// --login</c> for the app, and a build's own program otherwise, or <c>dotnet Claudette.dll</c> when that program
+/// wouldn't find .NET. A LaunchAgent works on macOS 12, which the app still supports, and for a source build, which has
+/// no bundle; <c>SMAppService</c> needs macOS 13 and a bundle. Only file work, so it's tested on every OS.
 /// </summary>
-public sealed class LaunchAgentLoginItems(IProcessLauncher launcher, string launchAgentsDirectory) : ILoginItems
+/// <param name="dotnet">The .NET a build is started with when its program wouldn't find it: the one Claudette runs on, by default.</param>
+public sealed class LaunchAgentLoginItems(IProcessLauncher launcher, string launchAgentsDirectory, LoginDotnet? dotnet = null) : ILoginItems
 {
     public const string Label = "com.dotbunny.claudette.login";
 
     /// <summary>The app's bundle identifier, so Login Items names the agent after Claudette.</summary>
     private const string BundleIdentifier = "com.dotbunny.claudette";
+
+    private readonly LoginDotnet _dotnet = dotnet ?? LoginDotnet.Current();
 
     public string AgentPath => Path.Combine(launchAgentsDirectory, Label + ".plist");
 
@@ -87,7 +90,7 @@ public sealed class LaunchAgentLoginItems(IProcessLauncher launcher, string laun
             """;
     }
 
-    private static LoginCommand Command(ClaudetteCopy copy) =>
-        LoginCommand.For(copy, windows: false, LoginCommand.DotnetHost(Environment.ProcessPath))
+    private LoginCommand Command(ClaudetteCopy copy) =>
+        LoginCommand.For(copy, windows: false, _dotnet.Host, _dotnet.FoundByProgram)
         ?? throw new InvalidOperationException("An MSIX can't start on macOS.");
 }

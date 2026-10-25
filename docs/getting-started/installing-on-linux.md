@@ -78,18 +78,7 @@ Claudette opens, and `dotnet run` returns straight away: a build from source run
 
 ## Add it to your app menu
 
-`dotnet run` needs a terminal. To start Claudette from your desktop's app menu, as any other app, give it a launcher.
-
-First, let programs started from the menu find .NET. A program built with .NET looks for it where `/etc/dotnet/install_location` says, else in `/usr/share/dotnet`, and the `DOTNET_ROOT` in your `~/.bashrc` only reaches programs started from a terminal. So register the folder the script installed it in:
-
-```sh
-sudo mkdir -p /etc/dotnet
-echo "$HOME/.dotnet" | sudo tee /etc/dotnet/install_location
-```
-
-If that file is there already, your distribution's .NET made it, and this points .NET programs at yours instead.
-
-Then add the launcher, a desktop entry:
+`dotnet run` needs a terminal. To start Claudette from your desktop's app menu, as any other app, give it a launcher, a desktop entry:
 
 ```sh
 mkdir -p ~/.local/share/applications
@@ -98,7 +87,7 @@ cat > ~/.local/share/applications/claudette.desktop <<EOF
 Type=Application
 Name=Claudette
 Comment=Claude Code in a desktop window
-Exec=$HOME/Claudette/src/Claudette.App/bin/Release/net10.0/Claudette
+Exec=$HOME/.dotnet/dotnet $HOME/Claudette/src/Claudette.App/bin/Release/net10.0/Claudette.dll
 Icon=$HOME/Claudette/packaging/icon/claudette-1024.png
 Categories=Development;
 StartupWMClass=Claudette
@@ -108,11 +97,12 @@ EOF
 
 The shell fills in `$HOME` as it writes the file. **Claudette** is now in your app menu, with its icon, and its window is grouped under the launcher in your dock or taskbar.
 
-- The launcher starts the build in the checkout, which starts a copy of itself as `dotnet run` does, so it's always the newest build you've made.
+- The launcher starts the build in the checkout with the .NET you installed above, which a launcher can't find by itself in `~/.dotnet`. If your .NET is somewhere else, use its `dotnet`.
+- The build starts a copy of itself, as with `dotnet run`, so the launcher always starts the newest build you've made.
 - `net10.0` in the path is the .NET version Claudette is built for. When Claudette moves to a newer one, the build's folder changes with it, and so does this line.
 - Started from the menu, Claudette reads your login shell's environment, so `claude`, `git`, `dotnet` and the rest are found as in a terminal ([Claude can't find a program](../troubleshooting/claude-cant-find-a-program.md)).
 
-To start Claudette when you log in, turn on Settings → General → **Start Claudette when I log in**. It adds `claudette.desktop` to `~/.config/autostart`, which starts this build too, and needs .NET registered as above. See [Starting at login](../away/starting-at-login.md).
+To start Claudette when you log in, turn on Settings → General → **Start Claudette when I log in**. It adds `claudette.desktop` to `~/.config/autostart`, which starts this build the same way, with the .NET it runs on. See [Starting at login](../away/starting-at-login.md).
 
 ## Keeping it current
 
@@ -126,7 +116,7 @@ Claudette works on Linux as on Windows and macOS. Shortcuts use `Ctrl`, as on Wi
 
 ## If it doesn't start
 
-- *You must install .NET to run this application*, from the launcher or the login entry: .NET isn't registered. See [Add it to your app menu](#add-it-to-your-app-menu).
+- *You must install .NET to run this application*: something started Claudette's own program, `Claudette`, which looks for .NET only where `DOTNET_ROOT` says, else where `/etc/dotnet/install_location` says, else in `/usr/share/dotnet`. Start it with `dotnet`, as [the launcher](#add-it-to-your-app-menu) does, or register your .NET for every program: `sudo mkdir -p /etc/dotnet` and `echo "$HOME/.dotnet" | sudo tee /etc/dotnet/install_location`.
 - *XOpenDisplay failed*: there's no desktop to draw on, as over SSH. Start it from your desktop session.
 - **An error naming `libICE`, `libSM` or `libfontconfig`**: the system lacks a desktop's usual libraries. On Debian and Ubuntu, `sudo apt install libice6 libsm6 libfontconfig1`.
 - **`dotnet` can't find a compatible SDK**: install the one `global.json` names, as in [Install the .NET SDK](#install-the-net-sdk).

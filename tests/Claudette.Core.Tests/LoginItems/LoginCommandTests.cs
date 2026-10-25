@@ -31,6 +31,26 @@ public sealed class LoginCommandTests : IDisposable
     }
 
     [Fact]
+    public void On_macOS_and_Linux_a_build_whose_program_wouldnt_find_dotnet_is_started_with_dotnet()
+    {
+        File.WriteAllText(Path.Combine(_root, "Claudette"), "");
+
+        var command = LoginCommand.For(new ClaudetteCopy(AppInstallKind.SourceBuild, _root, "0.3.0"), windows: false, "/home/me/.dotnet/dotnet", programFindsDotnet: false);
+
+        Assert.Equal(new LoginCommand("/home/me/.dotnet/dotnet", [Path.Combine(_root, "Claudette.dll"), "--login"]), command, CommandComparer.Instance);
+    }
+
+    [Fact]
+    public void On_Windows_a_build_keeps_its_program_since_dotnet_would_open_a_console_window()
+    {
+        File.WriteAllText(Path.Combine(_root, "Claudette.exe"), "");
+
+        var command = LoginCommand.For(new ClaudetteCopy(AppInstallKind.SourceBuild, _root, "0.3.0"), windows: true, "C:/Users/me/.dotnet/dotnet.exe", programFindsDotnet: false);
+
+        Assert.Equal(new LoginCommand(Path.Combine(_root, "Claudette.exe"), ["--login"]), command, CommandComparer.Instance);
+    }
+
+    [Fact]
     public void A_build_without_a_program_of_its_own_is_started_with_dotnet()
     {
         var command = LoginCommand.For(new ClaudetteCopy(AppInstallKind.Other, _root, "0.3.0"), windows: true, "/usr/share/dotnet/dotnet");

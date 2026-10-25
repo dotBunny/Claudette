@@ -10,12 +10,15 @@ namespace Claudette.Platform.LoginItems.Linux;
 /// autostart folder, which desktops that follow the Desktop Application Autostart spec run at login. Only file work, so
 /// it's tested on every OS.
 /// </summary>
-public sealed class XdgAutostartLoginItems(IProcessLauncher launcher, string autostartDirectory) : ILoginItems
+/// <param name="dotnet">The .NET a build is started with when its program wouldn't find it: the one Claudette runs on, by default.</param>
+public sealed class XdgAutostartLoginItems(IProcessLauncher launcher, string autostartDirectory, LoginDotnet? dotnet = null) : ILoginItems
 {
     public const string FileName = "claudette.desktop";
 
     /// <summary>What the Desktop Entry spec says needs quoting in an <c>Exec</c> argument.</summary>
     private const string Reserved = " \t\n\"'\\><~|&;$*?#()`";
+
+    private readonly LoginDotnet _dotnet = dotnet ?? LoginDotnet.Current();
 
     public string FilePath => Path.Combine(autostartDirectory, FileName);
 
@@ -115,7 +118,7 @@ public sealed class XdgAutostartLoginItems(IProcessLauncher launcher, string aut
         return quoted.Replace("\\", "\\\\").Replace("%", "%%");
     }
 
-    private static LoginCommand Command(ClaudetteCopy copy) =>
-        LoginCommand.For(copy, windows: false, LoginCommand.DotnetHost(Environment.ProcessPath))
+    private LoginCommand Command(ClaudetteCopy copy) =>
+        LoginCommand.For(copy, windows: false, _dotnet.Host, _dotnet.FoundByProgram)
         ?? throw new InvalidOperationException("An MSIX can't start on Linux.");
 }

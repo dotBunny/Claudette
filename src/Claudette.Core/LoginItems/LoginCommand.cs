@@ -10,12 +10,20 @@ public sealed record LoginCommand(string Program, IReadOnlyList<string> Argument
 
     /// <summary>
     /// The command that starts <paramref name="copy"/> at login: <c>open -a</c> for <c>Claudette.app</c>, so macOS starts
-    /// it as an app; the program in a build's folder; or <c>dotnet Claudette.dll</c> for a build without one. Null for
-    /// the MSIX, which only its own startup task starts.
+    /// it as an app; the program in a build's folder; or <c>dotnet Claudette.dll</c> for a build without one, or whose
+    /// program wouldn't find .NET. Null for the MSIX, which only its own startup task starts.
     /// </summary>
-    /// <param name="windows">Whether the program is <c>Claudette.exe</c> rather than <c>Claudette</c>.</param>
+    /// <param name="windows">
+    /// Whether the program is <c>Claudette.exe</c> rather than <c>Claudette</c>. On Windows a build's program is used
+    /// whenever it has one: <c>dotnet.exe</c> is a console program, so it would open a console window at login.
+    /// </param>
     /// <param name="dotnetHost">The <c>dotnet</c> that runs a build without a program of its own.</param>
-    public static LoginCommand? For(ClaudetteCopy copy, bool windows, string dotnetHost)
+    /// <param name="programFindsDotnet">
+    /// Whether a build's program finds the .NET <paramref name="dotnetHost"/> belongs to at login, with none of a
+    /// terminal's environment (<see cref="LoginDotnet"/>). On macOS and Linux, a build is started with
+    /// <paramref name="dotnetHost"/> when it doesn't.
+    /// </param>
+    public static LoginCommand? For(ClaudetteCopy copy, bool windows, string dotnetHost, bool programFindsDotnet = true)
     {
         switch (copy.Kind)
         {
@@ -25,7 +33,7 @@ public sealed record LoginCommand(string Program, IReadOnlyList<string> Argument
                 return new LoginCommand("/usr/bin/open", ["-a", copy.Location, "--args", LoginOption]);
         }
         var program = Path.Combine(copy.Location, windows ? ClaudetteCopy.AssemblyName + ".exe" : ClaudetteCopy.AssemblyName);
-        return File.Exists(program)
+        return File.Exists(program) && (windows || programFindsDotnet)
             ? new LoginCommand(program, [LoginOption])
             : new LoginCommand(dotnetHost, [Path.Combine(copy.Location, ClaudetteCopy.AssemblyName + ".dll"), LoginOption]);
     }

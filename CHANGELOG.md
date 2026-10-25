@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- **Start Claudette when I log in** now starts a build of Claudette on macOS and Linux that runs on a .NET in your home folder, such as the one Microsoft's install script puts in `~/.dotnet`. It used to start the build's own program, which looks for .NET only in the usual places, so nothing started at login. If you turned it on before and Claudette didn't start, turn it off and on again.
 - A tab whose Claude Code stopped as it started, because it isn't signed in say, could say *Couldn't start Claude Code: Broken pipe*. It now says why Claude Code stopped, and shows the sign-in screen when signing in is what it needs.
 
 ## [0.6.0] - 2026-10-24
