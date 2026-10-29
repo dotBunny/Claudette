@@ -386,13 +386,13 @@
       <controls:Card Classes="tools quiet" Label="Tool calls" Icon="{StaticResource IconCardTools}" Detail="{Binding CountText}"
                      TimeText="{Binding TimeText}" TimeTip="{Binding TimeTip}"
                      IsCollapsible="True" IsCollapsed="{Binding IsCollapsed}" ToggleCommand="{Binding ToggleCommand}">
-        <!-- Every Tool calls card, and the ones to come, in every tab: the same as Settings → Conversation → Collapse tool calls (DESIGN.md §18). -->
+        <!-- Every Tool calls card in the tab, and the ones to come, without changing Settings, as thinking's menu (DESIGN.md §18). -->
         <controls:Card.ContextMenu>
           <ContextMenu>
             <MenuItem Header="Collapse all tool calls" Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).CollapseAllToolCallsCommand}"
-                      ToolTip.Tip="Fold every Tool calls card to its header line, and start new ones folded" />
+                      ToolTip.Tip="Collapse every Tool calls card in this tab, and start new ones collapsed" />
             <MenuItem Header="Expand all tool calls" Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).ExpandAllToolCallsCommand}"
-                      ToolTip.Tip="Open every Tool calls card, and start new ones open" />
+                      ToolTip.Tip="Expand every Tool calls card in this tab, and start new ones expanded" />
           </ContextMenu>
         </controls:Card.ContextMenu>
         <StackPanel IsVisible="{Binding !IsCollapsed}">

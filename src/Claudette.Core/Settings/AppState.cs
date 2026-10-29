@@ -327,6 +327,13 @@ public sealed class TabState
     /// </summary>
     public bool? ExpandThinking { get; set; }
 
+    /// <summary>
+    /// Whether new Tool calls cards in this tab start collapsed, as <b>Collapse all tool calls</b> or <b>Expand all tool
+    /// calls</b> last left it (DESIGN.md §18, "Conversation cards"), or null for Settings → Conversation. The tab's own
+    /// state, not an override.
+    /// </summary>
+    public bool? CollapseToolCalls { get; set; }
+
     public TokenTotals Tokens { get; set; } = new();
 
     /// <summary>

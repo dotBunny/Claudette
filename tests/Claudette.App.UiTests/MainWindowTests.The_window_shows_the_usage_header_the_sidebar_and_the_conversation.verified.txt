@@ -39,7 +39,6 @@
 [button] Opus ▾
 [button] Default effort ▾
 [button] Manual ▾
-[button] Collapse tool calls: Fold tools
 [button] Files (0)
 [button] Context 1%
 "Cache 60m"

@@ -28,7 +28,7 @@ A question or a plan gives its tile up to its own card ([Questions](../permissio
 ## Folding the calls
 A long run of calls takes a lot of room. The chevron before a Tool calls card's icon folds the card to its header line, such as *Tool calls · 4 calls · 1 failed*, and a second click brings the tiles back. A call that is running or has failed still shows in the header's words.
 
-Settings → Conversation → **Collapse tool calls** starts every card folded. The message box's bar has the same choice as a small checkbox, **Fold tools**, before **Files**. Right-click a Tool calls card for **Collapse all tool calls** and **Expand all tool calls**: they change that setting, so every card in every tab, and the ones still to come, follow at once. A card you fold or open by hand stays as you left it until the setting next changes. Opening a call from elsewhere, as find does, opens its card.
+It works as thinking does. Settings → Conversation → **Show tool calls collapsed** starts new cards folded. Right-click a Tool calls card for **Collapse all tool calls** and **Expand all tool calls**: they fold or open every card in the tab, and start the ones still to come the same way, without changing Settings. The tab remembers which you chose. Opening a call from elsewhere, as find does, opens its card.
 
 ## Opening a call
 
@@ -59,7 +59,7 @@ An output over 20,000 characters shows its start, with **Show all (n KB)** to sh
 
 ## Settings
 
-**Collapse tool calls** (Settings → Conversation, off by default) starts the Tool calls cards folded to their header line.
+**Show tool calls collapsed** (Settings → Conversation, off by default) starts new Tool calls cards folded to their header line.
 
 Tool calls are one of the in-between steps that **Quieter in-between steps** (Settings → Conversation, on by default) draws without a tint and outline until you point at them. See [Reading the conversation](reading-the-conversation.md#quieter-in-between-steps).
 

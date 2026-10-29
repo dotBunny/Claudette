@@ -153,6 +153,8 @@ await new JsonFileStore<AppState>(paths.StateFile).SaveAsync(new AppState
     Accounts = [new ClaudeAccount { Id = DemoContent.StudioAccount, Name = "Studio", Color = "#A66BFF", DailySpendAlert = 20 }],
     FolderAccounts = { [tabs.Single(t => t.Id == "tab-pool").Folder] = DemoContent.StudioAccount },
     Window = new WindowPlacement(60, 40, 1480, 920, IsMaximized: false),
+    // Answered, so the sidebar doesn't offer Claude Code's projects over the pictures (DESIGN.md §4, "Claude Code's projects").
+    ClaudeProjectsOffered = true,
 });
 
 Console.WriteLine($"""

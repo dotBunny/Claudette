@@ -338,6 +338,7 @@ public sealed partial class TabViewModel
             AccountId = Account?.Id,
             KeptSuffixes = [.. State.KeptSuffixes],
             ExpandThinking = State.ExpandThinking,
+            CollapseToolCalls = State.CollapseToolCalls,
             // A copy has the same changes, so keeps their marks (DESIGN.md §8, "Reviewed").
             ReviewedFiles = sessionId is null ? [] : Copy(State.ReviewedFiles) ?? [],
             AllFilesReviewed = sessionId is not null && State.AllFilesReviewed,

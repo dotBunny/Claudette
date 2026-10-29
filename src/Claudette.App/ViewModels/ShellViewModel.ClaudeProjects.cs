@@ -21,11 +21,20 @@ public sealed record ClaudeProjectsOffer(int FolderCount)
 /// </summary>
 public sealed partial class ShellViewModel
 {
-    /// <summary>The sessions last read, every project's, which the groups are laid out from.</summary>
-    private IReadOnlyList<HistoryEntry> _claudeSessions = [];
+    /// <summary>The projects last read, by project, with their sessions newest first: what the groups are laid out from.</summary>
+    private IReadOnlyDictionary<string, HistoryEntry[]> _claudeProjects = NoProjects;
 
-    /// <summary>A read that a later one has overtaken drops its result instead of replacing the newer one's.</summary>
-    private int _claudeSessionsRead;
+    private static readonly IReadOnlyDictionary<string, HistoryEntry[]> NoProjects = new Dictionary<string, HistoryEntry[]>();
+
+    /// <summary>
+    /// One read at a time: a read asked for while one runs (Claudette coming to the front again, say) waits and runs once
+    /// after it, so reads don't pile up, and none can land after a newer one. Checked and set together, under the lock.
+    /// </summary>
+    private readonly Lock _claudeProjectsReads = new();
+
+    private bool _claudeProjectsReading;
+
+    private bool _claudeProjectsReadAgain;
 
     private bool _showsClaudeProjects;
 
@@ -74,7 +83,7 @@ public sealed partial class ShellViewModel
         }
         else
         {
-            _claudeSessions = [];
+            _claudeProjects = NoProjects;
             ApplyClaudeProjects();
         }
     }
@@ -89,48 +98,59 @@ public sealed partial class ShellViewModel
         {
             return;
         }
-        _ = RefreshClaudeProjectsAsync();
+        lock (_claudeProjectsReads)
+        {
+            if (_claudeProjectsReading)
+            {
+                _claudeProjectsReadAgain = true;
+                return;
+            }
+            _claudeProjectsReading = true;
+        }
+        _ = ReadClaudeProjectsAsync();
     }
 
-    private async Task RefreshClaudeProjectsAsync()
+    private async Task ReadClaudeProjectsAsync()
     {
-        var read = ++_claudeSessionsRead;
-        IReadOnlyList<HistoryEntry> sessions;
-        try
+        while (true)
         {
-            sessions = await HistorySessions.ReadAsync(_services, OpenSessionIds());
+            try
+            {
+                var projects = await HistorySessions.ReadProjectsAsync(_services, OpenSessionIds());
+                if (ShowsClaudeProjects)
+                {
+                    _claudeProjects = projects;
+                    ApplyClaudeProjects();
+                }
+            }
+            catch (Exception)
+            {
+                // History says what went wrong when it's opened; the sidebar just keeps what it has.
+            }
+            lock (_claudeProjectsReads)
+            {
+                if (!_claudeProjectsReadAgain)
+                {
+                    _claudeProjectsReading = false;
+                    return;
+                }
+                _claudeProjectsReadAgain = false;
+            }
         }
-        catch (Exception)
-        {
-            // History says what went wrong when it's opened; the sidebar just keeps what it has.
-            return;
-        }
-        if (read != _claudeSessionsRead || !ShowsClaudeProjects)
-        {
-            return;
-        }
-        _claudeSessions = sessions;
-        ApplyClaudeProjects();
     }
 
     private HashSet<string> OpenSessionIds() => AllTabs.Select(t => t.State.SessionId).OfType<string>().ToHashSet(StringComparer.Ordinal);
 
     /// <summary>
-    /// Lays the sidebar out from the sessions last read: a group for each project, with its past sessions, the ones
-    /// with nothing open after the ones with tabs, the most recently used first. With the setting off, every group
-    /// loses its past sessions, and one with nothing open leaves.
+    /// Lays the sidebar out from the projects last read: a group for each, with its past sessions, the ones with nothing
+    /// open after the ones with tabs, the most recently used first. With the setting off, every group loses its past
+    /// sessions, and one with nothing open leaves. It runs as each tab opens and closes, so it reads nothing from disk.
     /// </summary>
     private void ApplyClaudeProjects()
     {
-        var shows = ShowsClaudeProjects;
         var open = OpenSessionIds();
         var now = _services.Time.GetUtcNow();
-        var projects = shows
-            ? _claudeSessions
-                .Where(e => e.ProjectFolder is { } folder && !e.IsConflictCopy && Directory.Exists(folder))
-                .GroupBy(e => e.ProjectKey, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.OrderByDescending(e => e.LastActivity).ToArray(), StringComparer.OrdinalIgnoreCase)
-            : [];
+        var projects = ShowsClaudeProjects ? _claudeProjects : NoProjects;
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var group in Groups.ToArray())
         {
@@ -215,10 +235,10 @@ public sealed partial class ShellViewModel
     /// </summary>
     private async Task OfferClaudeProjectsAsync()
     {
-        IReadOnlyList<HistoryEntry> sessions;
+        IReadOnlyDictionary<string, HistoryEntry[]> projects;
         try
         {
-            sessions = await HistorySessions.ReadAsync(_services, OpenSessionIds());
+            projects = await HistorySessions.ReadProjectsAsync(_services, OpenSessionIds());
         }
         catch (Exception)
         {
@@ -228,11 +248,9 @@ public sealed partial class ShellViewModel
         {
             return;
         }
-        var folders = sessions.Where(e => e.ProjectFolder is { } folder && !e.IsConflictCopy && Directory.Exists(folder))
-            .Select(e => e.ProjectKey).Distinct(StringComparer.OrdinalIgnoreCase).Count();
-        if (folders > 0)
+        if (projects.Count > 0)
         {
-            ClaudeProjectsOffer = new ClaudeProjectsOffer(folders);
+            ClaudeProjectsOffer = new ClaudeProjectsOffer(projects.Count);
         }
     }
 

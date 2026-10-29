@@ -89,8 +89,8 @@ public sealed class ConversationBuilder
     private bool _expandThinking;
 
     /// <summary>
-    /// Start new Tool calls cards folded to their header line (Settings → Conversation). A subagent's builder asks the
-    /// builder that made it, so a group already running follows a change.
+    /// Start new Tool calls cards collapsed to their header line (Settings → Conversation, or the tab's own choice from a
+    /// card's menu). A subagent's builder asks the builder that made it, so a group already running follows a change.
     /// </summary>
     public bool CollapseToolCalls
     {

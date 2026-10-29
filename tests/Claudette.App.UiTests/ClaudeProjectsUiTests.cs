@@ -30,7 +30,7 @@ public class ClaudeProjectsUiTests
     }
 
     [AvaloniaFact]
-    public async Task A_projects_group_lists_its_past_sessions_under_a_fold_and_a_click_on_one_opens_it()
+    public async Task A_project_with_nothing_open_lists_its_past_sessions_and_once_one_opens_the_rest_fold_under_its_tab()
     {
         await using var h = new TabTestHarness(s => s.Sidebar.ShowClaudeProjects = true, dispatcher: new AvaloniaUiDispatcher());
         h.Services.State.ClaudeProjectsOffered = true;
@@ -41,23 +41,23 @@ public class ClaudeProjectsUiTests
         h.Shell.ClosePicker();
         UiText.Settle(window);
 
-        // Folded: the row says how many, and lists none.
-        var fold = Fold(window);
-        Assert.Equal("2 past sessions", Avalonia.Automation.AutomationProperties.GetName(fold));
-        Assert.DoesNotContain(window.GetVisualDescendants().OfType<Button>(), b => b.Classes.Contains("pastsession") && b.IsEffectivelyVisible);
-
-        Click(window, fold);
-        var group = h.Shell.Groups.Single();
-        Assert.True(group.IsPastSessionsExpanded);
-        var rows = window.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("pastsession") && b.IsEffectivelyVisible).ToList();
+        // Nothing open to fold them under: listed straight away, with no fold.
+        Assert.Null(Fold(window));
+        var rows = PastSessionRows(window);
         Assert.Equal(2, rows.Count);
         var shown = UiText.Describe(GroupList(window), (h.Root, "{root}"));
 
-        // A click resumes the session in a tab in the group, which then leaves the past sessions.
+        // A click resumes the session in a tab in the group; the rest fold away under it.
         Click(window, rows[0]);
         await UiText.SettleUntilAsync(window, () => h.Shell.SelectedTab?.State.SessionId == "w2", "the session's tab");
         Assert.Equal("Add the settings page", h.Shell.SelectedTab!.DisplayName);
-        Assert.Equal("1 past session", Avalonia.Automation.AutomationProperties.GetName(Fold(window)));
+        var fold = Fold(window)!;
+        Assert.Equal("1 past session", Avalonia.Automation.AutomationProperties.GetName(fold));
+        Assert.Empty(PastSessionRows(window));
+
+        Click(window, fold);
+        Assert.True(h.Shell.Groups.Single().IsPastSessionsExpanded);
+        Assert.Equal(["Fix the login bug, 3 h ago · 1 message"], PastSessionRows(window).Select(b => Avalonia.Automation.AutomationProperties.GetName(b)));
 
         await Verify(shown);
     }
@@ -90,10 +90,13 @@ public class ClaudeProjectsUiTests
     private static ItemsControl GroupList(Window window) =>
         window.GetVisualDescendants().OfType<ItemsControl>().Single(c => c.Name == "GroupList");
 
-    /// <summary>The fold's row, <i>2 past sessions</i>, which <b>Show all in History…</b> shares a class with.</summary>
-    private static Button Fold(Window window) =>
-        window.GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("pastsessions") && b.IsEffectivelyVisible
+    /// <summary>The fold's row, <i>2 past sessions</i>, which <b>Show all in History…</b> shares a class with; null while it isn't shown.</summary>
+    private static Button? Fold(Window window) =>
+        window.GetVisualDescendants().OfType<Button>().SingleOrDefault(b => b.Classes.Contains("pastsessions") && b.IsEffectivelyVisible
             && Avalonia.Automation.AutomationProperties.GetName(b)?.Contains("past session", StringComparison.Ordinal) is true);
+
+    private static List<Button> PastSessionRows(Window window) =>
+        [.. window.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("pastsession") && b.IsEffectivelyVisible)];
 
     private static void Click(Window window, Control target)
     {

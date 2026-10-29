@@ -593,8 +593,8 @@ public sealed class AppearanceSettings
     public bool QuietSteps { get; set; } = true;
 
     /// <summary>
-    /// Tool calls cards show only their header line, with a chevron to open them (DESIGN.md §18, "Conversation
-    /// cards"). Off by default.
+    /// New Tool calls cards start collapsed to their header line, with a chevron to open them, as thinking rows start
+    /// collapsed (DESIGN.md §18, "Conversation cards"); a card's menu changes it for its tab. Off by default.
     /// </summary>
     public bool CollapseToolCalls { get; set; }
 

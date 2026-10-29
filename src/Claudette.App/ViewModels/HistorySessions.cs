@@ -46,6 +46,33 @@ internal static class HistorySessions
         });
     }
 
+    /// <summary>
+    /// Claude Code's projects (DESIGN.md §4, "Claude Code's projects"): the sessions History lists, by project, newest
+    /// first, for the projects whose folders are still here. Each folder is checked once, off the UI thread, as a network
+    /// drive that's gone can take seconds to say so; the sidebar lays its groups out from the result without touching the disk.
+    /// </summary>
+    /// <param name="open">The sessions open in tabs, which the entries say.</param>
+    public static async Task<IReadOnlyDictionary<string, HistoryEntry[]>> ReadProjectsAsync(AppServices services, HashSet<string> open)
+    {
+        var sessions = await ReadAsync(services, open);
+        return await Task.Run(() => Projects(sessions, Directory.Exists));
+    }
+
+    /// <summary>The sessions by project, newest first, leaving out conflict copies and the projects whose folder <paramref name="exists"/> says is gone.</summary>
+    internal static IReadOnlyDictionary<string, HistoryEntry[]> Projects(IEnumerable<HistoryEntry> sessions, Func<string, bool> exists)
+    {
+        var projects = new Dictionary<string, HistoryEntry[]>(StringComparer.OrdinalIgnoreCase);
+        foreach (var project in sessions.Where(e => e.ProjectFolder is not null && !e.IsConflictCopy).GroupBy(e => e.ProjectKey, StringComparer.OrdinalIgnoreCase))
+        {
+            var entries = project.OrderByDescending(e => e.LastActivity).ToArray();
+            if (exists(entries[0].ProjectFolder!))
+            {
+                projects[project.Key] = entries;
+            }
+        }
+        return projects;
+    }
+
     /// <summary>The project a folder is in: the folder itself, or for a worktree Claude Code made, its main checkout; normalized.</summary>
     public static string ProjectKey(string? folder) =>
         folder is null ? "" : FolderHistory.Normalize(GitWorktrees.MainCheckoutOf(folder) ?? folder);

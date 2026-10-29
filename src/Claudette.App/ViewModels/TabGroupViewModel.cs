@@ -124,7 +124,7 @@ public sealed partial class TabGroupViewModel : ObservableObject
     /// in the sidebar</b> is on, tab or no tab (DESIGN.md §4, "Claude Code's projects").
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsProjectOnly), nameof(CanClose))]
+    [NotifyPropertyChangedFor(nameof(IsProjectOnly), nameof(CanClose), nameof(ShowsPastSessionsFold), nameof(ShowsPastSessionList), nameof(ShowsMorePastSessions))]
     public partial bool IsClaudeProject { get; set; }
 
     /// <summary>One of Claude Code's projects with nothing open in it: its menu has no <b>Close group</b>.</summary>
@@ -140,7 +140,8 @@ public sealed partial class TabGroupViewModel : ObservableObject
     /// empty while the setting is off.
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasPastSessions), nameof(PastSessionsText), nameof(ShownPastSessions), nameof(HasMorePastSessions), nameof(ShowsMorePastSessions))]
+    [NotifyPropertyChangedFor(nameof(HasPastSessions), nameof(PastSessionsText), nameof(ShownPastSessions), nameof(HasMorePastSessions), nameof(ShowsPastSessionsFold),
+        nameof(ShowsPastSessionList), nameof(ShowsMorePastSessions))]
     public partial IReadOnlyList<PastSessionRow> PastSessions { get; set; } = [];
 
     public bool HasPastSessions => PastSessions.Count > 0;
@@ -155,11 +156,20 @@ public sealed partial class TabGroupViewModel : ObservableObject
 
     /// <summary>Whether the user unfolded the past sessions; remembered for the folder on this machine.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowsMorePastSessions), nameof(PastSessionsTip))]
+    [NotifyPropertyChangedFor(nameof(ShowsPastSessionList), nameof(ShowsMorePastSessions), nameof(PastSessionsTip))]
     public partial bool IsPastSessionsExpanded { get; set; }
 
+    /// <summary>
+    /// The fold's row, <i>12 past sessions</i>, under a group's tabs. A group with nothing open has no tabs to fold
+    /// its sessions under, so lists them straight away instead.
+    /// </summary>
+    public bool ShowsPastSessionsFold => HasPastSessions && !IsProjectOnly;
+
+    /// <summary>The latest sessions are listed: unfolded, or in a group with nothing open.</summary>
+    public bool ShowsPastSessionList => HasPastSessions && (IsPastSessionsExpanded || IsProjectOnly);
+
     /// <summary><b>Show all in History…</b> shows under the listed sessions, when there are more.</summary>
-    public bool ShowsMorePastSessions => IsPastSessionsExpanded && HasMorePastSessions;
+    public bool ShowsMorePastSessions => ShowsPastSessionList && HasMorePastSessions;
 
     public string PastSessionsTip => IsPastSessionsExpanded ? "Fold the past sessions away" : "List the past sessions";
 
@@ -210,14 +220,19 @@ public sealed partial class TabGroupViewModel : ObservableObject
         OnPropertyChanged(nameof(UrgentGlyph));
         OnPropertyChanged(nameof(Summary));
         OnPropertyChanged(nameof(ProjectTab));
-        OnPropertyChanged(nameof(IsProjectOnly));
-        OnPropertyChanged(nameof(CanClose));
+        OnProjectOnlyChanged();
     }
 
-    partial void OnFilesChanged(ProjectFilesViewModel? value)
+    partial void OnFilesChanged(ProjectFilesViewModel? value) => OnProjectOnlyChanged();
+
+    /// <summary>Something open came or went: <b>Close group</b>, and how the past sessions show, may change.</summary>
+    private void OnProjectOnlyChanged()
     {
         OnPropertyChanged(nameof(IsProjectOnly));
         OnPropertyChanged(nameof(CanClose));
+        OnPropertyChanged(nameof(ShowsPastSessionsFold));
+        OnPropertyChanged(nameof(ShowsPastSessionList));
+        OnPropertyChanged(nameof(ShowsMorePastSessions));
     }
 
     private void OnTabPropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -55,6 +55,9 @@ public class ClaudeProjectsTests
         Assert.Equal("1 h ago · 1 message", work.PastSessions[0].Detail);
         Assert.False(work.HasMorePastSessions);
         Assert.False(work.IsPastSessionsExpanded);
+        // With no tabs to fold them under, they're listed straight away.
+        Assert.All(groups, g => Assert.False(g.ShowsPastSessionsFold));
+        Assert.All(groups, g => Assert.True(g.ShowsPastSessionList));
         // Groups with nothing open aren't saved: they come from the sessions each time.
         Assert.Empty(h.Services.State.GroupOrder!);
     }
@@ -80,6 +83,8 @@ public class ClaudeProjectsTests
         Assert.False(work.IsProjectOnly);
         Assert.True(work.CanClose);
         Assert.Equal(["w2", "w1"], work.PastSessions.Select(r => r.Entry.SessionId));
+        Assert.True(work.ShowsPastSessionsFold);
+        Assert.False(work.ShowsPastSessionList);
         await TabTestHarness.Eventually(() => h.Factory.Launches.Count == 1, "the resume");
         Assert.Equal("w3", h.Factory.Launches[0].Resume);
         // A group with a tab is placed with the tabs, first.
@@ -90,6 +95,7 @@ public class ClaudeProjectsTests
         await TabTestHarness.Eventually(() => InlineDispatcher.Read(() => work.PastSessions.Count == 3), "the session back in the past sessions");
         Assert.Contains(work, InlineDispatcher.Read(() => h.Shell.Groups.ToArray()));
         Assert.True(work.IsProjectOnly);
+        Assert.True(work.ShowsPastSessionList);
     }
 
     [Fact]
@@ -157,8 +163,7 @@ public class ClaudeProjectsTests
         Assert.Equal("7 past sessions", work.PastSessionsText);
         Assert.Equal(["s6", "s5", "s4", "s3", "s2"], work.ShownPastSessions.Select(r => r.Entry.SessionId));
         Assert.True(work.HasMorePastSessions);
-        Assert.False(work.ShowsMorePastSessions);
-        InlineDispatcher.Run(() => h.Shell.TogglePastSessionsCommand.Execute(work));
+        // Nothing open, so they're listed, with the way to the rest.
         Assert.True(work.ShowsMorePastSessions);
 
         // Show all in History… opens History on the folder.
@@ -232,6 +237,36 @@ public class ClaudeProjectsTests
         Assert.Equal("1 h ago · 14 messages", ShellViewModel.PastSessionDetail(Entry("This machine", now.AddHours(-1), 14), now));
         Assert.Equal("just now · 1 message", ShellViewModel.PastSessionDetail(Entry("This machine", now, 1), now));
         Assert.Equal("2 days ago · LAPTOP-02", ShellViewModel.PastSessionDetail(Entry("LAPTOP-02", now.AddDays(-2), 0), now));
+    }
+
+    [Fact]
+    public void Each_projects_folder_is_checked_once_and_a_project_whose_folder_is_gone_is_left_out()
+    {
+        var now = DateTimeOffset.Parse("2026-09-28T12:00:00Z");
+        HistoryEntry In(string id, string folder, int hoursAgo, bool conflict = false) => new()
+        {
+            SessionId = id,
+            Title = id,
+            Machine = "This machine",
+            ProjectFolder = folder,
+            ProjectKey = folder,
+            LastActivity = now.AddHours(-hoursAgo),
+            IsConflictCopy = conflict,
+            Details = "",
+        };
+        var checkedFolders = new List<string>();
+
+        var projects = HistorySessions.Projects(
+            [In("a1", "/work/a", 3), In("a2", "/work/a", 1), In("a3", "/work/a", 2), In("g1", "/gone", 1), In("c1", "/conflicts", 1, conflict: true)],
+            folder =>
+            {
+                checkedFolders.Add(folder);
+                return folder != "/gone";
+            });
+
+        Assert.Equal(["/work/a", "/gone"], checkedFolders);
+        Assert.Equal(["/work/a"], projects.Keys);
+        Assert.Equal(["a2", "a3", "a1"], projects["/work/a"].Select(e => e.SessionId));
     }
 
     private static HistoryEntry Entry(string machine, DateTimeOffset last, int messages) => new()

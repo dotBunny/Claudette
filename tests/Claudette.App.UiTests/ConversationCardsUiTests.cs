@@ -109,7 +109,7 @@ public sealed class ConversationCardsUiTests
     }
 
     [AvaloniaFact]
-    public async Task A_chevron_folds_a_Tool_calls_card_to_its_header_and_the_setting_folds_them_all()
+    public async Task A_chevron_folds_a_Tool_calls_card_to_its_header_and_the_setting_starts_new_ones_folded()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
         await h.OpenTabAsync();
@@ -132,24 +132,16 @@ public sealed class ConversationCardsUiTests
         UiText.Settle(window);
         Assert.Equal(2, VisibleTiles(window));
 
-        // The setting folds every card, and the ones that come after.
+        // The setting starts the cards to come collapsed, and leaves the ones there as they are, as thinking's does.
         h.Services.Settings.Appearance.CollapseToolCalls = true;
         h.Services.SaveSettings();
         UiText.Settle(window);
-        Assert.All(Named(window, "tools"), c => Assert.True(c.IsCollapsed));
-        Assert.Equal(0, VisibleTiles(window));
+        Assert.All(Named(window, "tools"), c => Assert.False(c.IsCollapsed));
         h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"text","text":"More."}]}}""");
         h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"tool_use","id":"r3","name":"Read","input":{"file_path":"c.cs"}}]}}""");
         await UiText.SettleUntilAsync(window, () => Named(window, "tools").Count == 3, "a third card");
         Assert.True(Named(window, "tools")[2].IsCollapsed);
-
-        // The message box's small checkbox is the same choice.
-        var fold = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "FoldToolsToggle");
-        fold.Command!.Execute(null);
-        UiText.Settle(window);
-        Assert.False(h.Services.Settings.Appearance.CollapseToolCalls);
-        Assert.All(Named(window, "tools"), c => Assert.False(c.IsCollapsed));
-        Assert.Equal(3, VisibleTiles(window));
+        Assert.Equal(2, VisibleTiles(window));
         window.Close();
     }
 
