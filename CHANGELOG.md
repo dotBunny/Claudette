@@ -40,6 +40,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- In the Claude style's dark theme, the Files tab's explorer is a shade of its own, rather than the window's frame color, so it no longer blends into the window's edge.
 - The find box in a file's editor, and in a log, could stay open with its **×** and arrows doing nothing, when it was opened from the Files tab's menu or the keyboard was elsewhere, as after **Use theirs**. Its buttons now always work.
 - A Unity or Godot run started in the project's folder with a relative path, such as `Unity -batchmode -projectPath .` that Claude runs, now shows its log under the tab. Claudette reads the path from where the run was started, where it used to look for the project's whole path on the command line.
 - The marks for your messages, prompts, errors and changed files are in the conversation's scroll bar, as code editors mark theirs, as wide as the bar, thin while it rests and wide when you point at it, rather than beside it, where they touched the cards, and in Compact density overlapped them. The scroll bar works as ever: its thumb drags even over a mark, and a click on a mark still goes there.
