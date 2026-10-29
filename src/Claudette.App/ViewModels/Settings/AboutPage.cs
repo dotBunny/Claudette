@@ -37,6 +37,17 @@ public sealed partial class AboutPage : SettingsPage
             "Trademarks of Perforce Software, Inc. or one of its affiliates. The logo is used with Perforce's permission, as its brand guidelines say."),
     ];
 
+    /// <summary>
+    /// The people outside dotBunny whose work is in Claudette, in the order they first contributed, each with what they
+    /// brought: a row each under Contributors (DESIGN.md §14, "About"). Merging a pull request from someone new adds
+    /// them here, in the same change or the one after.
+    /// </summary>
+    public static IReadOnlyList<Contributor> ContributorList { get; } =
+    [
+        new("Steklorez", "Steklorez",
+            "Claude Code's projects in the sidebar, with their past sessions; your messages set apart from Claude's; collapsing tool calls."),
+    ];
+
     public AboutPage(SettingsContext context) : base(context, "About Claudette")
     {
         Section("claudette", "Claudette",
@@ -47,6 +58,10 @@ public sealed partial class AboutPage : SettingsPage
             Info("about.license", "MIT License", $"{ThirdPartyNotices.ClaudetteCopyright.TrimEnd('.')}. Claudette is free and open source.",
                 keywords: ["license", "open source", "copyright"]),
         ]);
+        Contributors = [.. ContributorList.Select(c => new ContributorRow(c, Services.Platform.OpenUrlAsync))];
+        Section("contributors", "Contributors",
+            [.. ContributorList.Select(c => Info(c.Key, c.Name, c.Contributed, keywords: ["contributor", "thanks", "pull request", c.GitHub]))],
+            "The people outside dotBunny whose work is in Claudette, and what each brought. Thank you.");
         Trademarks = [.. TrademarkNotices.Select(t => Info(t.Key, t.Names, t.Notice, keywords: ["trademark", "logo"]))];
         Section("trademarks", "Trademarks", Trademarks,
             "Claudette is made by dotBunny. It isn't sponsored by, affiliated with or endorsed by Anthropic or the makers of the engines and tools it "
@@ -61,6 +76,9 @@ public sealed partial class AboutPage : SettingsPage
     public bool IsClaudeStyle => Services.Settings.Appearance.Style == Claudette.Core.Settings.AppStyle.Claude;
 
     public override string Description => "Which Claudette this is, whose names it uses, and what it's built with.";
+
+    /// <summary>The contributors' rows, in <see cref="ContributorList"/>'s order.</summary>
+    public IReadOnlyList<ContributorRow> Contributors { get; }
 
     /// <summary>The trademark rows, in <see cref="TrademarkNotices"/>' order.</summary>
     public IReadOnlyList<SettingItem> Trademarks { get; }
@@ -85,6 +103,33 @@ public sealed partial class AboutPage : SettingsPage
 
     [RelayCommand]
     private Task OpenPrivacyPolicyAsync() => Services.Platform.OpenUrlAsync(PrivacyPolicyUrl);
+}
+
+/// <summary>Someone outside dotBunny whose work is in Claudette: their name, their GitHub account and what they brought.</summary>
+public sealed record Contributor(string Name, string GitHub, string Contributed)
+{
+    /// <summary>Their row's key in About.</summary>
+    public string Key => $"about.contributor.{GitHub.ToLowerInvariant()}";
+
+    public string ProfileUrl => $"https://github.com/{GitHub}";
+
+    /// <summary>Their pull requests to Claudette, on GitHub.</summary>
+    public string PullRequestsUrl => $"{AboutPage.SourceUrl}/pulls?q=is%3Apr+author%3A{GitHub}";
+}
+
+/// <summary>One of About's contributors: their row, with their GitHub profile and pull requests a click away.</summary>
+public sealed partial class ContributorRow(Contributor contributor, Func<string, Task> openUrl)
+{
+    public Contributor Contributor => contributor;
+
+    /// <summary>The row's setting, which gives it its name and what they brought.</summary>
+    public string Key => contributor.Key;
+
+    [RelayCommand]
+    private Task OpenProfileAsync() => openUrl(contributor.ProfileUrl);
+
+    [RelayCommand]
+    private Task OpenPullRequestsAsync() => openUrl(contributor.PullRequestsUrl);
 }
 
 /// <summary>One of About's open-source licenses: a library, with its license and notices shown under it on request.</summary>

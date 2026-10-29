@@ -2,14 +2,14 @@
 title: About Claudette
 parent: Settings
 nav_order: 8
-summary: "About Claudette says which Claudette you have, where it is on the web, the trademarks it names, and the licenses of what it's built with."
+summary: "About Claudette says which Claudette you have, where it is on the web, who has contributed to it, the trademarks it names, and the licenses of what it's built with."
 ---
 
 # About Claudette
 
 {% include unreleased.html %}
 
-About Claudette is a window of its own. It says which Claudette you have and where to find it on the web, whose names and logos it uses, and the open-source libraries, font and artwork it's built with, each with its license. It opens over the window you opened it from, and `Esc` closes it.
+About Claudette is a window of its own. It says which Claudette you have and where to find it on the web, who has contributed to it, whose names and logos it uses, and the open-source libraries, font and artwork it's built with, each with its license. It opens over the window you opened it from, and `Esc` closes it.
 
 {% include shot.html name="guide/settings/about" alt="About Claudette, its own window: Claudette's logo and name, the version, On the web with Website, Source code, Changelog and Privacy policy, Claudette's MIT License, and the Trademarks section with a row for each name and its owner's notice" %}
 
@@ -25,6 +25,10 @@ About Claudette is a window of its own. It says which Claudette you have and whe
 - **The version**, the same as at the foot of the Settings window's sidebar, where a click copies the versions for a bug report ([The version and Help](the-settings-window.md#the-version-and-help)).
 - **On the web**: **Website**, **Source code**, **Changelog** and **Privacy policy** open in your browser.
 - **MIT License**: Claudette is free and open source, made by dotBunny. **License** shows the license's text under it.
+
+## Contributors
+
+The people outside dotBunny whose work is in Claudette, each with a line on what they brought. **GitHub** opens their profile, and **Pull requests** their pull requests to Claudette. Claudette's [source](https://github.com/dotBunny/Claudette) is on GitHub, and pull requests are welcome.
 
 ## Trademarks
 

@@ -298,6 +298,36 @@ public class SettingsWindowTests
     }
 
     /// <summary>
+    /// About Claudette (DESIGN.md §14, "About") thanks the people outside dotBunny whose work is in Claudette: a row each,
+    /// after Claudette's own, with what they brought, and their GitHub profile and pull requests in the browser.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task About_lists_its_contributors_with_their_GitHub_and_pull_requests()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var about = new AboutPage(new SettingsContext(h.Services));
+        var window = new AboutWindow { DataContext = about, Width = 720, Height = 700 };
+        window.Show();
+        UiText.Settle(window);
+        var sections = window.GetVisualDescendants().OfType<SettingsSection>().Select(s => s.Key).ToList();
+        Assert.Equal(["claudette", "contributors", "trademarks", "licenses"], sections);
+
+        var rows = window.GetVisualDescendants().OfType<SettingsSection>().Single(s => s.Key == "contributors").GetVisualDescendants().OfType<SettingRow>().ToList();
+        Assert.Equal(AboutPage.ContributorList.Select(c => c.Name), rows.Select(r => r.Title));
+        var row = rows.Single(r => r.Title == "Steklorez");
+        Assert.StartsWith("Claude Code's projects in the sidebar", row.Description, StringComparison.Ordinal);
+        var links = row.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("settingslink") && b.IsEffectivelyVisible).ToList();
+        Assert.Equal(["GitHub", "Pull requests"], links.Select(b => b.Content as string));
+
+        foreach (var link in links)
+        {
+            await ((CommunityToolkit.Mvvm.Input.IAsyncRelayCommand)link.Command!).ExecuteAsync(null);
+        }
+        Assert.Equal(["https://github.com/Steklorez", "https://github.com/dotBunny/Claudette/pulls?q=is%3Apr+author%3ASteklorez"], h.Platform.OpenedUrls);
+        window.Close();
+    }
+
+    /// <summary>
     /// About Claudette, a window of its own (DESIGN.md §14, "About"), lists every library with its license, which shows
     /// under its row on request; a license that asks only for a link, such as the Godot logo's, is a link. Godot's page in
     /// Settings' sidebar has its logo, filled, where the other pages' icons are strokes.

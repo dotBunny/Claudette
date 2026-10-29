@@ -19,7 +19,7 @@ A .NET desktop app that wraps Claude Code in a native GUI: one tab per Claude Co
 
 ## Backlog
 
-The backlog is the open GitHub issues on `dotBunny/Claudette` assigned to `reapazor`. The `issues` skill (`.claude/skills/issues/SKILL.md`) lists them, plans one and builds it once the user says go. A pull request that resolves one says `Fixes #N`; don't comment on the issue itself.
+The backlog is the open GitHub issues on `dotBunny/Claudette` assigned to `reapazor`. The `issues` skill (`.claude/skills/issues/SKILL.md`) lists them, plans one and builds it once the user says go. A pull request that resolves one says `Fixes #N`; don't comment on the issue itself. Merging a pull request from someone outside dotBunny adds them to About's **Contributors** (`AboutPage.ContributorList`) if they aren't there yet, and keeps their commits theirs: update their branch with a merge rather than rebasing it.
 
 ## Stack
 

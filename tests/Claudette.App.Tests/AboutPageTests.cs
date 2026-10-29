@@ -77,6 +77,10 @@ public class AboutPageTests
         // Perforce's logo, on its page, is shown with Perforce's permission.
         Assert.Contains("Perforce's permission", about.FindSetting("about.trademark.perforce")!.Description, StringComparison.Ordinal);
         Assert.Contains("isn't sponsored by, affiliated with or endorsed by", about.FindGroup("trademarks")!.Description, StringComparison.Ordinal);
+        // Who has contributed, each found by their row's key, and the page's sections in order.
+        Assert.Equal(["claudette", "contributors", "trademarks", "licenses"], about.Groups.Select(g => g.Key));
+        Assert.Equal(AboutPage.ContributorList.Select(c => c.Key), about.Contributors.Select(r => r.Key));
+        Assert.Equal("Steklorez", about.FindSetting("about.contributor.steklorez")!.Title);
         // Nothing on it to change, so nothing to reset.
         Assert.All(about.Groups, g => Assert.False(g.CanReset));
     }

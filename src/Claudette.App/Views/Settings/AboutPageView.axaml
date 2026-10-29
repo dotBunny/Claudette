@@ -4,8 +4,8 @@
              xmlns:c="using:Claudette.App.Controls"
              x:Class="Claudette.App.Views.Settings.AboutPageView" ClipToBounds="False"
              x:DataType="settings:AboutPage">
-  <!-- About (DESIGN.md §14, "About"): which Claudette this is, the trademarks it names, and the licenses of what it's built
-       with, each license and notices under its row on request -->
+  <!-- About (DESIGN.md §14, "About"): which Claudette this is, who has contributed to it, the trademarks it names, and the
+       licenses of what it's built with, each license and notices under its row on request -->
   <StackPanel Spacing="32">
     <c:SettingsSection Key="claudette">
       <c:SettingRow Key="about.version" />
@@ -28,6 +28,19 @@
           </Border>
         </c:SettingRow.Details>
       </c:SettingRow>
+    </c:SettingsSection>
+
+    <c:SettingsSection Key="contributors" ItemsSource="{Binding Contributors}">
+      <c:SettingsSection.ItemTemplate>
+        <DataTemplate x:DataType="settings:ContributorRow">
+          <c:SettingRow Key="{Binding Key}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <Button Classes="settingslink" Content="GitHub" Command="{Binding OpenProfileCommand}" ToolTip.Tip="{Binding Contributor.ProfileUrl}" />
+              <Button Classes="settingslink" Content="Pull requests" Command="{Binding OpenPullRequestsCommand}" ToolTip.Tip="{Binding Contributor.PullRequestsUrl}" />
+            </StackPanel>
+          </c:SettingRow>
+        </DataTemplate>
+      </c:SettingsSection.ItemTemplate>
     </c:SettingsSection>
 
     <c:SettingsSection Key="trademarks" ItemsSource="{Binding Trademarks}">
