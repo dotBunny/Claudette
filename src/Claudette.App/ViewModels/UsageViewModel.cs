@@ -69,6 +69,9 @@ public sealed partial class UsageViewModel : ViewModelBase, IDisposable
 
     public MeterViewModel Session { get; } = new("Session");
 
+    /// <summary>The usage chip at the header's right, made from the meters (DESIGN.md §6, "Header meters").</summary>
+    public UsageChipViewModel Chip { get; } = new();
+
     /// <summary>The weekly limit across all models, then each model-specific weekly limit.</summary>
     public ObservableCollection<MeterViewModel> Weekly { get; } = [];
 
@@ -259,6 +262,8 @@ public sealed partial class UsageViewModel : ViewModelBase, IDisposable
             }
             Fill(meter, reading, now, weekly: true);
         }
+
+        Chip.Update(snapshot.Session is not null, Session, Weekly, ProjectionText, AsOfText);
 
         if (IsDetailed)
         {

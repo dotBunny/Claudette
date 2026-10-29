@@ -7,23 +7,35 @@ summary: "The strip across the top of the window shows how much of your plan's l
 
 # The usage header
 
-The strip across the top of the window shows how much of your plan's limits you've used, how fast you're using them, and when you'll hit the limit at that rate. It's there whichever tab is selected, and it keeps up even when no tab is working.
+A small chip at the right of the window's top strip shows how much of your plan's limits you've used, and a click on it says how fast you're using them and when you'll hit the limit at that rate. It's there whichever tab is selected, and it keeps up even when no tab is working.
 
-{% include shot.html name="standard" alt="Claudette's window with the usage header across the top: the session meter and its countdown, a small chart, the weekly meters and the line that says where the session is heading" %}
+{% include shot.html name="standard" alt="Claudette's window with the usage chip at the right of the top strip: a short label, a thin bar and the percent for the session, the weekly limit and a model" %}
 
 ## What's in it
 
-- **Session** is the most prominent meter: a bar, the percent used, and a countdown such as *resets in 2h 14m*. A session is a 5-hour window. Hover over it for the clock time it resets.
-- **The trendline** is a small chart beside it of this window's usage so far. A dotted line carries the current rate forward to show where the window is heading, and faint dashed lines mark the warning and alert levels.
-- **The line under the session meter** says in words where that's heading. See below.
-- **Weekly** meters are smaller and stacked, with the limit across all models on top. Each shows its percent and when it resets (*resets Thu 9:00 AM*). Hover over one for the full reset time.
-- **Model meters** sit under **Weekly**: one for each weekly limit your plan has for a particular model, named for the model.
+The chip is one line. Each meter in it has a short label, a thin bar and the percent used:
+
+- **S** is the session, the most important: a 5-hour window.
+- **W** is the weekly limit across all models.
+- A model's own weekly limit, if your plan has one, takes the model's first letter, such as **F** for Fable (more letters if another meter has that one).
+
+In a narrow window the chip drops the bars and keeps the labels and percents, so it never crowds the logo or the menu. A screen reader reads each meter with its reset, such as *Session 9%, resets in 3h 18m*.
+
+## The popover
+
+Click the chip, or press `Enter` while it has the focus, to open a popover under it. `Esc` closes it.
+
+- **Each meter** on its own row: its full name, the percent used, a full-size bar, and when it resets: the session's as a countdown (*resets in 2h 14m*), the weekly ones' as a day and time (*resets Thu 9:00 AM*).
+- **The trendline** is a small chart of this window's usage so far. A dotted line carries the current rate forward to show where the window is heading, and faint dashed lines mark the warning and alert levels.
+- **The line under it** says in words where that's heading. See below.
+- **Open the Usage panel** opens [the Usage window](the-usage-window.md).
+- **Model meters** are the rows after **Weekly**: one for each weekly limit your plan has for a particular model, named for the model.
 
 ## Colors and warning levels
 
-A meter turns amber at the warning level, 75% by default, and red at the alert level, 90% by default. The percent beside it takes the color too. The same two levels apply to every meter, and to the [alerts](alerts.md).
+A meter's bar is blue, turns amber at the warning level, 75% by default, and red at the alert level, 90% by default. The percent beside it takes the color too, in the chip and in the popover. The same two levels apply to every meter, and to the [alerts](alerts.md).
 
-## The line under the session meter
+## The line under the trendline
 
 It's one of these:
 
@@ -55,17 +67,17 @@ An OS notification tells you when credits start paying: see [Alerts](alerts.md).
 
 ## How current the numbers are
 
-Claudette reads your usage when it starts, after each turn (at most once a minute) and every 5 minutes otherwise, and the meters also move as your tabs work. When the numbers are more than 10 minutes old, for example just after launch before the first reading, the header adds *as of 14:02* beside the line under the session meter.
+Claudette reads your usage when it starts, after each turn (at most once a minute) and every 5 minutes otherwise, and the meters also move as your tabs work. When the numbers are more than 10 minutes old, for example just after launch before the first reading, the popover adds *as of 14:02* under the line that says where the session is heading.
 
 Within one window a meter only goes up. A reading lower than the one shown, for the same window, is out of date, so Claudette keeps the higher one.
 
 ## When there are no meters
 
-A sign-in with no plan limits, such as an API key, has no meters, and the header just says **Claudette**. If Claudette can't start tracking usage, the header says **Usage unavailable** and why, and your tabs keep working.
+A sign-in with no plan limits, such as an API key, has no chip, and the header just says **Claudette** (for one of Claudette's [API-key accounts](../accounts/api-key-accounts.md), it shows the account's spend). If Claudette can't start tracking usage, the header says **Usage unavailable** and why, and your tabs keep working.
 
 ## Opening the details
 
-Click anywhere on the meters to open [the Usage window](the-usage-window.md). The chevron at the header's right draws the header taller, with charts: see [The detailed header](the-detailed-header.md).
+**Open the Usage panel** in the popover opens [the Usage window](the-usage-window.md). The chevron at the header's right draws the header taller, with charts: see [The detailed header](the-detailed-header.md).
 
 ## Settings
 

@@ -167,6 +167,9 @@ public partial class MainWindow : Window
         Activate();
     }
 
+    /// <summary>The popover's link opens the Usage panel, and the popover goes.</summary>
+    private void OnUsagePanelLinkClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => UsageChip.Flyout?.Hide();
+
     /// <summary>The Usage panel (DESIGN.md §6). One at a time; clicking the header again brings it forward.</summary>
     private Task ShowUsagePanelAsync()
     {

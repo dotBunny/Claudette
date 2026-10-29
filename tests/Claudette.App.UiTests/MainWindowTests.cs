@@ -347,11 +347,11 @@ public class MainWindowTests
     }
 
     /// <summary>
-    /// The weekly meters stack one above the other, the limit across all models on top, with their bars lined up; the
-    /// sparkline beside them is as tall as the session meter and the projection line together (DESIGN.md §6).
+    /// The usage meters are one compact chip at the header's right: a short label, a thin bar and the percent for each,
+    /// and a click opens the popover with the detail, the sparkline and the way to the Usage panel (DESIGN.md §6).
     /// </summary>
     [AvaloniaFact]
-    public async Task The_weekly_meters_stack_beside_a_sparkline_as_tall_as_the_header()
+    public async Task The_usage_chip_sits_at_the_right_and_opens_a_popover_with_the_detail()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
         var store = new UsageStore(Path.Combine(h.Root, "usage.db"), h.Time);
@@ -359,7 +359,7 @@ public class MainWindowTests
         Assert.True(store.AddSample(new UsageSnapshot(
             [
                 new LimitReading(LimitKind.Session, "Session", 62, reset, null, true),
-                new LimitReading(LimitKind.WeeklyAll, "Weekly", 92, reset.AddDays(3), null, true),
+                new LimitReading(LimitKind.WeeklyAll, "Weekly", 80, reset.AddDays(3), null, true),
                 new LimitReading(LimitKind.WeeklyModel, "Fable", 100, reset.AddDays(3), null, true),
             ],
             h.Time.GetUtcNow(),
@@ -371,21 +371,64 @@ public class MainWindowTests
         var window = new MainWindow { DataContext = main, Width = 1200, Height = 800 };
         window.Show();
         UiText.Settle(window);
-        var meters = window.GetVisualDescendants().OfType<ItemsControl>().Single(c => c.Name == "WeeklyMeters");
-        var (weekly, fable) = (meters.GetVisualDescendants().OfType<ProgressBar>().First(), meters.GetVisualDescendants().OfType<ProgressBar>().Last());
-        var sparkline = window.GetVisualDescendants().OfType<UsageChart>().Single(c => c.Name == "Sparkline");
-        var header = sparkline.FindAncestorOfType<Grid>()!;
+        var chip = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageChip");
+        var meters = chip.GetVisualDescendants().OfType<ItemsControl>().Single(c => c.Name == "ChipMeters");
+        var chevron = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageDetailsToggle");
         Point At(Control c) => c.TranslatePoint(default, window)!.Value;
 
-        Assert.Equal(["Weekly", "Fable"], usage.Weekly.Select(m => m.Label));
-        Assert.Equal(At(weekly).X, At(fable).X);
-        Assert.True(At(fable).Y > At(weekly).Y + weekly.Bounds.Height, "Fable's meter should be under the weekly one");
-        Assert.Equal(At(header).Y, At(sparkline).Y);
-        Assert.Equal(header.Bounds.Height, sparkline.Bounds.Height);
-        Assert.True(sparkline.Bounds.Height > 30, $"The sparkline is {sparkline.Bounds.Height} px high.");
-        var right = meters.GetVisualDescendants().OfType<TextBlock>().Max(t => t.TranslatePoint(new Point(t.Bounds.Width, 0), window)!.Value.X);
-        var chevron = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageDetailsToggle");
-        Assert.True(right <= At(chevron).X, $"The meters end at {right}, past the chevron at {At(chevron).X}");
+        // One line: S, W and F, each with a bar and its percent, ending before the chevron.
+        Assert.Equal(["S", "W", "F"], usage.Chip.Items.Select(i => i.ShortLabel));
+        Assert.Equal(["62%", "80%", "100%"], usage.Chip.Items.Select(i => i.PercentText));
+        var bars = meters.GetVisualDescendants().OfType<ProgressBar>().ToArray();
+        Assert.Equal(3, bars.Length);
+        Assert.All(bars, b => Assert.True(b.IsEffectivelyVisible));
+        Assert.True(bars[1].Classes.Contains("warning") && bars[2].Classes.Contains("critical") && !bars[0].Classes.Contains("warning"));
+        Assert.Equal(At(bars[0]).Y, At(bars[2]).Y);
+        Assert.True(chip.Bounds.Height < 40, $"The chip is {chip.Bounds.Height} px high.");
+        Assert.True(At(chip).X > window.Width / 2, "The chip is at the header's right.");
+        Assert.True(At(chip).X + chip.Bounds.Width <= At(chevron).X + 1, "The chip ends where the chevron begins.");
+        Assert.Contains("Weekly 80%, resets", AutomationProperties.GetName(chip), StringComparison.Ordinal);
+        Assert.Contains("Session 62%, resets in 2h", AutomationProperties.GetName(chip), StringComparison.Ordinal);
+        Assert.True(chip.Focusable);
+
+        // A click opens the popover: every meter with its reset, the sparkline, and the link to the Usage panel.
+        Click(window, chip);
+        UiText.Settle(window);
+        var flyout = Assert.IsType<Flyout>(chip.Flyout);
+        Assert.True(flyout.IsOpen);
+        var popover = Assert.IsAssignableFrom<Control>(flyout.Content);
+        var texts = popover.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToArray();
+        Assert.Contains("Fable", texts);
+        Assert.Contains("80%", texts);
+        Assert.Contains(texts, t => t?.StartsWith("resets in ", StringComparison.Ordinal) == true);
+        Assert.Contains(texts, t => t?.StartsWith("resets ", StringComparison.Ordinal) == true && !t.StartsWith("resets in", StringComparison.Ordinal));
+        Assert.Single(popover.GetVisualDescendants().OfType<UsageChart>());
+        var link = popover.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsagePanelLink");
+        Assert.Equal("Open the Usage panel", link.Content);
+        var opened = 0;
+        usage.ShowUsagePanel = () =>
+        {
+            opened++;
+            return Task.CompletedTask;
+        };
+        link.Command!.Execute(null);
+        Assert.Equal(1, opened);
+
+        // Esc closes it.
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+        window.KeyReleaseQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+        UiText.Settle(window);
+        Assert.False(flyout.IsOpen);
+
+        // A narrow window drops the bars and keeps the labels and percents, clear of the title area.
+        window.Width = UsageChipViewModel.BarsMinWidth - 20;
+        UiText.Settle(window);
+        Assert.All(bars, b => Assert.False(b.IsEffectivelyVisible));
+        Assert.True(chip.IsEffectivelyVisible);
+        Assert.True(At(chip).X + chip.Bounds.Width <= window.Width);
+        window.Width = 1200;
+        UiText.Settle(window);
+        Assert.All(bars, b => Assert.True(b.IsEffectivelyVisible));
     }
 
     [AvaloniaFact]

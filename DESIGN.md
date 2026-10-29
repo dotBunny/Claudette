@@ -233,7 +233,7 @@ Claudette's menu on the composer ([§5](#claudette-on-the-composer)) is drawn in
 
 ✅ Built 2026-10-29. As in JetBrains Rider, the header is the window's title bar, on Windows and macOS: there's no title bar of the OS's over it.
 
-- **What's in it.** Claudette's logo first, then **≡**, the usage meters, and at the right the account, plan and **Settings**, then the window's buttons: minimize, maximize and close on Windows, drawn by Avalonia in Windows' look, as tall as the header and side by side, so a button's highlight is too (close's red), without a full-screen button; on macOS the traffic lights at the header's left, before the logo. No title beside the logo: the logo says it, and the OS's taskbar and window lists still have the window's title, *Claudette*.
+- **What's in it.** Claudette's logo first, then **≡**, and at the right the usage chip ([§6](#header-meters)), the account, plan and **Settings**, then the window's buttons: minimize, maximize and close on Windows, drawn by Avalonia in Windows' look, as tall as the header and side by side, so a button's highlight is too (close's red), without a full-screen button; on macOS the traffic lights at the header's left, before the logo. No title beside the logo: the logo says it, and the OS's taskbar and window lists still have the window's title, *Claudette*.
 - **Moving it.** The header's gaps drag the window, and a double-click maximizes it, as a title bar's do; Windows 11's snap layouts show over maximize. Its controls take their own clicks.
 - **The logo** is the window's icon on Windows: a click opens Windows' window menu (Restore, Move, Size, Minimize, Maximize, Close, the ones that apply enabled) and a double-click closes the window, as any window's icon does. A few pixels round it count too. On macOS it drags the window.
 - **Its height** is the header's first row's, which the window's buttons fill; the detailed header's charts ([§6](#detailed-header)) are under the title bar, in the window.
@@ -586,7 +586,7 @@ Tabs can run Claude Code under accounts besides the one it's signed in to, for p
 - **Usage history.** Each turn record has its account, null for Default, as every turn recorded before accounts is. Once there's an account besides Default, the Usage panel lists **Accounts** under **Projects**, over the same period: tokens, estimated cost and turns each ([§6](#usage-history)).
 - **Still to build.**
   - **Second claude.ai sign-ins**, such as a company Team plan beside a personal one. Each gets a config folder of its own (a new one in Claudette's data folder, or one already used, such as `~/.claude-work`) with its own sign-in and sign-out. It shares Default's settings, CLAUDE.md, skills, agents, commands, output styles and plugins through links. Its MCP servers are in `.claude.json` with its sign-in, so they're copied when the account is made, with **Copy from Default again**. Plan usage is tracked per account, History and the other reads cover every folder, and moving a tab copies its transcript, subagents and checkpoints, as **Choose folder…** does. First, a spike: whether a linked `settings.json` stays linked when Claude Code saves it (file links on Windows also need Developer Mode). If not, folders are linked as junctions, CLAUDE.md is pulled in with an `@` import, and `settings.json` is copied whenever Default's changes.
-  - **A strip of accounts** beside the weekly meters when there are several: a plan's session percentage, or a key's spend today. Only accounts with open tabs are polled; the others show their last reading, marked with its age.
+  - **A strip of accounts** beside the usage chip when there are several: a plan's session percentage, or a key's spend today. Only accounts with open tabs are polled; the others show their last reading, marked with its age.
   - **When a plan limit stops a tab,** offering to continue it under another account with room, or an API key, with what the re-read costs, beside **Continue when it resets**.
   - **Not planned:** Bedrock, Vertex and Foundry accounts; syncing accounts between machines (only their turns' spend is matched, by name); real spend from the Admin API, which needs an organization admin's key.
 
@@ -1031,29 +1031,33 @@ This is Claudette's main feature: knowing how fast you're using your plan's limi
 
 ### Header meters
 
-- **Session (5-hour window)**, the most prominent:
-  - Progress bar with % used.
-  - Countdown to reset ("resets in 2h 14m", with the clock time in a tooltip).
-  - Every meter's bar, the weekly and each model's as well as the session's, turns amber at 75% and red at 90%. Settings → Usage → **Warn at (% of the session used)** and **Alert at (% of the session used)** change the two.
-- **Weekly limits**, smaller and to the side:
-  - Weekly limit across all models.
-  - Each model-specific weekly limit the plan has (for example Fable).
-  - Each shows % used and its reset day and time in a tooltip.
-  - They stack one above the other, the limit across all models on top, with their bars lined up.
+The meters are one compact **usage chip** at the right of the header, before the chevron, the cup and the account. It is one line, which leaves the header's left side free for the title.
+
+- **The chip.** For each meter, a short label, a thin bar and the percent used, such as `S ▬ 9%   W ▬ 47%   F ▬ 84%`:
+  - **S** is the session (5-hour window), **W** the weekly limit across all models, and each model-specific weekly limit the plan has (for example Fable) takes its name's first letter, or its first letters when another meter has the one.
+  - Every meter's bar, the session's, the weekly and each model's, is blue, turns amber at 75% and red at 90%, and the percent beside it takes the color. Settings → Usage → **Warn at (% of the session used)** and **Alert at (% of the session used)** change the two.
+  - A tooltip says "Click for usage details".
+  - **Narrow windows** (below 820 px, at the window's zoom) drop the bars and keep the labels and percents, so the chip stays clear of the logo and the menu: the header's content never overlaps.
+- **The popover.** A click on the chip, or `Enter` or `Space` while it has the focus, opens a popover under it; `Esc`, or a click elsewhere, closes it. It has:
+  - each meter on a row of its own: its full name, the percent, a full-size bar, and when it resets: the session's as a countdown ("resets in 2h 14m"), the weekly ones' as the day and time ("resets Tue 23:00");
+  - the session's sparkline with its dotted projection ([Burn trendline](#burn-trendline)), the line in words under it, and "as of 14:02" when the readings are old;
+  - **Open the Usage panel**, which closes the popover and opens the Usage panel ([Burn trendline](#burn-trendline)).
+- **Accessibility.** The chip is a button the keyboard reaches with `Tab`. Its accessible name says every meter and its reset: "Usage details: Session 9%, resets in 3h 18m; Weekly 47%, resets Tue 23:00; Fable 84%, resets Tue 23:00".
+- The presentation is `UsageChipViewModel`, made from the header's meters; what's read, kept and projected is as before.
 
 ### Burn trendline
 
-- A sparkline between the session meter and the weekly limits showing usage % over the current window, as tall as the session meter and the plain-language line under it together.
+- A sparkline in the usage chip's popover showing usage % over the current window.
 - A dotted **projection** line continues the current rate forward.
-- A plain-language line under the meter:
+- A plain-language line under the sparkline in the popover:
   - "At this rate you'll hit the limit in 1h 05m, 1h 09m before it resets" (amber/red), or
   - "On track: about 70% used when the session resets" (neutral).
 - **Rate** is measured over a recent window (by default the last 30 minutes, using a moving average), so a single big turn doesn't swing the projection wildly. When nothing is running, the projection says so instead of showing a stale rate.
-- Clicking the header opens a **Usage** panel (its own window) with:
+- The popover's **Open the Usage panel** opens a **Usage** panel (its own window) with:
   - A larger chart of the current session and the past week.
   - Tokens per tab for the current window, so you can see which session is burning the most. A tab closed since then keeps the last name it had, from the [usage history](#usage-history), after a restart too. Only the Default account's turns count: an API key's don't use the plan ([§4](#accounts)).
   - Past sessions and weeks, as far back as the stored [usage history](#usage-history) goes. Each past window shows the highest usage it reached. The lists show the latest 30 sessions and 12 weeks, with **Show more** for the next page.
-- Accounts without plan limits (an API key, for example) get no meters; the header just says Claudette. While the selected tab runs under one of Claudette's API-key accounts, the header shows that account's estimated spend instead ([§4](#accounts)).
+- Accounts without plan limits (an API key, for example) get no chip; the header just says Claudette. While the selected tab runs under one of Claudette's API-key accounts, the header shows that account's estimated spend instead ([§4](#accounts)).
 
 ### Detailed header
 
@@ -1061,8 +1065,8 @@ The header can be drawn taller, with charts, for keeping an eye on usage without
 
 - **Turning it on.** A chevron at the header's right expands it, and collapses it again. Settings → Usage → **Detailed usage header** is the same switch.
   - The choice is remembered on this machine and doesn't sync, like the sidebar's collapsed state.
-  - Collapsed, the header is exactly as described above.
-- **Layout.** The one-line header stays on top. Under it, about 150 px high: the session chart, the weekly chart, the numbers and the busiest tabs, left to right.
+  - Collapsed, the header is just the chip, as described above.
+- **Layout.** The one-line header, with its chip, stays on top. Under it, about 150 px high: the session chart, the weekly chart, the numbers and the busiest tabs, left to right.
 - **Session chart.** Usage over the current 5-hour window, from its start to its reset.
   - Faint bands above the warning and critical thresholds (Settings → Usage), with a dashed line at each.
   - The dotted projection from now, a "now" marker, and times at the start, now and the reset.

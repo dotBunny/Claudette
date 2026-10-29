@@ -191,6 +191,7 @@ public sealed partial class UsageViewModel
     /// <summary>Called by the window as it resizes: a narrow header leaves out the busiest tabs, then the weekly chart.</summary>
     public void SetDetailsWidth(double width)
     {
+        Chip.SetWidth(width);
         ShowBusiestTabs = width >= DetailsTabsMinWidth;
         ShowWeekChart = width >= DetailsWeekMinWidth;
     }
