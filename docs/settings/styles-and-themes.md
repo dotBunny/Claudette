@@ -57,6 +57,10 @@ Tool calls, thinking, subagents and notes are neutral in both, and a turn's stat
 
 Settings → Appearance → **Density** is **Comfortable** (the default) or **Compact**. Compact tightens the conversation's spacing, the padding of messages and cards, the tool rows, the sidebar's rows and the composer's padding, so more fits on screen.
 
+## The title bar
+
+On Windows and macOS the header is the window's title bar, as in JetBrains Rider: Claudette's logo, the menu, your usage, then the window's buttons. Settings → Appearance → **Use the system's title bar** puts your system's title bar over the header instead. It's this computer's, so it doesn't sync, and Linux always has the system's. See [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header).
+
 ## Fonts
 
 Four settings in Settings → Appearance choose the type:

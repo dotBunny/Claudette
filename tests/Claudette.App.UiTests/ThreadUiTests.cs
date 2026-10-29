@@ -110,6 +110,8 @@ public class ThreadUiTests
         Assert.True(fold.Bounds.Height > Name(plan).Bounds.Height, "The gap should reach past the name's line");
         Button Row(TabViewModel tab) => window.GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("tabrow") && b.DataContext == tab);
         Assert.Equal(Row(other).Bounds.Height, Row(plan).Bounds.Height);
+        // A gap between it and its row, so neither's hover runs into the other's.
+        Assert.True(Left(Row(plan)) - (Left(fold) + fold.Bounds.Width) >= 2, "The chevron should stand clear of its row");
         // Clicking it reaches it, though it's outside the row.
         Assert.Contains(fold, (UiText.HitTest(window, Middle(fold)) as Visual)?.GetSelfAndVisualAncestors() ?? []);
 

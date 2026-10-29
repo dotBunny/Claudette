@@ -564,6 +564,12 @@ public sealed class AppearanceSettings
     public bool FullWidthConversation { get; set; }
 
     /// <summary>
+    /// Settings → Appearance → Use the system's title bar: the OS's title bar over the header, rather than the header in its
+    /// place as in JetBrains Rider (DESIGN.md §3, "Window frame"). Off by default; Linux always has the OS's. Per machine.
+    /// </summary>
+    public bool SystemTitleBar { get; set; }
+
+    /// <summary>
     /// The conversation's steps on the way (tool calls, thinking, hook runs, notes and the replies Claude carried on
     /// after) lose their cards' tint and outline until they're pointed at (DESIGN.md §18, "Conversation cards"). On by
     /// default.

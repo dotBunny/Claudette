@@ -93,9 +93,16 @@ public partial class ShellView
         SplitGrip.IsVisible = top && split;
     }
 
-    /// <summary>The dock asks for the keyboard in a window shown by a click on its icon.</summary>
+    /// <summary>
+    /// The dock asks for the keyboard in a window shown by a click on its icon; not while Claudette leaves the focus alone
+    /// (DESIGN.md §9, "Taking screenshots without the focus"), as a focused control would bring its window forward.
+    /// </summary>
     private void OnToolFocusRequested(ToolWindowViewModel window)
     {
+        if (Services.UnfocusedWindows.IsOn)
+        {
+            return;
+        }
         var panel = window.Group switch
         {
             ToolGroup.Top => TopPanel,
@@ -191,10 +198,13 @@ public partial class ShellView
 
     // ---- Unpinned windows --------------------------------------------------------------------------------------------
 
-    /// <summary>A press in the dock area: an unpinned window showing hides, unless the press was in it or on the strip.</summary>
+    /// <summary>
+    /// A press in the dock area: an unpinned window showing hides, unless the press was in it or on the strip. A press on a
+    /// grip is the start of resizing one, so nothing hides.
+    /// </summary>
     private void OnDockPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (Dock is not { } dock || e.Source is not Visual source)
+        if (Dock is not { } dock || e.Source is not Visual source || source == RightGrip || source == BottomGrip || source == SplitGrip)
         {
             return;
         }

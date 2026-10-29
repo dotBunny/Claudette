@@ -46,6 +46,12 @@ public interface IPlatformServices
     IReadOnlyList<string> InstalledFonts() => [];
 
     /// <summary>
+    /// The header can be the window's title bar (DESIGN.md §3, "Window frame"): on Windows and macOS. Linux keeps its window
+    /// manager's, which may not draw the window's buttons for a window that takes its title bar.
+    /// </summary>
+    bool CanMergeTitleBar => !OperatingSystem.IsLinux();
+
+    /// <summary>
     /// The OS's save dialog, offering <paramref name="types"/> (the first is the default) and starting from
     /// <paramref name="suggestedName"/>. Returns the chosen path, or null for Cancel.
     /// </summary>

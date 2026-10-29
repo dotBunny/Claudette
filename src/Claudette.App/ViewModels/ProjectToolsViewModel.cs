@@ -50,7 +50,7 @@ internal interface IProjectToolsHost : ITabAreaHost
 
 /// <summary>
 /// Project tools (DESIGN.md §18): the project detected for the tab's folder, its actions and the folder's custom ones,
-/// the project's row at the sidebar's foot and its menu (<see cref="ProjectMenu"/>), and the Project page of the side
+/// the project's icon on its group's row and its menu (<see cref="ProjectMenu"/>), and the Project page of the side
 /// panel. The runs of its jobs, each with its log, are <see cref="Runs"/>.
 /// </summary>
 public sealed partial class ProjectToolsViewModel : ViewModelBase, IProjectRunsHost
@@ -100,24 +100,24 @@ public sealed partial class ProjectToolsViewModel : ViewModelBase, IProjectRunsH
     /// </summary>
     public bool HasTools => Project is not null || _customActions.Count > 0 || _projectFile.Problems.Count > 0;
 
-    /// <summary>
-    /// "NightOwl · UE 5.4", the folder's name when no project was recognized, or while a job runs, its name:
-    /// "Build editor…".
-    /// </summary>
-    public string ButtonText =>
-        Runs.RunningRun is { } running ? $"{running.Name}…"
-        : Project is { } project ? project.ShortVersion is { } version ? $"{project.Name} · {version}" : project.Name
-        : _host.FolderName;
+    /// <summary>"NightOwl · UE 5.4", or without a version, its name.</summary>
+    private static string NameAndVersion(ProjectInfo project) => project.ShortVersion is { } version ? $"{project.Name} · {version}" : project.Name;
 
+    /// <summary>
+    /// The tip of the project's icon on its group's row, which shows only the project's kind: "NightOwl · UE 5.4 (Unreal
+    /// Engine)", or the folder's path when no project was recognized; first, while a job runs, its name; last, the
+    /// shortcut of the main action.
+    /// </summary>
     public string ButtonTip
     {
         get
         {
-            var name = Project is { } project ? $"{project.Name} ({project.KindName})" : _host.Folder;
+            var running = Runs.RunningRun is { } run ? $"{run.Name}… · " : "";
+            var name = Project is { } project ? $"{NameAndVersion(project)} ({project.KindName})" : _host.Folder;
             var main = MainAction is { } action && _services.Tips.Text(KeyboardShortcuts.RunProjectAction) is { } shortcut
                 ? $". {shortcut}: {action.Label}"
                 : "";
-            return name + main;
+            return running + name + main;
         }
     }
 
@@ -316,7 +316,6 @@ public sealed partial class ProjectToolsViewModel : ViewModelBase, IProjectRunsH
     private void ToolsChanged()
     {
         OnPropertyChanged(nameof(HasTools));
-        OnPropertyChanged(nameof(ButtonText));
         OnPropertyChanged(nameof(ButtonTip));
         OnPropertyChanged(nameof(HeaderTitle));
         OnPropertyChanged(nameof(HeaderLines));
@@ -720,7 +719,7 @@ public sealed partial class ProjectToolsViewModel : ViewModelBase, IProjectRunsH
 
     Task<OpenedPath> IProjectRunsHost.OpenPathAsync(string path, int? line, int? column) => _host.OpenPathAsync(path, line, column);
 
-    void IProjectRunsHost.RunningRunChanged() => OnPropertyChanged(nameof(ButtonText));
+    void IProjectRunsHost.RunningRunChanged() => OnPropertyChanged(nameof(ButtonTip));
 
     void IProjectRunsHost.JobBegan() => ToolsChanged();
 

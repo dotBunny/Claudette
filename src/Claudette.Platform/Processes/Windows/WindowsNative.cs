@@ -32,6 +32,12 @@ internal static unsafe partial class WindowsNative
 
     public const int ProcessBasicInformationClass = 0;
     public const int ProcessCommandLineInformationClass = 60;
+
+    /// <summary>A 64-bit PEB's <c>ProcessParameters</c>, the RTL_USER_PROCESS_PARAMETERS' address.</summary>
+    public const int PebProcessParameters = 0x20;
+
+    /// <summary>A 64-bit RTL_USER_PROCESS_PARAMETERS' <c>CurrentDirectory.DosPath</c>, a UNICODE_STRING.</summary>
+    public const int ParametersCurrentDirectory = 0x38;
     public const int StatusInfoLengthMismatch = unchecked((int)0xC0000004);
     public const int StatusBufferTooSmall = unchecked((int)0xC0000023);
 
@@ -83,6 +89,14 @@ internal static unsafe partial class WindowsNative
     [LibraryImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool QueryFullProcessImageName(SafeProcessHandle process, uint flags, char* buffer, ref uint size);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool ReadProcessMemory(SafeProcessHandle process, nint address, void* buffer, nuint size, out nuint read);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool IsWow64Process(SafeProcessHandle process, [MarshalAs(UnmanagedType.Bool)] out bool wow64);
 
     [LibraryImport("ntdll.dll")]
     public static partial int NtQueryInformationProcess(SafeProcessHandle process, int infoClass, void* info, uint length, out uint returnLength);

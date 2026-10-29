@@ -27,8 +27,9 @@ public static partial class GodotLogs
     public static EditorLogWriter? Writer(SystemProcess process, GodotProject project, string? projectLog, ToolOS os)
     {
         var commandLine = process.CommandLine;
+        // A relative --path, such as `--path .` from the project's folder, is read against the process's working folder.
         var opened = CommandLineOptions.ValueAfter(commandLine, "--path") is { } path
-            ? SamePath(path, project.Root, os) || SamePath(path, project.File, os)
+            ? CommandLineOptions.FullPath(path, process.WorkingFolder, os) is { } full && (SamePath(full, project.Root, os) || SamePath(full, project.File, os))
             : SystemProcessNames.CommandLineMentions(process, project.File);
         if (!opened || CommandLineOptions.Has(commandLine, "-p", "--project-manager"))
         {

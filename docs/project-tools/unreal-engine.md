@@ -7,7 +7,7 @@ summary: "An Unreal Engine project gets a row with its name and engine, and acti
 
 <h1 class="unreal-title">{% include unreal-logo.html full=true %}</h1>
 
-When a tab's folder holds an Unreal Engine project (a `.uproject` file), the [project row](using-project-tools.md) shows its name and engine, such as `NightOwl · UE 5.4`, and its menu has the actions below. Unreal Engine 4 projects work too.
+When a tab's folder holds an Unreal Engine project (a `.uproject` file), the [project's icon](using-project-tools.md) on its group's row is Unreal Engine's logo, with its name and engine in its tooltip, such as `NightOwl · UE 5.4`, and its menu has the actions below. Unreal Engine 4 projects work too.
 
 ## The engine
 

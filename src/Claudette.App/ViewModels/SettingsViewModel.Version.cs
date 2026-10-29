@@ -51,7 +51,13 @@ public sealed partial class SettingsViewModel
     [RelayCommand]
     private Task ReportIssueAsync() => HelpLinks.ReportIssueAsync(_services);
 
-    /// <summary>The About page (DESIGN.md §14, "About"): the version, trademarks and licenses.</summary>
+    /// <summary>About Claudette (DESIGN.md §14, "About"), a window of its own, over Settings: its view opens it.</summary>
     [RelayCommand]
-    private void ShowAbout() => Show(SettingsCategory.About);
+    private void ShowAbout() => AboutRequested?.Invoke();
+
+    /// <summary>Help's <b>About Claudette</b>: the view opens the About window over Settings.</summary>
+    public event Action? AboutRequested;
+
+    /// <summary>The app's services, for the About window.</summary>
+    internal AppServices Services => _services;
 }

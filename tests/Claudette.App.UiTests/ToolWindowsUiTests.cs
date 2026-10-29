@@ -102,6 +102,82 @@ public class ToolWindowsUiTests
     private static ToolPanelView Panel(Window window, string name) => window.GetVisualDescendants().OfType<ToolPanelView>().Single(v => v.Name == name);
 
     [AvaloniaFact]
+    public async Task Each_strip_icons_glyph_is_drawn_in_the_middle_of_it_whatever_its_shape()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        UiText.Settle(window);
+
+        // Changed files and Scratch pad are taller than wide, Agents as wide as tall.
+        var icons = window.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("stripicon") && b.IsEffectivelyVisible).ToList();
+        Assert.Equal(["Changed files", "Agents", "Scratch pad"], icons.Select(AutomationProperties.GetName));
+        foreach (var icon in icons)
+        {
+            var glyph = icon.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Single(p => p.Classes.Contains("stripglyph"));
+            var drawn = glyph.TranslatePoint(glyph.RenderedGeometry!.Bounds.Center, icon)!.Value;
+            Assert.Equal(icon.Bounds.Width / 2, drawn.X, 0.5);
+            Assert.Equal(icon.Bounds.Height / 2, drawn.Y, 0.5);
+            // As big as fits its 16 pixels.
+            Assert.Equal(16, Math.Max(glyph.RenderedGeometry.Bounds.Width, glyph.RenderedGeometry.Bounds.Height), 0.5);
+        }
+    }
+
+    /// <summary>A drag with the mouse from <paramref name="from"/>, by <paramref name="by"/>, as the user does it.</summary>
+    private static void Drag(Window window, Point from, Vector by)
+    {
+        window.MouseMove(from);
+        window.MouseDown(from, MouseButton.Left);
+        window.MouseMove(from + by / 2);
+        window.MouseMove(from + by);
+        window.MouseUp(from + by, MouseButton.Left);
+        UiText.Settle(window);
+    }
+
+    [AvaloniaFact]
+    public async Task A_tool_windows_edge_drags_it_wider_or_taller_down_to_its_least_pinned_or_not()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell }, width: 1400, height: 900);
+        h.ShowToolWindow(ToolWindowKinds.Files);
+        UiText.Settle(window);
+        var right = window.GetVisualDescendants().OfType<Grid>().Single(g => g.Name == "RightSide");
+        Assert.Equal(ToolDockViewModel.DefaultRightWidth, right.Bounds.Width);
+
+        // The gap at its left, between it and the conversation, as the sidebar's edge is dragged.
+        Point Edge() => right.TranslatePoint(new Point(-3, right.Bounds.Height / 2), window)!.Value;
+        Drag(window, Edge(), new Vector(-100, 0));
+        Assert.Equal(ToolDockViewModel.DefaultRightWidth + 100, right.Bounds.Width);
+        Drag(window, Edge(), new Vector(400, 0));
+        Assert.Equal(ToolDockViewModel.MinRightWidth, right.Bounds.Width);
+        Assert.Equal(ToolDockViewModel.MinRightWidth, h.Shell.ToolWindows.RightWidth);
+
+        // The line between the right side's two windows: the top one taller as it goes down.
+        h.ShowToolWindow(ToolWindowKinds.ScratchPad);
+        UiText.Settle(window);
+        var top = Panel(window, "TopPanel");
+        var was = top.Bounds.Height;
+        Drag(window, top.TranslatePoint(new Point(top.Bounds.Width / 2, top.Bounds.Height + 3), window)!.Value, new Vector(0, 80));
+        Assert.InRange(top.Bounds.Height - was, 78, 82);
+
+        // The bottom's, by the gap above it.
+        InlineDispatcher.Run(() => h.Shell.ToolWindows.MoveTo(h.ToolWindow(ToolWindowKinds.Agents), ToolGroup.Bottom));
+        h.ShowToolWindow(ToolWindowKinds.Agents);
+        UiText.Settle(window);
+        var bottom = Panel(window, "BottomPanel");
+        Point Above() => bottom.TranslatePoint(new Point(bottom.Bounds.Width / 2, -3), window)!.Value;
+        Drag(window, Above(), new Vector(0, -60));
+        Assert.Equal(ToolDockViewModel.DefaultBottomHeight + 60, bottom.Bounds.Height);
+
+        // An unpinned window's edge sizes it too, rather than hiding it as a press elsewhere does.
+        InlineDispatcher.Run(() => h.Shell.ToolWindows.SetPinned(h.ToolWindow(ToolWindowKinds.Agents), pinned: false));
+        Drag(window, Above(), new Vector(0, -40));
+        Assert.True(bottom.IsEffectivelyVisible);
+        Assert.Equal(ToolDockViewModel.DefaultBottomHeight + 100, bottom.Bounds.Height);
+    }
+
+    [AvaloniaFact]
     public async Task A_changed_files_box_ticks_it_as_reviewed_without_opening_the_diff()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());

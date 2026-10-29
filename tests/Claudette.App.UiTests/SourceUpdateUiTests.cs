@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
@@ -38,6 +39,34 @@ public class SourceUpdateUiTests
         Assert.Contains(texts, t => t?.StartsWith("3333333 · Ada · ", StringComparison.Ordinal) == true);
         Assert.Equal(["Pull, build and restart", "Pull and build", "Skip these commits"], Buttons(dialog));
         badge.Flyout.Hide();
+        window.Close();
+    }
+
+    /// <summary>
+    /// The sidebar's head has New tab, History and collapsing, and its foot, under a line, shows only while a badge does
+    /// (DESIGN.md §4, "Sidebar").
+    /// </summary>
+    [AvaloniaFact]
+    public async Task The_sidebars_head_has_History_and_its_foot_shows_only_while_a_badge_does()
+    {
+        var launcher = new FakeLauncher();
+        await using var h = new TabTestHarness(launcher: launcher, dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell }, 1200, 800);
+        Button Named(string name) => window.GetVisualDescendants().OfType<Button>().Single(b => Avalonia.Automation.AutomationProperties.GetName(b) == name && b.IsEffectivelyVisible);
+        double Left(Control c) => c.TranslatePoint(default, window)!.Value.X;
+        double Top(Control c) => c.TranslatePoint(default, window)!.Value.Y;
+
+        var (newTab, history, collapse) = (Named("New tab"), Named("History"), Named("Collapse the sidebar"));
+        Assert.True(Left(newTab) < Left(history) && Left(history) < Left(collapse));
+        Assert.Equal(Top(collapse), Top(history), 0.5);
+        var foot = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "SidebarFoot");
+        Assert.False(foot.IsVisible);
+
+        using var source = await FakeCheckout.StartAsync(h, launcher);
+        h.Shell.SourceUpdate = source.Badge;
+        await UiText.SettleUntilAsync(window, () => foot.IsEffectivelyVisible, "the foot");
+        Assert.True(window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "SourceUpdateBadge").IsEffectivelyVisible);
         window.Close();
     }
 

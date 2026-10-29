@@ -144,6 +144,38 @@ public sealed class EditorLogTests : IDisposable
         Assert.Null(Unity(@"-batchmode -projectPath D:\Games\Owl -runTests -logFile -"));
     }
 
+    [Fact]
+    public void A_relative_path_is_read_against_the_processs_working_folder()
+    {
+        Assert.Equal(@"D:\Games\Owl", CommandLineOptions.FullPath(".", @"D:\Games\Owl", ToolOS.Windows));
+        Assert.Equal(@"D:\Games\Owl", CommandLineOptions.FullPath(@"..\Owl\", @"D:\Games\Tools", ToolOS.Windows));
+        Assert.Equal(@"D:\Games\Owl\Logs", CommandLineOptions.FullPath("./Owl/Logs", @"D:\Games\", ToolOS.Windows));
+        Assert.Equal("/g/Owl", CommandLineOptions.FullPath("Owl", "/g", ToolOS.Linux));
+        Assert.Equal("/", CommandLineOptions.FullPath("../..", "/g", ToolOS.MacOS));
+        Assert.Equal(@"C:\Owl", CommandLineOptions.FullPath(@"C:\Owl", @"D:\Games", ToolOS.Windows));
+        // Without the working folder, a relative one can't be told.
+        Assert.Null(CommandLineOptions.FullPath(".", null, ToolOS.Windows));
+    }
+
+    [Fact]
+    public void A_unity_batch_run_with_a_relative_project_path_is_the_projects_from_its_working_folder()
+    {
+        // As Claude runs it in the project's folder: -projectPath . and a -logFile in it.
+        var run = Process(1, "Unity", @"Unity.exe -batchmode -quit -projectPath . -executeMethod Capture.Run -logFile Logs/hd-capture.log");
+        EditorLogWriter? Writer(string? folder) => UnityLogs.Writer(run with { WorkingFolder = folder }, @"D:\Games\Owl", EditorLog, ToolOS.Windows);
+
+        var batch = Writer(@"D:\Games\Owl")!;
+        Assert.Equal("Unity (batch mode)", batch.Role);
+        Assert.Equal([@"D:\Games\Owl\Logs\hd-capture.log"], batch.LogFiles);
+        Assert.NotNull(UnityLogs.Writer(run with { CommandLine = @"Unity.exe -batchmode -projectPath ..\Owl", WorkingFolder = @"d:\games\tools" }, @"D:\Games\Owl", EditorLog, ToolOS.Windows));
+        // Another project's folder, or none known: not this project's.
+        Assert.Null(Writer(@"D:\Games\Other"));
+        Assert.Null(Writer(null));
+        // Once Unity has its project open it works in the project's folder, whatever the path was read against.
+        Assert.True(UnityLogs.Opens(run with { CommandLine = "Unity -projectPath Owl", WorkingFolder = "/g/Owl" }, "/g/Owl", ToolOS.Linux));
+        Assert.False(UnityLogs.Opens(run with { CommandLine = "Unity -projectPath /g/Other", WorkingFolder = "/g/Owl" }, "/g/Owl", ToolOS.Linux));
+    }
+
     [Theory]
     [InlineData("Assets/Player.cs(12,5): error CS0103: The name 'x' does not exist", LogLineLevel.Error)]
     [InlineData("Assets/Player.cs(3,7): warning CS0168: The variable 'e' is declared but never used", LogLineLevel.Warning)]
@@ -412,6 +444,13 @@ public sealed class EditorLogTests : IDisposable
         Assert.Null(Writer(@"--path D:\Games\Other"));
         Assert.Null(Writer(@"--project-manager --path D:\Games\Owl"));
         Assert.Null(GodotLogs.Writer(Process(1, "godot", @"godot --path D:\Games\Owl"), project, null, ToolOS.Windows));
+
+        // A relative --path, from the project's folder or beside it.
+        var here = Process(1, "godot", "godot --headless --path . --quit");
+        Assert.Equal("Godot (headless)", GodotLogs.Writer(here with { WorkingFolder = @"D:\Games\Owl" }, project, log, ToolOS.Windows)!.Role);
+        Assert.NotNull(GodotLogs.Writer(here with { CommandLine = @"godot --path ..\Owl", WorkingFolder = @"D:\Games\Tools" }, project, log, ToolOS.Windows));
+        Assert.Null(GodotLogs.Writer(here with { WorkingFolder = @"D:\Games\Other" }, project, log, ToolOS.Windows));
+        Assert.Null(GodotLogs.Writer(here, project, log, ToolOS.Windows));
     }
 
     [Theory]

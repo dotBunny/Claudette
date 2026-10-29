@@ -13,12 +13,21 @@ public sealed record AutomationRequest
 {
     /// <summary>
     /// What to do: <c>ping</c>, <c>click</c>, <c>rightclick</c>, <c>toggle</c>, <c>settext</c>, <c>show</c>,
-    /// <c>scroll</c>, <c>hover</c>, <c>unhover</c>, <c>key</c> or <c>close</c>.
+    /// <c>scroll</c>, <c>hover</c>, <c>unhover</c>, <c>key</c>, <c>capture</c> or <c>close</c>.
     /// </summary>
     public string Verb { get; init; } = "";
 
-    /// <summary>The native handle of the window, or of the popup (a menu, a tip), the control is in.</summary>
+    /// <summary>
+    /// The native handle of the window, or of the popup (a menu, a tip), the control is in. Zero for the window called
+    /// <see cref="Title"/>, or without one, the main window: what a script has on macOS and Linux, without UI Automation.
+    /// </summary>
     public long Window { get; init; }
+
+    /// <summary>With no <see cref="Window"/> handle, the title of the window, such as <c>Settings</c>.</summary>
+    public string? Title { get; init; }
+
+    /// <summary>For <c>capture</c>: where to save the window's picture, a PNG.</summary>
+    public string? Path { get; init; }
 
     /// <summary>The control's name, as UI Automation has it (its <c>AutomationProperties.Name</c>, or its text).</summary>
     public string? Name { get; init; }

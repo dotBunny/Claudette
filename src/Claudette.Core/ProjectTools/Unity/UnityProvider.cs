@@ -209,7 +209,8 @@ public sealed class UnityProvider : IProjectType
         {
             return true;
         }
-        return processes.Find(EditorProcessNames).Any(p => p.CommandLine is null || SystemProcessNames.CommandLineMentions(p, project.Root));
+        return processes.Find(EditorProcessNames).Any(p => p.CommandLine is null || SystemProcessNames.CommandLineMentions(p, project.Root)
+            || UnityLogs.Opens(p, project.Root, context.OS));
     }
 
     /// <summary>What <b>Clean Library</b> deletes: <c>Library</c>, <c>Temp</c> and <c>obj</c> in the project, and nothing else.</summary>

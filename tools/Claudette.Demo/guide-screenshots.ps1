@@ -109,7 +109,7 @@ function Show-Tabs {
     }
 }
 
-# Opens Settings, which is a window of its own, and returns it.
+# Opens Settings, which is a window of its own, from its button in the header, and returns it.
 function Open-Settings {
     Invoke-ByText $window 'Settings'
     $settings = Get-OtherWindow $claudette $window 'the Settings window'
@@ -183,10 +183,10 @@ foreach ($theme in $Themes) {
                 Start-Sleep -Seconds 1
             }
 
-            # From the top of the first group to Settings under the last.
+            # The sidebar's head, with New tab and History, down to its last group; the foot shows only with a badge.
             Shot 'tabs/sidebar' {
                 param($path)
-                Save-Elements $window $path ((Find-ByText $window 'New tab'), (Find-ById $window 'GroupList'), (Find-ByText $window 'User Guide')) 10
+                Save-Elements $window $path ((Find-ByText $window 'New tab'), (Find-ById $window 'GroupList')) 10
             }
 
             # The card has no control of its own: its tiles, with room around them for its header and edge.
@@ -288,13 +288,16 @@ foreach ($theme in $Themes) {
             }
 
             # About: the version, its links and license, and the trademarks.
+            # About Claudette, a window of its own, from the header's menu.
             Shot 'settings/about' {
                 param($path)
-                $settings = Open-Settings
-                Select-ListItem $settings 'About'
+                $menu = Open-Menu $claudette $window (Find-ByText $window 'Menu') 'About Claudette'
                 Start-Sleep -Seconds 1
-                Save-Window $settings $path
-                Close-Window $settings
+                Send-Click (Find-ByText $menu 'About Claudette')
+                $about = Get-OtherWindow $claudette $window 'the About window'
+                Start-Sleep -Seconds 2
+                Save-Window $about $path
+                Close-Window $about
                 Start-Sleep -Seconds 1
             }
 

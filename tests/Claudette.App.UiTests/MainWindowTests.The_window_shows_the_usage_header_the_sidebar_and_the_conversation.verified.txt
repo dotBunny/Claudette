@@ -1,4 +1,5 @@
-﻿[button] Usage details
+﻿[image] "Claudette"
+[button] Usage details
   "Session"
   [meter 62%]
   "62%"
@@ -12,8 +13,10 @@
 [button] Account: me@example.com
 [button] Plan usage: Max plan
 [button] New tab
+[button] History
 [button] Collapse the sidebar
 [button] work
+[button] Project tools
 [button] Project files
 [button] New tab in this folder
 [button] (parts below)
@@ -21,10 +24,6 @@
   "Opus · Default"
   [button] Close tab
   [button] Context 1%
-[button] Project tools: work
-[button] History
-[button] Settings
-[button] User Guide
 "Claude"
 [button] Copy message
 [button] Add to scratch pad
@@ -44,9 +43,9 @@
 [button] Context 1%
 "Cache 60m"
 [button] 120 tok
-[button] Tab info: ⓘ
 [button] Enter sends: ⏎ sends
 [button] Send
+[button] Tab info
 "{root}/work"
 "Idle"
 [button] Changed files

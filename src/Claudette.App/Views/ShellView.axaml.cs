@@ -375,16 +375,28 @@ public partial class ShellView : UserControl
         });
     }
 
-    /// <summary>
-    /// The project's menu opened: look at the project's files again, so what's enabled is current (a solution generated
-    /// from a terminal, say). The menu updates in place when that's done (DESIGN.md §18).
-    /// </summary>
-    private void OnProjectMenuOpened(object? sender, EventArgs e) => ViewModel?.ProjectTab?.ProjectTools.RefreshCommand.Execute(null);
+    /// <summary>The project's menu open, from a group's row or the rail, for its entries to close.</summary>
+    private Flyout? _projectMenu;
 
-    /// <summary>An entry of the project's menu was picked: the menu closes, as a menu does.</summary>
-    /// <summary>Closes the menu once the item has run its command, which a button does after raising Click.</summary>
+    /// <summary>
+    /// A group's project menu opened: look at the project's files again, so what's enabled is current (a solution
+    /// generated from a terminal, say). The menu updates in place when that's done (DESIGN.md §18).
+    /// </summary>
+    private void OnProjectMenuOpened(object? sender, EventArgs e)
+    {
+        _projectMenu = sender as Flyout;
+        if (_projectMenu?.Target?.DataContext is TabGroupViewModel { ProjectTab: { } tab })
+        {
+            tab.ProjectTools.RefreshCommand.Execute(null);
+        }
+    }
+
+    /// <summary>
+    /// An entry of the project's menu was picked: the menu closes, as a menu does, once the entry has run its command,
+    /// which a button does after raising Click.
+    /// </summary>
     private void OnProjectMenuItemPicked(object? sender, RoutedEventArgs e) =>
-        Avalonia.Threading.Dispatcher.UIThread.Post(() => ProjectButton.Flyout?.Hide());
+        Avalonia.Threading.Dispatcher.UIThread.Post(() => _projectMenu?.Hide());
 
     protected override void OnDataContextChanged(EventArgs e)
     {
@@ -398,6 +410,9 @@ public partial class ShellView : UserControl
         if (_shell is not null)
         {
             _shell.ShowSettingsWindow = ShowSettingsAsync;
+            _shell.ShowAboutWindow = () => this.FindAncestorOfType<Window>() is { DataContext: MainWindowViewModel main } owner
+                ? AboutWindow.ShowAsync(main.Services, owner)
+                : Task.CompletedTask;
             _shell.ShowImageWindow = viewer => ImageWindow.Open(viewer, TopLevel.GetTopLevel(this) as Window);
             _shell.PropertyChanged += OnShellChanged;
             _shell.ToolWindows.FocusRequested += OnToolFocusRequested;

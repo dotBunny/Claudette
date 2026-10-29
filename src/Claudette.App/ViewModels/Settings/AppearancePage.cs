@@ -62,6 +62,10 @@ public sealed class AppearancePage : SettingsPage
                 "Compact tightens the conversation, the sidebar's rows and the message box.", keywords: ["compact", "comfortable", "spacing"]),
             Setting("appearance.fullWidthConversation", "Full-width conversation", s => s.Appearance.FullWidthConversation, (s, v) => s.Appearance.FullWidthConversation = v,
                 "Fill the tab's width, rather than stopping at a width that's easy to read.", keywords: ["wide", "narrow", "max width"]),
+            Setting("appearance.systemTitleBar", "Use the system's title bar", s => s.Appearance.SystemTitleBar, (s, v) => s.Appearance.SystemTitleBar = v,
+                "The window's own title bar over the header, rather than the header in its place.",
+                "As in JetBrains Rider, the header is the window's title bar: drag it to move the window, and double-click it to maximize. Linux always has the system's.",
+                ["title bar", "window frame", "caption", "rider"]),
         ]);
         Section("text", "Text",
         [
@@ -171,6 +175,15 @@ public sealed class AppearancePage : SettingsPage
         get => Settings.Appearance.FullWidthConversation;
         set => Set(value, v => Settings.Appearance.FullWidthConversation = v);
     }
+
+    public bool SystemTitleBar
+    {
+        get => Settings.Appearance.SystemTitleBar;
+        set => Set(value, v => Settings.Appearance.SystemTitleBar = v);
+    }
+
+    /// <summary>Linux always has the system's title bar, so the switch is only for Windows and macOS.</summary>
+    public bool CanMergeTitleBar => Context.Services.Platform.CanMergeTitleBar;
 
     // ---- Fonts (DESIGN.md §14, "Appearance") ----------------------------------------------------------------------
 

@@ -111,9 +111,15 @@ public class VersionFooterTests
     {
         await using var h = new TabTestHarness(appInstaller: new NoAppInstaller(AppInstallKind.Msix));
 
-        var help = h.Shell.PaletteEntries().TakeLast(3).ToList();
+        var abouts = 0;
+        h.Shell.ShowAboutWindow = () =>
+        {
+            abouts++;
+            return Task.CompletedTask;
+        };
+        var help = h.Shell.PaletteEntries().TakeLast(4).ToList();
 
-        Assert.Equal(["User Guide", "Ask on Discord", "Report an issue"], help.Select(e => e.Label));
+        Assert.Equal(["User Guide", "Ask on Discord", "Report an issue", "About Claudette"], help.Select(e => e.Label));
         Assert.All(help, e => Assert.Equal("Help", e.Group));
         foreach (var entry in help)
         {
@@ -122,6 +128,8 @@ public class VersionFooterTests
         Assert.Equal("https://claudette.dotbunny.com/guide/", h.Platform.OpenedUrls[0]);
         Assert.Equal("https://claudette.dotbunny.com/discord/", h.Platform.OpenedUrls[1]);
         Assert.StartsWith("https://github.com/dotBunny/Claudette/issues/new?body=", h.Platform.OpenedUrls[2], StringComparison.Ordinal);
+        // About Claudette is a window of its own (DESIGN.md §14, "About").
+        Assert.Equal(1, abouts);
         Assert.Contains("\nClaudette: 0.1.0 (MSIX)\n", Uri.UnescapeDataString(h.Platform.OpenedUrls[2]), StringComparison.Ordinal);
     }
 

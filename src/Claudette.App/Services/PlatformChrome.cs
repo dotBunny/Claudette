@@ -40,10 +40,10 @@ public sealed class PlatformChrome : IDisposable
             _dock = new NativeMenu();
             NativeMenu.SetMenu(app,
             [
-                // DESIGN.md §14, "About": the page in Settings, as About comes first in a Mac app's menu.
+                // DESIGN.md §14, "About": its window, as About comes first in a Mac app's menu.
                 new NativeMenuItem("About Claudette")
                 {
-                    Command = new AsyncRelayCommand(() => _main.Shell?.OpenSettingsAtAsync(SettingsCategory.About) ?? Task.CompletedTask),
+                    Command = new AsyncRelayCommand(() => _main.Shell?.OpenAboutCommand.ExecuteAsync(null) ?? Task.CompletedTask),
                 },
                 new NativeMenuItemSeparator(),
                 Item("Settings…", KeyboardShortcuts.Settings, () => _main.Shell?.OpenSettingsCommand.Execute(null)),

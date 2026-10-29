@@ -106,6 +106,59 @@
       </Button>
     </DataTemplate>
     <!-- Its square on the rail. -->
+    <!-- The project's icon on its group's row and in the rail (DESIGN.md §18, "Project tools"): its kind's, or a folder's
+         without a project; a busy dot in its place while a job runs -->
+    <DataTemplate x:Key="ProjectIcon" DataType="vm:TabViewModel">
+      <Panel Width="14" Height="14">
+        <Path Classes="projecticon" Data="{Binding ProjectTools.IconKey, Converter={x:Static conversation:ToolIcons.Geometry}}"
+              Classes.filled="{Binding ProjectTools.IconKey, Converter={x:Static conversation:ToolIcons.IsFilled}}"
+              Classes.unreal="{Binding ProjectTools.IconKey, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:Logos.Unreal}}"
+              IsVisible="{Binding !ProjectTools.Runs.IsJobRunning}" />
+        <TextBlock Classes="status busy" Text="●" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   IsVisible="{Binding ProjectTools.Runs.IsJobRunning}" />
+      </Panel>
+    </DataTemplate>
+    <!-- The project's menu (DESIGN.md §18, "Project tools"): the project and what's wrong with claudette.json, then its
+         actions and links -->
+    <DataTemplate x:Key="ProjectMenu" DataType="vm:TabViewModel">
+      <StackPanel x:Name="ProjectMenu" MinWidth="300" MaxWidth="440" Spacing="1">
+        <TextBlock Text="{Binding ProjectTools.HeaderTitle}" FontWeight="SemiBold" Margin="8,2,8,0" />
+        <ItemsControl ItemsSource="{Binding ProjectTools.HeaderLines}" Margin="8,0,8,2">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Classes="muted small" Text="{Binding}" TextWrapping="Wrap" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <!-- Entries of claudette.json that were skipped, and why (DESIGN.md §18) -->
+        <ItemsControl ItemsSource="{Binding ProjectTools.FileProblems}" Margin="8,0,8,2" IsVisible="{Binding ProjectTools.HasFileProblems}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Classes="small warning" Text="{Binding}" TextWrapping="Wrap" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Separator Margin="0,2" />
+        <ItemsControl ItemsSource="{Binding ProjectTools.Menu}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="vm:ProjectMenuEntry">
+              <Panel>
+                <Separator Margin="0,3" IsVisible="{Binding IsSeparator}" />
+                <TextBlock Classes="muted small" Text="{Binding Label}" Margin="8,4,8,1" IsVisible="{Binding IsHeader}" />
+                <Button Classes="flat row" IsVisible="{Binding IsButton}" IsEnabled="{Binding IsEnabled}" HorizontalContentAlignment="Stretch"
+                        ToolTip.Tip="{Binding Tip}" ToolTip.ShowOnDisabled="True" Click="OnProjectMenuItemPicked"
+                        Command="{Binding Command}" CommandParameter="{Binding Parameter}">
+                  <Grid ColumnDefinitions="16,*">
+                    <TextBlock Classes="small" Text="{Binding Mark}" VerticalAlignment="Center" IsVisible="{Binding HasMark}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Label}" />
+                  </Grid>
+                </Button>
+              </Panel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </DataTemplate>
     <DataTemplate x:Key="ProjectFilesSquare" DataType="vm:ProjectFilesViewModel">
       <Button Classes="tab" Classes.selected="{Binding IsSelected}" Width="38" Height="34" Padding="0" HorizontalAlignment="Center"
               HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
@@ -131,8 +184,8 @@
   </UserControl.Resources>
 
   <UserControl.Styles>
-    <!-- The sidebar's own rows: New tab, History, the update badge, Settings and User Guide. The icon keeps its place when the
-         sidebar collapses to its rail. -->
+    <!-- The sidebar's own rows: New tab and the update badges. The icon keeps its place when the sidebar collapses
+         to its rail. -->
     <Style Selector="Button.side">
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -174,18 +227,28 @@
     <Style Selector="Button.side.update Path.icon">
       <Setter Property="Stroke" Value="{DynamicResource AccentStatusBrush}" />
     </Style>
+    <!-- The project's icon (DESIGN.md §18, "Project tools"): 13 pixels, fitted and centred, as a shape stretched into a
+         fixed size draws from its top left -->
+    <Style Selector="Path.projecticon">
+      <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
+      <Setter Property="StrokeThickness" Value="1.4" />
+      <Setter Property="MaxWidth" Value="13" />
+      <Setter Property="MaxHeight" Value="13" />
+      <Setter Property="Stretch" Value="Uniform" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
     <!-- A project type's logo (ProjectTypeIcons.IsLogo): filled in the same color, where the others are strokes -->
-    <Style Selector="Button.side Path.icon.filled">
+    <Style Selector="Path.projecticon.filled">
       <Setter Property="Stroke" Value="{x:Null}" />
       <Setter Property="Fill" Value="{DynamicResource MutedTextBrush}" />
     </Style>
     <!-- Unreal Engine's icon (Logos.Unreal): Epic's black or white, never the theme's, at 14 pixels as Epic allowed, centred
          where the others' 13 are -->
-    <Style Selector="Button.side Path.icon.unreal">
+    <Style Selector="Path.projecticon.unreal">
       <Setter Property="Fill" Value="{DynamicResource UnrealLogoBrush}" />
-      <Setter Property="Width" Value="14" />
-      <Setter Property="Height" Value="14" />
-      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="MaxWidth" Value="14" />
+      <Setter Property="MaxHeight" Value="14" />
     </Style>
     <!-- Only the badge's own label: its flyout's text is inside the button too. -->
     <Style Selector="Button.side.update TextBlock.badge">
@@ -239,6 +302,14 @@
       <Setter Property="Height" Value="10" />
     </Style>
     <Style Selector="Border#SidebarEdge:pointerover">
+      <Setter Property="Background" Value="{DynamicResource DividerBrush}" />
+    </Style>
+    <!-- The tool windows' grips, the gaps beside them (DESIGN.md §3, "Tool windows"): painted, so a press finds them, and lit
+         under the pointer as the sidebar's edge is. -->
+    <Style Selector="Border.toolgrip">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.toolgrip:pointerover">
       <Setter Property="Background" Value="{DynamicResource DividerBrush}" />
     </Style>
     <!-- Where a dragged tab would open (DESIGN.md §18, "Split panes"): an accent outline over the half or pane it takes. -->
@@ -317,32 +388,44 @@
 
   <Grid ColumnDefinitions="Auto,*">
 
-    <!-- The sidebar: tabs grouped by folder, with New tab above and History, updates and Settings below
+    <!-- The sidebar: tabs grouped by folder, with New tab and History above and updates below
          (DESIGN.md §3, §4). Collapses to a rail of status icons. -->
     <Border x:Name="Sidebar" Grid.Column="0" Classes="island" Width="{Binding Layout.SidebarDisplayWidth}" Margin="6,0,0,6">
       <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- New tab, and collapsing -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="6,8,6,4" IsVisible="{Binding Layout.IsSidebarExpanded}">
-          <Button Classes="flat side" Command="{Binding NewTabCommand}" ToolTip.Tip="{Binding Tips.NewTab}" AutomationProperties.Name="New tab">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-              <Path Classes="icon" Data="{StaticResource IconPlus}" />
-              <TextBlock Text="New tab" VerticalAlignment="Center" />
+        <!-- New tab, History and collapsing: the sidebar's head, over a line (DESIGN.md §4, "Sidebar") -->
+        <Border Grid.Row="0" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1" Padding="6,8,6,6">
+          <Panel>
+            <Grid ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding Layout.IsSidebarExpanded}">
+              <Button Classes="flat side" Command="{Binding NewTabCommand}" ToolTip.Tip="{Binding Tips.NewTab}" AutomationProperties.Name="New tab">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Path Classes="icon" Data="{StaticResource IconPlus}" />
+                  <TextBlock Text="New tab" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <!-- History (DESIGN.md §9) -->
+              <Button Grid.Column="1" Classes="flat" Padding="8" Command="{Binding OpenHistoryCommand}" ToolTip.Tip="{Binding Tips.History}"
+                      AutomationProperties.Name="History">
+                <Path Data="{StaticResource IconHistory}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="13" Height="13" Stretch="Uniform" />
+              </Button>
+              <Button Grid.Column="2" Classes="flat" Padding="8" Command="{Binding Layout.ToggleSidebarCommand}"
+                      ToolTip.Tip="{Binding Tips.CollapseSidebar}" AutomationProperties.Name="Collapse the sidebar">
+                <Path Data="{StaticResource IconSidebar}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="13" Height="13" Stretch="Uniform" />
+              </Button>
+            </Grid>
+            <StackPanel Spacing="2" IsVisible="{Binding Layout.IsSidebarCollapsed}">
+              <Button Classes="flat side" Command="{Binding Layout.ToggleSidebarCommand}" ToolTip.Tip="{Binding Tips.ExpandSidebar}" AutomationProperties.Name="Expand the sidebar">
+                <Path Classes="icon" Data="{StaticResource IconSidebar}" />
+              </Button>
+              <Button Classes="flat side" Command="{Binding NewTabCommand}" ToolTip.Tip="{Binding Tips.NewTab}" AutomationProperties.Name="New tab">
+                <Path Classes="icon" Data="{StaticResource IconPlus}" />
+              </Button>
+              <Button Classes="flat side" Command="{Binding OpenHistoryCommand}" ToolTip.Tip="{Binding Tips.History}" ToolTip.Placement="Right" AutomationProperties.Name="History">
+                <Path Classes="icon" Data="{StaticResource IconHistory}" />
+              </Button>
             </StackPanel>
-          </Button>
-          <Button Grid.Column="1" Classes="flat" Padding="8" Command="{Binding Layout.ToggleSidebarCommand}"
-                  ToolTip.Tip="{Binding Tips.CollapseSidebar}" AutomationProperties.Name="Collapse the sidebar">
-            <Path Data="{StaticResource IconSidebar}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="13" Height="13" Stretch="Uniform" />
-          </Button>
-        </Grid>
-        <StackPanel Grid.Row="0" Margin="6,8,6,4" Spacing="2" IsVisible="{Binding Layout.IsSidebarCollapsed}">
-          <Button Classes="flat side" Command="{Binding Layout.ToggleSidebarCommand}" ToolTip.Tip="{Binding Tips.ExpandSidebar}" AutomationProperties.Name="Expand the sidebar">
-            <Path Classes="icon" Data="{StaticResource IconSidebar}" />
-          </Button>
-          <Button Classes="flat side" Command="{Binding NewTabCommand}" ToolTip.Tip="{Binding Tips.NewTab}" AutomationProperties.Name="New tab">
-            <Path Classes="icon" Data="{StaticResource IconPlus}" />
-          </Button>
-        </StackPanel>
+          </Panel>
+        </Border>
 
         <!-- Groups and their tabs. Drag a tab to reorder it in its group, or a group's label to move the group
              (DESIGN.md §4). -->
@@ -351,7 +434,7 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate DataType="vm:TabGroupViewModel">
                 <StackPanel Margin="0,6,0,0">
-                  <Grid ColumnDefinitions="*,Auto,Auto">
+                  <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                     <!-- Group label: click to collapse; right-click for group actions -->
                     <Button Classes="flat grouplabel" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="4,4"
                             ToolTip.Tip="{Binding Summary}"
@@ -396,19 +479,31 @@
                         </ContextMenu>
                       </Button.ContextMenu>
                     </Button>
+                    <!-- The project's tools and links (DESIGN.md §18, "Project tools"), from the group's tab used last: a click
+                         opens its menu -->
+                    <Button x:Name="ProjectButton" Grid.Column="1" Classes="flat" Padding="5" VerticalAlignment="Center"
+                            IsVisible="{Binding ProjectTab, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            ToolTip.Tip="{Binding ProjectTab.ProjectTools.ButtonTip, FallbackValue={x:Null}}" AutomationProperties.Name="Project tools">
+                      <ContentControl Content="{Binding ProjectTab}" ContentTemplate="{StaticResource ProjectIcon}" />
+                      <Button.Flyout>
+                        <Flyout Placement="RightEdgeAlignedTop" Opened="OnProjectMenuOpened">
+                          <ContentControl Content="{Binding ProjectTab}" ContentTemplate="{StaticResource ProjectMenu}" />
+                        </Flyout>
+                      </Button.Flyout>
+                    </Button>
                     <!-- The group's Project Files tab (DESIGN.md §18, "Project files"): opens it, or selects it -->
-                    <Button x:Name="ProjectFilesButton" Grid.Column="1" Classes="flat" Padding="6" ToolTip.Tip="Project files" AutomationProperties.Name="Project files"
+                    <Button x:Name="ProjectFilesButton" Grid.Column="2" Classes="flat" Padding="6" ToolTip.Tip="Project files" AutomationProperties.Name="Project files"
                             Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenProjectFilesCommand}" CommandParameter="{Binding}" VerticalAlignment="Center">
                       <Path Data="{StaticResource IconFiles}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.2" Width="11" Height="11" Stretch="Uniform" />
                     </Button>
-                    <Button Grid.Column="2" Classes="flat" Padding="6" ToolTip.Tip="New tab in this folder" AutomationProperties.Name="New tab in this folder"
+                    <Button Grid.Column="3" Classes="flat" Padding="6" ToolTip.Tip="New tab in this folder" AutomationProperties.Name="New tab in this folder"
                             Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewTabInGroupCommand}" CommandParameter="{Binding}" VerticalAlignment="Center">
                       <Path Data="{StaticResource IconPlus}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="9" Height="9" Stretch="Uniform" />
                     </Button>
                   </Grid>
 
                   <!-- Tabs, under a line in the group's color; its Project Files tab first (DESIGN.md §18, "Project files") -->
-                  <controls:SideLine x:Name="GroupLine" Margin="9,2,0,0" Padding="5,0,0,0" LineBrush="{Binding Brush}" LineThickness="2" IsVisible="{Binding IsExpanded}">
+                  <controls:SideLine x:Name="GroupLine" Margin="9,2,0,0" Padding="8,0,0,0" LineBrush="{Binding Brush}" LineThickness="2" IsVisible="{Binding IsExpanded}">
                     <StackPanel Spacing="1">
                     <ContentControl Content="{Binding Files}" IsVisible="{Binding HasFiles}" ContentTemplate="{StaticResource ProjectFilesRow}" />
                     <!-- Unclipped, as the rows are, so a row's chevron can sit out on the line -->
@@ -842,6 +937,18 @@
                       </ContextMenu>
                     </Button.ContextMenu>
                   </Button>
+                  <!-- The project's tools and links (DESIGN.md §18, "Project tools"), as on the group's row -->
+                  <Button x:Name="ProjectSquare" Classes="flat" Width="38" Height="28" Padding="0" HorizontalAlignment="Center"
+                          HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                          IsVisible="{Binding ProjectTab, Converter={x:Static ObjectConverters.IsNotNull}}"
+                          ToolTip.Tip="{Binding ProjectTab.ProjectTools.ButtonTip, FallbackValue={x:Null}}" ToolTip.Placement="Right" AutomationProperties.Name="Project tools">
+                    <ContentControl Content="{Binding ProjectTab}" ContentTemplate="{StaticResource ProjectIcon}" />
+                    <Button.Flyout>
+                      <Flyout Placement="RightEdgeAlignedTop" Opened="OnProjectMenuOpened">
+                        <ContentControl Content="{Binding ProjectTab}" ContentTemplate="{StaticResource ProjectMenu}" />
+                      </Flyout>
+                    </Button.Flyout>
+                  </Button>
                   <ContentControl Content="{Binding Files}" IsVisible="{Binding HasFiles}" ContentTemplate="{StaticResource ProjectFilesSquare}" />
                   <ItemsControl ItemsSource="{Binding Tabs}" IsVisible="{Binding IsExpanded}">
                     <ItemsControl.ItemsPanel>
@@ -943,78 +1050,10 @@
           </ItemsControl>
         </ScrollViewer>
 
-        <!-- The selected tab's project, History, the Claude Code update badge (DESIGN.md §12) and Settings -->
-        <Border Grid.Row="2" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="6">
+        <!-- The update badges (DESIGN.md §12), and a source build's (DESIGN.md §9, "Working on Claudette"), under a line;
+             only while one shows -->
+        <Border x:Name="SidebarFoot" Grid.Row="2" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="6" IsVisible="{Binding HasFootBadge}">
           <StackPanel Spacing="2">
-            <!-- The selected tab's project tools and links (DESIGN.md §18, "Project tools"): its kind's icon, or a folder's
-                 without a project; the project's name and version, else the folder's name, or while a job runs, its name;
-                 a click opens the project's menu -->
-            <Button x:Name="ProjectButton" Classes="flat side" HorizontalContentAlignment="Stretch"
-                    IsVisible="{Binding ProjectTab, Converter={x:Static ObjectConverters.IsNotNull}}"
-                    ToolTip.Tip="{Binding ProjectTab.ProjectTools.ButtonTip}" ToolTip.Placement="Right" AutomationProperties.Name="Project tools">
-              <DockPanel>
-                <!-- As wide as the other icons, so the busy dot lines up with them -->
-                <Panel DockPanel.Dock="Left" Width="13" VerticalAlignment="Center">
-                  <Path Classes="icon" Data="{Binding ProjectTab.ProjectTools.IconKey, Converter={x:Static conversation:ToolIcons.Geometry}, FallbackValue={x:Null}}"
-                        Classes.filled="{Binding ProjectTab.ProjectTools.IconKey, Converter={x:Static conversation:ToolIcons.IsFilled}, FallbackValue=False}"
-                        Classes.unreal="{Binding ProjectTab.ProjectTools.IconKey, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:Logos.Unreal}, FallbackValue=False}"
-                        IsVisible="{Binding !ProjectTab.ProjectTools.Runs.IsJobRunning, FallbackValue=True}" />
-                  <TextBlock Classes="status busy" Text="●" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"
-                             IsVisible="{Binding ProjectTab.ProjectTools.Runs.IsJobRunning, FallbackValue=False}" />
-                </Panel>
-                <Path DockPanel.Dock="Right" Data="{StaticResource IconChevronRight}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="9" Height="9"
-                      Stretch="Uniform" VerticalAlignment="Center" Margin="6,0,0,0" IsVisible="{Binding Layout.IsSidebarExpanded}" />
-                <TextBlock Margin="10,0,0,0" Text="{Binding ProjectTab.ProjectTools.ButtonText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                           IsVisible="{Binding Layout.IsSidebarExpanded}" />
-              </DockPanel>
-              <Button.Flyout>
-                <Flyout Placement="RightEdgeAlignedBottom" Opened="OnProjectMenuOpened">
-                  <StackPanel x:Name="ProjectMenu" MinWidth="300" MaxWidth="440" Spacing="1" DataContext="{Binding ProjectTab}" x:DataType="vm:TabViewModel">
-                    <TextBlock Text="{Binding ProjectTools.HeaderTitle}" FontWeight="SemiBold" Margin="8,2,8,0" />
-                    <ItemsControl ItemsSource="{Binding ProjectTools.HeaderLines}" Margin="8,0,8,2">
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                          <TextBlock Classes="muted small" Text="{Binding}" TextWrapping="Wrap" />
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <!-- Entries of claudette.json that were skipped, and why (DESIGN.md §18) -->
-                    <ItemsControl ItemsSource="{Binding ProjectTools.FileProblems}" Margin="8,0,8,2" IsVisible="{Binding ProjectTools.HasFileProblems}">
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                          <TextBlock Classes="small warning" Text="{Binding}" TextWrapping="Wrap" />
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <Separator Margin="0,2" />
-                    <ItemsControl ItemsSource="{Binding ProjectTools.Menu}">
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="vm:ProjectMenuEntry">
-                          <Panel>
-                            <Separator Margin="0,3" IsVisible="{Binding IsSeparator}" />
-                            <TextBlock Classes="muted small" Text="{Binding Label}" Margin="8,4,8,1" IsVisible="{Binding IsHeader}" />
-                            <Button Classes="flat row" IsVisible="{Binding IsButton}" IsEnabled="{Binding IsEnabled}" HorizontalContentAlignment="Stretch"
-                                    ToolTip.Tip="{Binding Tip}" ToolTip.ShowOnDisabled="True" Click="OnProjectMenuItemPicked"
-                                    Command="{Binding Command}" CommandParameter="{Binding Parameter}">
-                              <Grid ColumnDefinitions="16,*">
-                                <TextBlock Classes="small" Text="{Binding Mark}" VerticalAlignment="Center" IsVisible="{Binding HasMark}" />
-                                <TextBlock Grid.Column="1" Text="{Binding Label}" />
-                              </Grid>
-                            </Button>
-                          </Panel>
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                  </StackPanel>
-                </Flyout>
-              </Button.Flyout>
-            </Button>
-            <Button Classes="flat side" Command="{Binding OpenHistoryCommand}" ToolTip.Tip="{Binding Tips.History}" ToolTip.Placement="Right" AutomationProperties.Name="History">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <Path Classes="icon" Data="{StaticResource IconHistory}" />
-                <TextBlock Text="History" VerticalAlignment="Center" IsVisible="{Binding Layout.IsSidebarExpanded}" />
-              </StackPanel>
-            </Button>
             <!-- "Claude Code 2.1.290 is ready" (DESIGN.md §12, "Applying it"): small and non-blocking -->
             <Button x:Name="UpdateBadge" Classes="flat side update" DataContext="{Binding Updates}" x:DataType="vm:ClaudeUpdateViewModel"
                     IsVisible="{Binding HasBadge, FallbackValue=False}" ToolTip.Tip="{Binding BadgeText}" ToolTip.Placement="Right"
@@ -1202,20 +1241,6 @@
                   </StackPanel>
                 </Flyout>
               </Button.Flyout>
-            </Button>
-            <Button Classes="flat side" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{Binding Tips.Settings}" ToolTip.Placement="Right" AutomationProperties.Name="Settings">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <Path Classes="icon" Data="{StaticResource IconSettings}" />
-                <TextBlock Text="Settings" VerticalAlignment="Center" IsVisible="{Binding Layout.IsSidebarExpanded}" />
-              </StackPanel>
-            </Button>
-            <!-- The user guide on the web (DESIGN.md §2, "User Guide") -->
-            <Button Classes="flat side" Command="{Binding OpenGuideCommand}" ToolTip.Tip="Opens Claudette's user guide in your browser" ToolTip.Placement="Right"
-                    AutomationProperties.Name="User Guide">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <Path Classes="icon" Data="{StaticResource IconGuide}" />
-                <TextBlock Text="User Guide" VerticalAlignment="Center" IsVisible="{Binding Layout.IsSidebarExpanded}" />
-              </StackPanel>
             </Button>
           </StackPanel>
         </Border>
