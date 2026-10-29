@@ -34,7 +34,7 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
 
     /// <summary>The usage header (DESIGN.md §6), once signed in.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasUsage), nameof(ShowsTitle), nameof(ShowsUsageDetails))]
+    [NotifyPropertyChangedFor(nameof(ShowsUsageDetails))]
     public partial UsageViewModel? Usage { get; set; }
 
     partial void OnUsageChanged(UsageViewModel? oldValue, UsageViewModel? newValue)
@@ -47,6 +47,7 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
         {
             newValue.PropertyChanged += OnUsageHeaderChanged;
         }
+        OnUsagePlaceChanged();
     }
 
     /// <summary>Plan usage arrived, or the detailed header was turned on or off: what the header shows follows.</summary>
@@ -54,8 +55,7 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
     {
         if (e.PropertyName == nameof(UsageViewModel.HasData))
         {
-            OnPropertyChanged(nameof(HasUsage));
-            OnPropertyChanged(nameof(ShowsTitle));
+            OnUsagePlaceChanged();
         }
         if (e.PropertyName is nameof(UsageViewModel.ShowDetails) or nameof(UsageViewModel.HasData))
         {
@@ -67,12 +67,39 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
     /// True once plan usage has arrived, and the selected tab runs under the Default account, whose plan it is. API-key
     /// accounts have no plan limits: the header shows their spend instead (<see cref="Spend"/>), or stays plain.
     /// </summary>
-    public bool HasUsage => Usage is { HasData: true } && Spend is not { IsShown: true };
+    public bool HasPlanUsage => Usage is { HasData: true } && Spend is not { IsShown: true };
+
+    /// <summary>
+    /// The meters are in the card at the top of the sidebar (DESIGN.md §6, "Sidebar meters"): Settings → Usage → Show
+    /// usage in the sidebar, while the sidebar is open. A collapsed sidebar has no room, so the header's chip comes back.
+    /// </summary>
+    public bool ShowsSidebarUsage => HasPlanUsage && services.Settings.Usage.ShowInSidebar && _shell is { Layout.IsSidebarExpanded: true };
+
+    /// <summary>The header's usage chip: plan usage to show, and the sidebar's card isn't showing it.</summary>
+    public bool HasUsage => HasPlanUsage && !ShowsSidebarUsage;
+
+    /// <summary>
+    /// What decides where the meters show changed: usage arrived, the account, the setting or the sidebar. The shell gets
+    /// the meters for its card while it shows them.
+    /// </summary>
+    private void OnUsagePlaceChanged()
+    {
+        OnPropertyChanged(nameof(HasPlanUsage));
+        OnPropertyChanged(nameof(ShowsSidebarUsage));
+        OnPropertyChanged(nameof(HasUsage));
+        OnPropertyChanged(nameof(ShowsTitle));
+        if (_shell is not null)
+        {
+            _shell.SidebarUsage = ShowsSidebarUsage ? Usage : null;
+        }
+    }
 
     /// <summary>The header while the selected tab runs under an API key: its estimated spend (DESIGN.md §4, "Accounts").</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasUsage), nameof(ShowsSpend), nameof(ShowsTitle), nameof(ShowsUsageDetails))]
+    [NotifyPropertyChangedFor(nameof(ShowsSpend), nameof(ShowsUsageDetails))]
     public partial AccountSpendViewModel? Spend { get; set; }
+
+    partial void OnSpendChanged(AccountSpendViewModel? value) => OnUsagePlaceChanged();
 
     public bool ShowsSpend => Spend is { IsShown: true };
 
@@ -119,6 +146,21 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
         _shell = shell;
         CurrentPage = shell;
         OnPropertyChanged(nameof(Shell));
+        FollowSidebar(shell);
+    }
+
+    /// <summary>The sidebar's card shows the meters only while the sidebar is open (DESIGN.md §6, "Sidebar meters").</summary>
+    private void FollowSidebar(ShellViewModel shell)
+    {
+        shell.Layout.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ShellLayout.IsSidebarCollapsed))
+            {
+                OnUsagePlaceChanged();
+            }
+        };
+        services.SettingsChanged += (_, _) => OnUsagePlaceChanged();
+        OnUsagePlaceChanged();
     }
 
     public AppServices Services => services;
@@ -305,6 +347,7 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
                 }
             };
             OnPropertyChanged(nameof(Shell));
+            FollowSidebar(_shell);
             CurrentPage = _shell;
             var restored = _restore;
             _restore = null;
@@ -354,9 +397,8 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
             {
                 if (e.PropertyName == nameof(AccountSpendViewModel.IsShown))
                 {
-                    OnPropertyChanged(nameof(HasUsage));
+                    OnUsagePlaceChanged();
                     OnPropertyChanged(nameof(ShowsSpend));
-                    OnPropertyChanged(nameof(ShowsTitle));
                     OnPropertyChanged(nameof(ShowsUsageDetails));
                 }
             };

@@ -28,6 +28,9 @@ public sealed partial class UsagePage : SettingsPage
             Setting("usage.useUsageCommandFallback", "If Claude Code stops reporting them, read them from /usage", s => s.Usage.UseUsageCommandFallback,
                 (s, v) => s.Usage.UseUsageCommandFallback = v,
                 "Free, but can break when Claude Code changes its wording.", keywords: ["model limits", "fallback"]),
+            Setting("usage.showInSidebar", "Show usage in the sidebar", s => s.Usage.ShowInSidebar, (s, v) => s.Usage.ShowInSidebar = v,
+                "A card at the top of the sidebar with each limit, how much of it is used and when it resets. The header leaves out its chip while the card shows.",
+                keywords: ["meters", "session", "weekly", "left"]),
             Setting("state.detailedUsageHeader", "Detailed usage header", () => !Services.State.DetailedUsageHeader, () => Services.State.DetailedUsageHeader = false,
                 "Taller, with charts of the session and the week, the burn rate and the busiest tabs.",
                 "The chevron at the header's right does the same.", ["charts", "sparkline"]),
@@ -91,6 +94,12 @@ public sealed partial class UsagePage : SettingsPage
     {
         get => Settings.Usage.BurnRateWindowMinutes;
         set => Set(value, v => Settings.Usage.BurnRateWindowMinutes = Math.Clamp((int)(v ?? 30), 5, 300));
+    }
+
+    public bool ShowInSidebar
+    {
+        get => Settings.Usage.ShowInSidebar;
+        set => Set(value, v => Settings.Usage.ShowInSidebar = v);
     }
 
     public bool ShowModelMeters

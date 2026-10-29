@@ -61,6 +61,12 @@ If your plan has usage credits, they pay for Claude once a limit is used up, up 
 
 An OS notification tells you when credits start paying: see [Alerts](alerts.md).
 
+## In the sidebar
+
+With **Show usage in the sidebar** on (Settings → Usage, on by default), the meters are a card at the top of the sidebar instead of the chip. Each limit has its own row: its name, the percent used and when it resets (*9% · resets in 3h 18m*), over a bar that turns amber and red as the chip's do. Under them is the line that says where the session is heading. Click the card for [the Usage window](the-usage-window.md).
+
+The card shows only while the sidebar is open. Collapse the sidebar and the chip comes back to the header; open it again and the card takes over. Turn the setting off to keep the chip in the header.
+
 ## Model meters
 
 **Show model-specific weekly limits** (Settings → Usage, on by default) shows the model meters. Claude Code reports them. If a version of Claude Code stops reporting them, the model meters go away and the rest of the header carries on, unless **If Claude Code stops reporting them, read them from /usage** is on. Then Claudette reads the text Claude Code prints for `/usage` instead. That costs nothing, but it can break when Claude Code changes the wording, so it's off by default.
@@ -89,6 +95,7 @@ All in Settings → Usage.
 | **Alert at (% of the session used)** | 90 |
 | **Burn rate window (minutes)** | 30 (from 5 to 300) |
 | **Show model-specific weekly limits** | On |
+| **Show usage in the sidebar** | On |
 | **If Claude Code stops reporting them, read them from /usage** | Off |
 
 ## See also

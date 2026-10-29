@@ -168,6 +168,7 @@ Your favorite and recent folders belong to this machine. They stay put when sett
 | **Alert at (% of the session used)** | Warnings | 90 | Yes | [The usage header](../usage/the-usage-header.md) |
 | **Burn rate window (minutes)** | Warnings | 30 (from 5 to 300) | Yes | [The usage header](../usage/the-usage-header.md) |
 | **Show model-specific weekly limits** | The usage header | On | Yes | [The usage header](../usage/the-usage-header.md) |
+| **Show usage in the sidebar** | The usage header | On | Yes | [The usage header](../usage/the-usage-header.md#in-the-sidebar) |
 | **If Claude Code stops reporting them, read them from /usage** | The usage header | Off | Yes | [The usage header](../usage/the-usage-header.md) |
 | **Detailed usage header** | The usage header | Off | No | [The detailed header](../usage/the-detailed-header.md) |
 | **Keep usage history**, with **Clear…** | History | 1 month (or 1 day, 1 week, 1 year or Forever) | Yes | [Usage history](../usage/usage-history.md) |

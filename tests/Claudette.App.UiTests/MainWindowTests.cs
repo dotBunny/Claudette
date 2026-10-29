@@ -431,6 +431,71 @@ public class MainWindowTests
         Assert.All(bars, b => Assert.True(b.IsEffectivelyVisible));
     }
 
+    /// <summary>
+    /// With Show usage in the sidebar on, the meters are a card at the top of the open sidebar, each with its percent and
+    /// reset over a bar, and the header leaves out its chip; a collapsed sidebar, or the setting off, brings the chip
+    /// back (DESIGN.md §6, "Sidebar meters").
+    /// </summary>
+    [AvaloniaFact]
+    public async Task The_sidebar_shows_the_meters_in_a_card_in_place_of_the_headers_chip()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        var store = new UsageStore(Path.Combine(h.Root, "usage.db"), h.Time);
+        var reset = h.Time.GetUtcNow().AddHours(2);
+        Assert.True(store.AddSample(new UsageSnapshot(
+            [
+                new LimitReading(LimitKind.Session, "Session", 9, reset, null, true),
+                new LimitReading(LimitKind.WeeklyAll, "Weekly", 47, reset.AddDays(3), null, true),
+                new LimitReading(LimitKind.WeeklyModel, "Fable", 84, reset.AddDays(3), null, true),
+            ],
+            h.Time.GetUtcNow(),
+            UsageSource.GetUsage)));
+        await using var tracker = new UsageTracker(h.Services, store);
+        using var usage = new UsageViewModel(h.Services, tracker);
+        await TabTestHarness.Eventually(() => usage.Weekly.Count == 2, "the weekly meters");
+        var main = new MainWindowViewModel(h.Services) { Usage = usage };
+        main.UseShell(h.Shell);
+        var window = new MainWindow { DataContext = main, Width = 1200, Height = 800 };
+        window.Show();
+        UiText.Settle(window);
+        var card = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "SidebarUsage");
+        var chip = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageChip");
+        var sidebar = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "Sidebar");
+
+        // The card, in the sidebar, and no chip in the header.
+        Assert.True(card.IsEffectivelyVisible);
+        Assert.False(chip.IsEffectivelyVisible);
+        Assert.Contains(card, sidebar.GetVisualDescendants());
+        var bars = card.GetVisualDescendants().OfType<ProgressBar>().ToArray();
+        Assert.Equal([9d, 47d, 84d], bars.Select(b => b.Value));
+        Assert.Contains("warning", bars[2].Classes);
+        var texts = card.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToArray();
+        Assert.Contains("Fable", texts);
+        Assert.Contains("9%", texts);
+        Assert.Contains(texts, t => t?.StartsWith("· resets in 2h", StringComparison.Ordinal) == true);
+        var button = card.GetVisualDescendants().OfType<Button>().First();
+        Assert.Same(usage.OpenPanelCommand, button.Command);
+
+        // A collapsed sidebar has no room for it: the chip comes back, and goes again with the sidebar.
+        h.Shell.Layout.ToggleSidebarCommand.Execute(null);
+        UiText.Settle(window);
+        Assert.False(card.IsEffectivelyVisible);
+        Assert.True(chip.IsEffectivelyVisible);
+        h.Shell.Layout.ToggleSidebarCommand.Execute(null);
+        UiText.Settle(window);
+        Assert.True(card.IsEffectivelyVisible);
+        Assert.False(chip.IsEffectivelyVisible);
+
+        // Turned off, the meters are the header's again.
+        h.Services.Settings.Usage.ShowInSidebar = false;
+        h.Services.SaveSettings();
+        UiText.Settle(window);
+        Assert.False(card.IsEffectivelyVisible);
+        Assert.True(chip.IsEffectivelyVisible);
+        window.Close();
+    }
+
     [AvaloniaFact]
     public async Task Typing_in_the_composer_and_pressing_Enter_sends_the_message()
     {

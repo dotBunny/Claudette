@@ -432,7 +432,44 @@
         <!-- Groups and their tabs. Drag a tab to reorder it in its group, or a group's label to move the group
              (DESIGN.md §4). -->
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding Layout.IsSidebarExpanded}">
-          <StackPanel>
+          <!-- Room at the right for the scroll bar, which widens to 16 px over the content under the pointer and would
+               cover the groups' buttons -->
+          <StackPanel Margin="0,0,10,0">
+          <!-- The plan's meters (DESIGN.md §6, "Sidebar meters"): each limit, how much is used and when it resets, then
+               the note under them. A click opens the Usage panel. -->
+          <Border x:Name="SidebarUsage" Classes="sidecard usage" Margin="6,8,6,0" IsVisible="{Binding HasSidebarUsage}">
+            <Button Classes="flat" Padding="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                    Command="{Binding SidebarUsage.OpenPanelCommand, FallbackValue={x:Null}}"
+                    ToolTip.Tip="Click for the Usage panel" AutomationProperties.Name="{Binding SidebarUsage.Chip.AccessibleName, FallbackValue='Sidebar usage'}">
+              <StackPanel Spacing="10">
+                <ItemsControl Name="SidebarMeters" ItemsSource="{Binding SidebarUsage.Chip.Items, FallbackValue={x:Null}}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Spacing="10" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:UsageChipMeterViewModel">
+                      <StackPanel Spacing="4">
+                        <DockPanel>
+                          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4" Margin="8,0,0,0">
+                            <TextBlock Classes="small" Text="{Binding PercentText}" FontWeight="SemiBold" />
+                            <TextBlock Classes="small muted" Text="{Binding ResetText, StringFormat='· {0}'}"
+                                       IsVisible="{Binding ResetText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                          </StackPanel>
+                          <TextBlock Text="{Binding Label}" TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
+                        <ProgressBar Classes="meter" Value="{Binding Percent}" Classes.warning="{Binding IsWarning}" Classes.critical="{Binding IsCritical}" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Classes="small muted" Classes.warning="{Binding SidebarUsage.IsProjectionWarning, FallbackValue=False}" TextWrapping="Wrap"
+                           Text="{Binding SidebarUsage.Chip.Note, FallbackValue={x:Null}}"
+                           IsVisible="{Binding SidebarUsage.Chip.Note, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}" />
+              </StackPanel>
+            </Button>
+          </Border>
           <!-- Once, until the user has chosen: the folders Claude Code has sessions in (DESIGN.md §4, "Claude Code's projects") -->
           <Border x:Name="ClaudeProjectsOffer" Classes="sidecard" Margin="6,8,6,0" IsVisible="{Binding HasClaudeProjectsOffer}">
             <StackPanel Spacing="8">

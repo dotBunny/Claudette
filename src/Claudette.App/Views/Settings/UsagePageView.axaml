@@ -27,6 +27,9 @@
           </c:SettingRow>
         </c:SettingRow.Details>
       </c:SettingRow>
+      <c:SettingRow Key="usage.showInSidebar">
+        <ToggleSwitch IsChecked="{Binding ShowInSidebar}" />
+      </c:SettingRow>
       <c:SettingRow Key="state.detailedUsageHeader">
         <ToggleSwitch IsChecked="{Binding DetailedUsageHeader}" />
       </c:SettingRow>

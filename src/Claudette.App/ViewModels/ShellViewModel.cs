@@ -185,6 +185,16 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     [ObservableProperty]
     public partial string? ProcessTotalsTip { get; private set; }
 
+    /// <summary>
+    /// The plan's meters for the card at the top of the sidebar (DESIGN.md §6, "Sidebar meters"), or null while they
+    /// show in the header instead. The main window decides which.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSidebarUsage))]
+    public partial UsageViewModel? SidebarUsage { get; set; }
+
+    public bool HasSidebarUsage => SidebarUsage is not null;
+
     /// <summary>A tab sampled its processes, or stopped sampling: adds up the latest samples again.</summary>
     internal void OnTabProcessesSampled()
     {

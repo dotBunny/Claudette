@@ -176,6 +176,12 @@ public sealed class UsageSettings
     /// <summary>Show model-specific weekly limits (for example Fable).</summary>
     public bool ShowModelMeters { get; set; } = true;
 
+    /// <summary>
+    /// The meters in a card at the top of the sidebar, each with its percent and reset, in place of the header's chip
+    /// while the sidebar is open (DESIGN.md §6, "Sidebar meters").
+    /// </summary>
+    public bool ShowInSidebar { get; set; } = true;
+
     /// <summary>If <c>get_usage</c> stops working, read model-specific limits from <c>/usage</c> text instead.</summary>
     public bool UseUsageCommandFallback { get; set; }
 
