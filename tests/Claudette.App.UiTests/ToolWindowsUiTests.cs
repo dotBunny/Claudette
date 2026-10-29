@@ -366,8 +366,10 @@ public class ToolWindowsUiTests
             window.Show();
             var reviewed = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "ReviewedButton");
             await UiText.SettleUntilAsync(window, () => ((DiffWindowViewModel)window.DataContext!).IsLoading == false, "the diff");
-            var header = reviewed.FindAncestorOfType<Border>()!;
-            var shown = UiText.Describe(header);
+            // The title bar, with the file's name and counts, and the toolbar under it, with where it is and what to do.
+            var titleBar = window.GetVisualDescendants().OfType<TitleBar>().Single();
+            var toolbar = reviewed.FindAncestorOfType<Border>()!;
+            var shown = UiText.Describe(titleBar) + UiText.Describe(toolbar);
             var closed = false;
             window.Closed += (_, _) => closed = true;
 
