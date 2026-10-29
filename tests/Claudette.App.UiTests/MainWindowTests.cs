@@ -172,12 +172,22 @@ public class MainWindowTests
         var drawn = lines.TranslatePoint(lines.RenderedGeometry!.Bounds.Center, menu)!.Value;
         Assert.Equal(menu.Bounds.Width / 2, drawn.X, 0.5);
         Assert.Equal(menu.Bounds.Height / 2, drawn.Y, 0.5);
-        var items = Assert.IsType<MenuFlyout>(menu.Flyout).Items.OfType<MenuItem>().ToList();
+        // Its sections under small titles, which can't be picked, and an icon before each entry.
+        var entries = Assert.IsType<MenuFlyout>(menu.Flyout).Items.OfType<MenuItem>().ToList();
+        var sections = entries.Where(e => e.Classes.Contains("menusection")).ToList();
+        var items = entries.Except(sections).ToList();
+        Assert.Equal(["Help", "Claudette"], sections.Select(s => s.Header as string));
+        Assert.All(sections, s => Assert.False(s.IsEnabled));
         Assert.Equal(["User Guide", "Ask on Discord", "Report an issue", "About Claudette"], items.Select(i => i.Header as string));
+        Assert.All(items, i => Assert.IsType<Avalonia.Controls.Shapes.Path>(i.Icon));
         menu.Flyout!.ShowAt(menu);
-        await UiText.SettleUntilAsync(window, () => items[0].Command is not null, "the open menu");
+        await UiText.SettleUntilAsync(window, () => items[0].Command is not null && items[0].IsEffectivelyVisible, "the open menu");
         Assert.Same(h.Shell.OpenGuideCommand, items[0].Command);
         Assert.Same(h.Shell.OpenAboutCommand, items[3].Command);
+        // The line between them runs from edge to edge.
+        var presenter = items[0].GetVisualAncestors().OfType<MenuFlyoutPresenter>().First();
+        var line = presenter.GetVisualDescendants().OfType<Separator>().Single();
+        Assert.Equal(presenter.Bounds.Width - presenter.BorderThickness.Left - presenter.BorderThickness.Right, line.Bounds.Width, 1);
         menu.Flyout.Hide();
         var sidebar = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "Sidebar");
         Assert.DoesNotContain(sidebar.GetVisualDescendants().OfType<Button>(), b => AutomationProperties.GetName(b) is "Settings" or "User Guide");

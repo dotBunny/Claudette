@@ -128,6 +128,39 @@
     <Style Selector="Window:not(.merged) Button#SettingsButton">
       <Setter Property="Margin" Value="0,0,-5,0" />
     </Style>
+    <!-- The menu's own look (DESIGN.md §3): small muted titles over its sections, an icon before each entry, and lines
+         between the sections from edge to edge -->
+    <Style Selector="MenuFlyoutPresenter.mainmenu">
+      <Setter Property="Padding" Value="0,4" />
+      <Setter Property="MinWidth" Value="220" />
+    </Style>
+    <Style Selector="MenuFlyoutPresenter.mainmenu Separator">
+      <Setter Property="Margin" Value="0,4" />
+    </Style>
+    <Style Selector="MenuItem.menusection">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Padding" Value="12,4,12,2" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+    <Style Selector="MenuItem.menusection /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+    </Style>
+    <Style Selector="MenuItem.menusection:disabled /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+    </Style>
+    <Style Selector="Path.menuicon">
+      <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
+      <Setter Property="StrokeThickness" Value="1.3" />
+      <Setter Property="StrokeLineCap" Value="Round" />
+      <Setter Property="StrokeJoin" Value="Round" />
+      <Setter Property="Stretch" Value="Uniform" />
+      <Setter Property="MaxWidth" Value="14" />
+      <Setter Property="MaxHeight" Value="14" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
     <!-- The header as the window's title bar (DESIGN.md §3, "Window frame"): its gaps drag the window, so each of its
          controls says it takes its own clicks, and the meters and totals their hover, for their tips -->
     <Style Selector="Border#Header :is(Button), Border#Header TextBlock#ProcessTotals">
@@ -170,12 +203,22 @@
                 <Path Data="{StaticResource IconMenu}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" StrokeLineCap="Round" Stretch="Uniform"
                       MaxWidth="13" MaxHeight="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <Button.Flyout>
-                  <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                    <MenuItem Header="User Guide" Command="{Binding Shell.OpenGuideCommand, FallbackValue={x:Null}}" />
+                  <MenuFlyout Placement="BottomEdgeAlignedLeft" FlyoutPresenterClasses="mainmenu">
+                    <MenuItem Classes="menusection" Header="Help" IsEnabled="False" />
+                    <MenuItem Header="User Guide" Command="{Binding Shell.OpenGuideCommand, FallbackValue={x:Null}}">
+                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconGuide}" /></MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Ask on Discord" Command="{Binding Shell.OpenDiscordCommand, FallbackValue={x:Null}}">
+                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconChat}" /></MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Report an issue" Command="{Binding Shell.ReportIssueCommand, FallbackValue={x:Null}}">
+                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconBug}" /></MenuItem.Icon>
+                    </MenuItem>
                     <Separator />
-                    <MenuItem Header="Ask on Discord" Command="{Binding Shell.OpenDiscordCommand, FallbackValue={x:Null}}" />
-                    <MenuItem Header="Report an issue" Command="{Binding Shell.ReportIssueCommand, FallbackValue={x:Null}}" />
-                    <MenuItem Header="About Claudette" Command="{Binding Shell.OpenAboutCommand, FallbackValue={x:Null}}" />
+                    <MenuItem Classes="menusection" Header="Claudette" IsEnabled="False" />
+                    <MenuItem Header="About Claudette" Command="{Binding Shell.OpenAboutCommand, FallbackValue={x:Null}}">
+                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconInfo}" /></MenuItem.Icon>
+                    </MenuItem>
                   </MenuFlyout>
                 </Button.Flyout>
               </Button>
