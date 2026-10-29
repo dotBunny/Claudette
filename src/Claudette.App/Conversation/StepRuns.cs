@@ -119,9 +119,11 @@ public sealed partial class StepRowItem : ObservableObject
 }
 
 /// <summary>
-/// The line a run of steps folds into (DESIGN.md §18, "Conversation cards"): <i>Worked for 18m</i>, with what the steps
-/// were beside it. A click opens it into a list of the steps, a line each, which scrolls once it's long and whose lines
-/// open further. While Claude is on the run its last step stays under the line.
+/// A run of steps folded into one (DESIGN.md §18, "Conversation cards"): <i>7 steps · 18m 43s</i>. With Claude's reply
+/// right after it, the reply carries it in its header (<see cref="AssistantTextItem.Steps"/>), and opens its steps inside
+/// its own card; otherwise it's a line of its own, with what the steps were beside it. Either way it opens into a list of
+/// the steps, a line each, which scrolls once it's long and whose lines open further. While Claude is on the run its
+/// last step stays under the line.
 /// </summary>
 public sealed partial class StepsMarkerItem : ConversationItem
 {
@@ -138,6 +140,9 @@ public sealed partial class StepsMarkerItem : ConversationItem
     /// </summary>
     internal bool KeepsLast { get; set; }
 
+    /// <summary>The reply that carries the run in its header, or null while the run is a line of its own.</summary>
+    internal AssistantTextItem? Reply { get; set; }
+
     /// <summary>The list is open, and the chevron points down.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFoldedAway))]
@@ -145,7 +150,7 @@ public sealed partial class StepsMarkerItem : ConversationItem
 
     public bool IsFoldedAway => !IsOpen;
 
-    /// <summary>"Worked for 18m" once the run is done; "Working · 6 earlier steps" while Claude is on it.</summary>
+    /// <summary>"7 steps · 18m 43s" once the run is done; "Working · 6 earlier steps" while Claude is on it.</summary>
     [ObservableProperty]
     public partial string Title { get; internal set; } = "";
 
@@ -193,9 +198,10 @@ public sealed partial class StepsMarkerItem : ConversationItem
             parts.Add(agents == 1 ? "1 agent" : $"{agents} agents");
         }
         Summary = string.Join(" · ", parts);
+        var count = $"{shown.Count} {(shown.Count == 1 ? "step" : "steps")}";
         Title = KeepsLast ? $"Working · {shown.Count} earlier {(shown.Count == 1 ? "step" : "steps")}"
-            : Took() is { } took ? $"Worked for {Formats.Elapsed(took)}"
-            : $"{shown.Count} {(shown.Count == 1 ? "step" : "steps")}";
+            : Took() is { } took ? $"{count} · {Formats.Elapsed(took)}"
+            : count;
         Fill();
     }
 
@@ -248,8 +254,9 @@ public sealed partial class StepsMarkerItem : ConversationItem
 
 /// <summary>
 /// Folds each run of steps on the way (thinking, Tool calls cards, subagents, with nothing else between them) into one
-/// <see cref="StepsMarkerItem"/> line, <i>Worked for 18m</i>, with the run's last step under it while Claude is on it
-/// (Settings → Conversation → Fold each chain of steps, DESIGN.md §18). The folded steps stay in the conversation, so
+/// <see cref="StepsMarkerItem"/>, <i>7 steps · 18m 43s</i>: in the header of Claude's reply right after it, or a line of
+/// its own, with the run's last step under it while Claude is on it (Settings → Conversation → Fold each chain of
+/// steps, DESIGN.md §18). The folded steps stay in the conversation, so
 /// find, export and the agent map still see them; they are flagged <see cref="ConversationItem.IsFolded"/> and the list
 /// gives them no height, and the line opens a list of them of its own. A run of one step Claude is still on is left as
 /// it is. Without chain folding there are no lines at all.
@@ -298,6 +305,7 @@ public sealed class StepRuns(ObservableCollection<ConversationItem> items)
         {
             foreach (var marker in items.OfType<StepsMarkerItem>().ToList())
             {
+                Carry(marker, null);
                 items.Remove(marker);
             }
             foreach (var item in items)
@@ -329,8 +337,11 @@ public sealed class StepRuns(ObservableCollection<ConversationItem> items)
     public StepsMarkerItem? MarkerOf(ConversationItem? step) =>
         step is { IsFolded: true } ? items.OfType<StepsMarkerItem>().FirstOrDefault(m => m.Steps.Contains(step)) : null;
 
-    /// <summary>A step the user is being taken to (find, the agent map): opens the list it is in, at its line, and returns the line.</summary>
-    public StepsMarkerItem? Reveal(ConversationItem? step)
+    /// <summary>
+    /// A step the user is being taken to (find, the agent map): opens the list it is in, at its line, and returns where
+    /// the list shows: the reply that carries it, or its own line.
+    /// </summary>
+    public ConversationItem? Reveal(ConversationItem? step)
     {
         if (MarkerOf(step) is not { } marker)
         {
@@ -339,7 +350,25 @@ public sealed class StepRuns(ObservableCollection<ConversationItem> items)
         marker.IsOpen = true;
         marker.Describe();
         marker.OpenRowOf(step!);
-        return marker;
+        return marker.Reply ?? (ConversationItem)marker;
+    }
+
+    /// <summary>Gives the run to <paramref name="reply"/>'s header, or back to a line of its own with null.</summary>
+    private static void Carry(StepsMarkerItem marker, AssistantTextItem? reply)
+    {
+        if (ReferenceEquals(marker.Reply, reply))
+        {
+            return;
+        }
+        if (marker.Reply is { } before && ReferenceEquals(before.Steps, marker))
+        {
+            before.Steps = null;
+        }
+        marker.Reply = reply;
+        if (reply is not null)
+        {
+            reply.Steps = marker;
+        }
     }
 
     /// <summary>Folds the run starting at <paramref name="start"/>, which may begin with its marker; returns where it ends.</summary>
@@ -362,6 +391,7 @@ public sealed class StepRuns(ObservableCollection<ConversationItem> items)
             }
             if (marker is not null)
             {
+                Carry(marker, null);
                 items.RemoveAt(start);
                 end--;
             }
@@ -386,6 +416,14 @@ public sealed class StepRuns(ObservableCollection<ConversationItem> items)
                 steps[k].IsFolded = folded;
                 changed = true;
             }
+        }
+        // Claude's reply right after a finished run carries it in its header, and the line itself takes no room.
+        var reply = !marker.KeepsLast && end < items.Count ? items[end] as AssistantTextItem : null;
+        Carry(marker, reply);
+        if (marker.IsFolded != reply is not null)
+        {
+            marker.IsFolded = reply is not null;
+            changed = true;
         }
         marker.Describe();
         if (inserted)

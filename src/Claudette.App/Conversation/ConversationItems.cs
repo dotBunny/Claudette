@@ -295,6 +295,17 @@ public sealed partial class AssistantTextItem : MessageItem
     [ObservableProperty]
     public partial bool IsIntermediate { get; set; }
 
+    /// <summary>
+    /// The chain of steps that led to this reply, folded into its header (Settings → Conversation → Fold each chain of
+    /// steps, DESIGN.md §18): <i>7 steps · 18m 43s</i>, which opens the steps inside the card. Null when no chain comes
+    /// just before it, or chains don't fold. Set by <see cref="StepRuns"/>.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSteps))]
+    public partial StepsMarkerItem? Steps { get; internal set; }
+
+    public bool HasSteps => Steps is not null;
+
     public string Text => Markdown.ToString();
 
     /// <summary>The reply's Markdown, as Claude wrote it.</summary>

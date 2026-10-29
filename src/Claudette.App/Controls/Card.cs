@@ -33,6 +33,11 @@ public sealed class Card : ContentControl
     public static readonly StyledProperty<Avalonia.Controls.Templates.IDataTemplate?> ActionsTemplateProperty =
         AvaloniaProperty.Register<Card, Avalonia.Controls.Templates.IDataTemplate?>(nameof(ActionsTemplate));
 
+    public static readonly StyledProperty<object?> ExtraProperty = AvaloniaProperty.Register<Card, object?>(nameof(Extra));
+
+    public static readonly StyledProperty<Avalonia.Controls.Templates.IDataTemplate?> ExtraTemplateProperty =
+        AvaloniaProperty.Register<Card, Avalonia.Controls.Templates.IDataTemplate?>(nameof(ExtraTemplate));
+
     public static readonly StyledProperty<IBrush?> StripeBrushProperty = AvaloniaProperty.Register<Card, IBrush?>(nameof(StripeBrush));
 
     public static readonly StyledProperty<IBrush?> TintBrushProperty = AvaloniaProperty.Register<Card, IBrush?>(nameof(TintBrush));
@@ -106,6 +111,23 @@ public sealed class Card : ContentControl
     {
         get => GetValue(ActionsTemplateProperty);
         set => SetValue(ActionsTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Something on the header line right after the label that shows all the time, such as the <i>7 steps · 18m 43s</i>
+    /// of the chain of steps a reply carries (DESIGN.md §18).
+    /// </summary>
+    public object? Extra
+    {
+        get => GetValue(ExtraProperty);
+        set => SetValue(ExtraProperty, value);
+    }
+
+    /// <summary>How <see cref="Extra"/> shows, when it's an item rather than a control.</summary>
+    public Avalonia.Controls.Templates.IDataTemplate? ExtraTemplate
+    {
+        get => GetValue(ExtraTemplateProperty);
+        set => SetValue(ExtraTemplateProperty, value);
     }
 
     /// <summary>The stripe down the left edge, and the label's color unless <see cref="LabelBrush"/> says otherwise.</summary>

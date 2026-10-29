@@ -30,7 +30,7 @@ public sealed class ConversationPage : SettingsPage
                 "The chevron before a card's icon opens it. Right-click a card for Collapse all tool calls or Expand all tool calls, which changes every card in that tab and the ones to come, as thinking's menu does.",
                 ["tools", "tiles", "fold", "expand", "collapse"]),
             Setting("appearance.foldChains", "Fold each chain of steps", s => s.Appearance.FoldChains, (s, v) => s.Appearance.FoldChains = v,
-                "Claude's thinking and tool calls between two messages fold into one line, such as “Worked for 18m”.",
+                "Claude's thinking and tool calls between two messages fold into one, such as “7 steps · 18m 43s” on Claude's reply, which opens them inside the card.",
                 "A click on the line opens a list of the steps, a line each, which scrolls once it's long; each line opens to what Claude thought or what the call did. While Claude works, the last step stays under the line.",
                 ["chain", "steps", "thinking", "tools", "fold", "compact", "collapse"]),
             Setting("appearance.expandThinking", "Show thinking expanded", s => s.Appearance.ExpandThinking, (s, v) => s.Appearance.ExpandThinking = v,

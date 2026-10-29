@@ -82,6 +82,9 @@ public partial class TabView : UserControl
             scroll.AddHandler(KeyDownEvent, (_, e) => list.ReaderScrolling |= e.Key is Key.Up or Key.PageUp or Key.Home, RoutingStrategies.Tunnel, handledEventsToo: true);
             scroll.AddHandler(InputElement.ScrollGestureEvent, (_, e) => list.ReaderScrolling |= e.Delta.Y < 0, RoutingStrategies.Tunnel, handledEventsToo: true);
             list.Items.ContainerPrepared += (_, e) => OnConversationContainerPrepared(list, e);
+            // Opening or folding a chain's steps keeps what was clicked where it is (DESIGN.md §18). Before the button's
+            // command runs, so the place is taken before anything grows.
+            scroll.AddHandler(Button.ClickEvent, (_, e) => KeepInPlace(list, e.Source), RoutingStrategies.Bubble, handledEventsToo: true);
             list.Marks.MarkClicked += mark => ScrollItemToTop(list, mark.Index);
         }
         ActualThemeVariantChanged += (_, _) => UpdateMarks(Active);
@@ -187,6 +190,33 @@ public partial class TabView : UserControl
         {
             UpdateMarks(list);
         }
+    }
+
+    /// <summary>
+    /// A click that opens or folds a chain's steps (a reply's <i>7 steps · 18m 43s</i>, a step's line, a chain's own line):
+    /// the reader is reading, so the list stops following new output, and once the steps are laid out the list scrolls by
+    /// however far the button moved, so it stays where it was clicked rather than jumping up or down.
+    /// </summary>
+    private static void KeepInPlace(ShownList list, object? source)
+    {
+        if (source is not Visual visual || visual.FindAncestorOfType<Button>(includeSelf: true) is not { } button
+            || !(button.Classes.Contains("stepspill") || button.Classes.Contains("steprow") || button.FindAncestorOfType<Card>() is { } card && card.Classes.Contains("steps")))
+        {
+            return;
+        }
+        var scroll = list.Scroll;
+        if (button.TranslatePoint(default, scroll) is not { } before)
+        {
+            return;
+        }
+        list.StickToBottom = false;
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (button.IsAttachedToVisualTree() && button.TranslatePoint(default, scroll) is { } after && Math.Abs(after.Y - before.Y) > 0.5)
+            {
+                scroll.Offset = new Vector(scroll.Offset.X, Math.Clamp(scroll.Offset.Y + after.Y - before.Y, 0, Math.Max(0, scroll.Extent.Height - scroll.Viewport.Height)));
+            }
+        }, Avalonia.Threading.DispatcherPriority.Loaded);
     }
 
     private static bool IsOnScrollBar(object? source) => source is Visual visual && visual.FindAncestorOfType<ScrollBar>(includeSelf: true) is not null;

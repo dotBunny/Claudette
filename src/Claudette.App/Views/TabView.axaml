@@ -252,6 +252,21 @@
         </Border>
       </StackPanel>
     </DataTemplate>
+
+    <!-- The chain of steps a reply carries, on its header line (DESIGN.md §18): how many steps and how long, and a chevron;
+         a click opens them inside the reply's card. What they were is its tooltip. -->
+    <DataTemplate x:Key="StepsPill" x:DataType="conv:StepsMarkerItem">
+      <Button Classes="flat stepspill" Command="{Binding ToggleCommand}" VerticalAlignment="Center"
+              ToolTip.Tip="{Binding Summary}" AutomationProperties.Name="{Binding Title}">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Classes="small muted" Text="{Binding Title}" VerticalAlignment="Center" />
+          <Panel VerticalAlignment="Center">
+            <Path Classes="toolicon" Data="{StaticResource IconChevronRight}" IsVisible="{Binding IsFoldedAway}" />
+            <Path Classes="toolicon" Data="{StaticResource IconChevronDown}" IsVisible="{Binding IsOpen}" />
+          </Panel>
+        </StackPanel>
+      </Button>
+    </DataTemplate>
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -315,9 +330,19 @@
     <!-- Claude's reply: a Claude card, quieter once Claude carried on working after it (DESIGN.md §18, "Conversation cards"). -->
     <DataTemplate DataType="conv:AssistantTextItem">
       <controls:Card Classes="claude" Classes.quiet="{Binding IsIntermediate}" Label="Claude" Icon="{StaticResource IconCardClaude}"
-                     TimeText="{Binding TimeText}" TimeTip="{Binding TimeTip}" Actions="{Binding}" ActionsTemplate="{StaticResource ReplyTools}">
-        <md:MarkdownRenderer UpdateProducer="{Binding Parsed, FallbackValue={x:Static conv:KeptMarkdown.None}}"
-                             LinkCommand="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).OpenLinkCommand}" />
+                     TimeText="{Binding TimeText}" TimeTip="{Binding TimeTip}" Actions="{Binding}" ActionsTemplate="{StaticResource ReplyTools}"
+                     Extra="{Binding Steps}" ExtraTemplate="{StaticResource StepsPill}">
+        <StackPanel>
+          <!-- The steps that led to the reply, opened from its header: a box of their own that scrolls once it's long, each
+               line opening further (DESIGN.md §18). -->
+          <Border Name="ReplySteps" Classes="stepsbox" IsVisible="{Binding Steps.IsOpen, FallbackValue=False}">
+            <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <ItemsControl ItemsSource="{Binding Steps.Rows, FallbackValue={x:Null}}" ItemTemplate="{StaticResource StepRow}" />
+            </ScrollViewer>
+          </Border>
+          <md:MarkdownRenderer UpdateProducer="{Binding Parsed, FallbackValue={x:Static conv:KeptMarkdown.None}}"
+                               LinkCommand="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).OpenLinkCommand}" />
+        </StackPanel>
       </controls:Card>
     </DataTemplate>
 
