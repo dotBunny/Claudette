@@ -25,7 +25,7 @@
 [toggle] Full-width conversation
 "Use the system's title bar"
 "This computer"
-"The window's own title bar over the header, rather than the header in its place.  "
+"Your system's title bar on each window, rather than Claudette's own.  "
 [toggle] Use the system's title bar
 "Text"
 [button] Reset to defaults
