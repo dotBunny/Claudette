@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Claudette.App.Controls"
         xmlns:vm="using:Claudette.App.ViewModels"
         xmlns:views="using:Claudette.App.Views"
         x:Class="Claudette.App.Views.AgentMapWindow"
@@ -10,12 +11,13 @@
 
   <!-- The agent map's larger view (DESIGN.md §18): the tree beside the selected agent's prompt and result. -->
   <DockPanel>
-    <Border DockPanel.Dock="Top" Padding="14,10" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
+    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"), naming what it shows -->
+    <controls:TitleBar DockPanel.Dock="Top" Padding="14,10" ShowsTitle="False">
       <StackPanel Spacing="2">
         <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
         <TextBlock Classes="muted small" Text="{Binding AgentsHeader}" TextWrapping="Wrap" />
       </StackPanel>
-    </Border>
+    </controls:TitleBar>
     <Grid ColumnDefinitions="2*,Auto,3*">
       <!-- The same subtle background as the side panel, which the tree's selection is drawn against. -->
       <Border Background="{DynamicResource SubtleBrush}">

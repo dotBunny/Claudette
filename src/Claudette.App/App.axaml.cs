@@ -94,6 +94,8 @@ public partial class App : Application
                 loggerFactory: loggers);
             // In the background, so the window isn't held up; the first claude start waits for it (DESIGN.md §13).
             _services.UserEnvironment.Start();
+            // Whether the windows draw their own title bars (DESIGN.md §3, "Window frame").
+            Controls.WindowFrame.Configure(_services);
             var services = _services;
             // The Dock or taskbar badge needs the window's native handle, so it's set up once the window exists.
             window.Opened += (_, _) => services.Notifications.UseBadge(

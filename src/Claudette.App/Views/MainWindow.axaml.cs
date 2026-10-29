@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.VisualTree;
 using Claudette.Platform.Shell.Windows;
 using Claudette.App.Services;
 using Claudette.App.ViewModels;
@@ -55,12 +54,6 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>The window's buttons Avalonia draws on Windows, when they can't be found: three 45 pixels wide, 2 apart.</summary>
-    private const double DrawnButtonsWidth = (3 * 45) + (2 * 2);
-
-    /// <summary>Room at the header's left for macOS's traffic lights.</summary>
-    private const double TrafficLightsWidth = 72;
-
     /// <summary>The header's padding, and its gap to the window's buttons.</summary>
     private const double HeaderPadding = 10;
 
@@ -72,16 +65,9 @@ public partial class MainWindow : Window
     private void FitTitleBar()
     {
         var merged = IsExtendedIntoWindowDecorations;
-        double right = HeaderPadding, left = HeaderPadding;
-        if (merged && OperatingSystem.IsMacOS())
-        {
-            left = TrafficLightsWidth / _zoom;
-        }
-        else if (merged)
-        {
-            var buttons = this.GetVisualDescendants().OfType<StackPanel>().FirstOrDefault(p => p is { Name: "PART_OverlayPanel", IsEffectivelyVisible: true });
-            right = ((buttons?.Bounds.Width ?? DrawnButtonsWidth) / _zoom) + (HeaderPadding / 2);
-        }
+        var room = Controls.WindowFrame.ButtonsRoom(this, _zoom);
+        var left = room.Left > 0 ? room.Left : HeaderPadding;
+        var right = room.Right > 0 ? room.Right + (HeaderPadding / 2) : HeaderPadding;
         var padding = new Thickness(left, 6, right, 6);
         if (Header.Padding != padding)
         {

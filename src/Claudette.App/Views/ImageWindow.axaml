@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Claudette.App.Controls"
         xmlns:vm="using:Claudette.App.ViewModels"
         xmlns:services="using:Claudette.App.Services"
         x:Class="Claudette.App.Views.ImageWindow"
@@ -25,7 +26,8 @@
     </Style>
   </Window.Styles>
   <DockPanel>
-    <Border DockPanel.Dock="Top" Padding="14,10" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
+    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"), naming what it shows -->
+    <controls:TitleBar DockPanel.Dock="Top" Padding="14,10" ShowsTitle="False">
       <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
         <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0">
@@ -55,7 +57,7 @@
         </StackPanel>
         <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Classes="small error" Text="{Binding Problem}" TextWrapping="Wrap" IsVisible="{Binding HasProblem}" />
       </Grid>
-    </Border>
+    </controls:TitleBar>
     <!-- Fitting, never larger than it is and smaller to fit the window; zoomed, its size at that step, and dragged
          about once it's larger than the window. The code behind sets which. -->
     <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">

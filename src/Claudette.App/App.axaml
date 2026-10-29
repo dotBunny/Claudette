@@ -509,6 +509,7 @@
     </Style>
     <!-- Settings and Tab settings…: sections, rows and switches (DESIGN.md §14). -->
     <StyleInclude Source="avares://Claudette/Themes/SettingsStyles.axaml" />
+    <StyleInclude Source="avares://Claudette/Themes/WindowFrameStyles.axaml" />
     <!-- Flyouts: room for the 480 the widest ask for (Fluent's 456 holds 430 inside its padding and border), and never
          scrolled sideways, so what's wider wraps or trims and a row's buttons stay in view. -->
     <Style Selector="FlyoutPresenter">

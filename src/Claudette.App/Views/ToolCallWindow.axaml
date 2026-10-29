@@ -45,7 +45,8 @@
 
   <!-- DESIGN.md §18, "Conversation cards": a tool call in a window that follows it -->
   <DockPanel>
-    <Border DockPanel.Dock="Top" Padding="14,10" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
+    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"), naming what it shows -->
+    <controls:TitleBar DockPanel.Dock="Top" Padding="14,10" ShowsTitle="False">
       <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
         <Path Classes="toolicon" Data="{Binding Tool.IconKey, Converter={x:Static conv:ToolIcons.Geometry}}" Margin="0,0,8,0" VerticalAlignment="Center" />
         <TextBlock Grid.Column="1" Text="{Binding Title}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
@@ -62,7 +63,7 @@
           <TextBlock Classes="muted small" Text="{Binding Tool.TimeTip}" IsVisible="{Binding Tool.HasTime}" VerticalAlignment="Center" />
         </StackPanel>
       </Grid>
-    </Border>
+    </controls:TitleBar>
 
     <TabControl Padding="14,8">
       <TabItem Header="Call">

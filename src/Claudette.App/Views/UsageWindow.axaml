@@ -24,160 +24,164 @@
   </Window.Styles>
 
   <!-- DESIGN.md §6: the Usage panel -->
-  <ScrollViewer Padding="24,20">
-    <StackPanel Spacing="18">
-      <!-- This session -->
-      <StackPanel Spacing="6">
-        <Grid ColumnDefinitions="*,Auto">
-          <TextBlock Classes="section" Text="This session (5-hour window)" />
-          <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center">
-            <Run Text="{Binding Header.Session.PercentText}" FontWeight="SemiBold" />
-            <Run Text="{Binding Header.Session.ResetText}" />
-          </TextBlock>
-        </Grid>
-        <TextBlock Classes="muted" Classes.warning="{Binding Header.IsProjectionWarning}" Text="{Binding Header.ProjectionText}" TextWrapping="Wrap" />
-        <controls:UsageChart Height="180" ShowAxes="True" TimeFormat="t"
-                             Points="{Binding Header.SessionPoints}" Projection="{Binding Header.SessionProjection}"
-                             RangeStart="{Binding Header.WindowStart}" RangeEnd="{Binding Header.WindowEnd}"
-                             WarnLevel="{Binding Header.WarnPercent}" CriticalLevel="{Binding Header.CriticalPercent}"
-                             LineBrush="{DynamicResource MeterBrush}" ProjectionBrush="{DynamicResource MutedTextBrush}"
-                             WarnBrush="{DynamicResource MeterWarningBrush}" CriticalBrush="{DynamicResource MeterCriticalBrush}"
-                             GridBrush="{DynamicResource DividerBrush}" LabelBrush="{DynamicResource MutedTextBrush}" />
-      </StackPanel>
-
-      <!-- Tokens per tab -->
-      <StackPanel Spacing="6">
-        <TextBlock Classes="section" Text="Tabs in this session window" />
-        <TextBlock Classes="muted small" Text="Tokens each tab used since the current 5-hour window started. Costs are Claude Code's estimates at list price, not your bill." TextWrapping="Wrap" />
-        <TextBlock Classes="muted" Text="No turns yet in this window." IsVisible="{Binding !HasTabs}" />
-        <ItemsControl ItemsSource="{Binding Tabs}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="vm:TabBurnRow">
-              <Grid ColumnDefinitions="*,120,80,70,70" Margin="0,3" Background="Transparent" ToolTip.Tip="{Binding Tooltip}">
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                <ProgressBar Grid.Column="1" Classes="share" Value="{Binding Share}" VerticalAlignment="Center" Margin="8,0" />
-                <TextBlock Grid.Column="2" Classes="mono small" Text="{Binding Tokens}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="3" Classes="mono small muted" Text="{Binding Cost}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="4" Classes="small muted" Text="{Binding Turns}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <!-- Tokens per project (DESIGN.md §6, "Usage history") -->
-      <StackPanel Spacing="6">
-        <Grid ColumnDefinitions="*,Auto">
-          <TextBlock Classes="section" Text="Projects" VerticalAlignment="Center" />
-          <ComboBox Grid.Column="1" MinWidth="170" ItemsSource="{Binding ProjectPeriods}" SelectedItem="{Binding SelectedProjectPeriod}"
-                    AutomationProperties.Name="Period" />
-        </Grid>
-        <TextBlock Classes="muted small" Text="{Binding ProjectsNote}" TextWrapping="Wrap" />
-        <TextBlock Classes="muted" Text="No turns in this period." IsVisible="{Binding !HasProjects}" />
-        <ItemsControl ItemsSource="{Binding Projects}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="vm:ProjectBurnRow">
-              <Grid ColumnDefinitions="*,120,80,70,70" Margin="0,3" Background="Transparent" ToolTip.Tip="{Binding Tooltip}">
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                <ProgressBar Grid.Column="1" Classes="share" Value="{Binding Share}" VerticalAlignment="Center" Margin="8,0" />
-                <TextBlock Grid.Column="2" Classes="mono small" Text="{Binding Tokens}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="3" Classes="mono small muted" Text="{Binding Cost}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="4" Classes="small muted" Text="{Binding Turns}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <!-- Tokens and estimated spend per account, over the same period (DESIGN.md §4, "Accounts") -->
-      <StackPanel Spacing="6" IsVisible="{Binding HasAccounts}">
-        <TextBlock Classes="section" Text="Accounts" />
-        <TextBlock Classes="muted small" TextWrapping="Wrap"
-                   Text="Over the period above. Costs are Claude Code's estimates at list price, not a bill; on a plan, its limits are what count." />
-        <ItemsControl ItemsSource="{Binding Accounts}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="vm:AccountBurnRow">
-              <Grid ColumnDefinitions="*,120,80,70,70" Margin="0,3" Background="Transparent" ToolTip.Tip="{Binding Tooltip}">
-                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                <ProgressBar Grid.Column="1" Classes="share" Value="{Binding Share}" VerticalAlignment="Center" Margin="8,0" />
-                <TextBlock Grid.Column="2" Classes="mono small" Text="{Binding Tokens}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="3" Classes="mono small muted" Text="{Binding Cost}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="4" Classes="small muted" Text="{Binding Turns}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-      </StackPanel>
-
-      <!-- The week -->
-      <StackPanel Spacing="6">
-        <TextBlock Classes="section" Text="This week" />
-        <ItemsControl ItemsSource="{Binding Header.Weekly}">
-          <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
-              <WrapPanel ItemSpacing="18" />
-            </ItemsPanelTemplate>
-          </ItemsControl.ItemsPanel>
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="vm:MeterViewModel">
-              <TextBlock ToolTip.Tip="{Binding Tooltip}">
-                <Run Text="{Binding Label}" />
-                <Run Text="{Binding PercentText}" FontWeight="SemiBold" />
-                <Run Classes="muted" Text="{Binding ResetText}" />
-              </TextBlock>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <controls:UsageChart Height="150" ShowAxes="True" TimeFormat="ddd"
-                             Points="{Binding WeekPoints}" RangeStart="{Binding WeekStart}" RangeEnd="{Binding WeekEnd}"
-                             WarnLevel="{Binding Header.WarnPercent}" CriticalLevel="{Binding Header.CriticalPercent}"
-                             LineBrush="{DynamicResource MeterBrush}" WarnBrush="{DynamicResource MeterWarningBrush}" CriticalBrush="{DynamicResource MeterCriticalBrush}"
-                             GridBrush="{DynamicResource DividerBrush}" LabelBrush="{DynamicResource MutedTextBrush}" />
-      </StackPanel>
-
-      <!-- History -->
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+  <DockPanel>
+    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): its title -->
+    <controls:TitleBar DockPanel.Dock="Top" />
+    <ScrollViewer Padding="24,20">
+      <StackPanel Spacing="18">
+        <!-- This session -->
         <StackPanel Spacing="6">
-          <TextBlock Classes="section" Text="Past sessions" />
-          <TextBlock Classes="muted small" Text="None recorded yet." IsVisible="{Binding !PastSessions.Count}" />
-          <ItemsControl ItemsSource="{Binding PastSessions}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate DataType="vm:PastWindowRow">
-                <StackPanel Margin="0,3" Spacing="2">
-                  <TextBlock Classes="small" Text="{Binding When}" />
-                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                    <ProgressBar Classes="meter" Value="{Binding Percent}" Minimum="0" Maximum="100" Height="4" MinHeight="4" VerticalAlignment="Center"
-                                 Background="{DynamicResource MeterTrackBrush}" Foreground="{DynamicResource MeterBrush}" />
-                    <TextBlock Grid.Column="1" Classes="muted small" Text="{Binding Peak}" />
-                  </Grid>
-                </StackPanel>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          <Button Classes="flat small" Content="{Binding MoreSessionsText}" Command="{Binding ShowMoreSessionsCommand}" IsVisible="{Binding HasMoreSessions}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Classes="section" Text="This session (5-hour window)" />
+            <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center">
+              <Run Text="{Binding Header.Session.PercentText}" FontWeight="SemiBold" />
+              <Run Text="{Binding Header.Session.ResetText}" />
+            </TextBlock>
+          </Grid>
+          <TextBlock Classes="muted" Classes.warning="{Binding Header.IsProjectionWarning}" Text="{Binding Header.ProjectionText}" TextWrapping="Wrap" />
+          <controls:UsageChart Height="180" ShowAxes="True" TimeFormat="t"
+                               Points="{Binding Header.SessionPoints}" Projection="{Binding Header.SessionProjection}"
+                               RangeStart="{Binding Header.WindowStart}" RangeEnd="{Binding Header.WindowEnd}"
+                               WarnLevel="{Binding Header.WarnPercent}" CriticalLevel="{Binding Header.CriticalPercent}"
+                               LineBrush="{DynamicResource MeterBrush}" ProjectionBrush="{DynamicResource MutedTextBrush}"
+                               WarnBrush="{DynamicResource MeterWarningBrush}" CriticalBrush="{DynamicResource MeterCriticalBrush}"
+                               GridBrush="{DynamicResource DividerBrush}" LabelBrush="{DynamicResource MutedTextBrush}" />
         </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="6">
-          <TextBlock Classes="section" Text="Past weeks" />
-          <TextBlock Classes="muted small" Text="None recorded yet." IsVisible="{Binding !PastWeeks.Count}" />
-          <ItemsControl ItemsSource="{Binding PastWeeks}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate DataType="vm:PastWindowRow">
-                <StackPanel Margin="0,3" Spacing="2">
-                  <TextBlock Classes="small" Text="{Binding When}" />
-                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                    <ProgressBar Value="{Binding Percent}" Minimum="0" Maximum="100" Height="4" MinHeight="4" MinWidth="0" VerticalAlignment="Center"
-                                 Background="{DynamicResource MeterTrackBrush}" Foreground="{DynamicResource MeterBrush}" />
-                    <TextBlock Grid.Column="1" Classes="muted small" Text="{Binding Peak}" />
-                  </Grid>
-                </StackPanel>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-          <Button Classes="flat small" Content="{Binding MoreWeeksText}" Command="{Binding ShowMoreWeeksCommand}" IsVisible="{Binding HasMoreWeeks}" />
-        </StackPanel>
-      </Grid>
 
-      <TextBlock Classes="muted small" Text="{Binding HistoryNote}" />
-    </StackPanel>
-  </ScrollViewer>
+        <!-- Tokens per tab -->
+        <StackPanel Spacing="6">
+          <TextBlock Classes="section" Text="Tabs in this session window" />
+          <TextBlock Classes="muted small" Text="Tokens each tab used since the current 5-hour window started. Costs are Claude Code's estimates at list price, not your bill." TextWrapping="Wrap" />
+          <TextBlock Classes="muted" Text="No turns yet in this window." IsVisible="{Binding !HasTabs}" />
+          <ItemsControl ItemsSource="{Binding Tabs}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:TabBurnRow">
+                <Grid ColumnDefinitions="*,120,80,70,70" Margin="0,3" Background="Transparent" ToolTip.Tip="{Binding Tooltip}">
+                  <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <ProgressBar Grid.Column="1" Classes="share" Value="{Binding Share}" VerticalAlignment="Center" Margin="8,0" />
+                  <TextBlock Grid.Column="2" Classes="mono small" Text="{Binding Tokens}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="3" Classes="mono small muted" Text="{Binding Cost}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="4" Classes="small muted" Text="{Binding Turns}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <!-- Tokens per project (DESIGN.md §6, "Usage history") -->
+        <StackPanel Spacing="6">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Classes="section" Text="Projects" VerticalAlignment="Center" />
+            <ComboBox Grid.Column="1" MinWidth="170" ItemsSource="{Binding ProjectPeriods}" SelectedItem="{Binding SelectedProjectPeriod}"
+                      AutomationProperties.Name="Period" />
+          </Grid>
+          <TextBlock Classes="muted small" Text="{Binding ProjectsNote}" TextWrapping="Wrap" />
+          <TextBlock Classes="muted" Text="No turns in this period." IsVisible="{Binding !HasProjects}" />
+          <ItemsControl ItemsSource="{Binding Projects}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:ProjectBurnRow">
+                <Grid ColumnDefinitions="*,120,80,70,70" Margin="0,3" Background="Transparent" ToolTip.Tip="{Binding Tooltip}">
+                  <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <ProgressBar Grid.Column="1" Classes="share" Value="{Binding Share}" VerticalAlignment="Center" Margin="8,0" />
+                  <TextBlock Grid.Column="2" Classes="mono small" Text="{Binding Tokens}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="3" Classes="mono small muted" Text="{Binding Cost}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="4" Classes="small muted" Text="{Binding Turns}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <!-- Tokens and estimated spend per account, over the same period (DESIGN.md §4, "Accounts") -->
+        <StackPanel Spacing="6" IsVisible="{Binding HasAccounts}">
+          <TextBlock Classes="section" Text="Accounts" />
+          <TextBlock Classes="muted small" TextWrapping="Wrap"
+                     Text="Over the period above. Costs are Claude Code's estimates at list price, not a bill; on a plan, its limits are what count." />
+          <ItemsControl ItemsSource="{Binding Accounts}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:AccountBurnRow">
+                <Grid ColumnDefinitions="*,120,80,70,70" Margin="0,3" Background="Transparent" ToolTip.Tip="{Binding Tooltip}">
+                  <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <ProgressBar Grid.Column="1" Classes="share" Value="{Binding Share}" VerticalAlignment="Center" Margin="8,0" />
+                  <TextBlock Grid.Column="2" Classes="mono small" Text="{Binding Tokens}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="3" Classes="mono small muted" Text="{Binding Cost}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="4" Classes="small muted" Text="{Binding Turns}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <!-- The week -->
+        <StackPanel Spacing="6">
+          <TextBlock Classes="section" Text="This week" />
+          <ItemsControl ItemsSource="{Binding Header.Weekly}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel ItemSpacing="18" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:MeterViewModel">
+                <TextBlock ToolTip.Tip="{Binding Tooltip}">
+                  <Run Text="{Binding Label}" />
+                  <Run Text="{Binding PercentText}" FontWeight="SemiBold" />
+                  <Run Classes="muted" Text="{Binding ResetText}" />
+                </TextBlock>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <controls:UsageChart Height="150" ShowAxes="True" TimeFormat="ddd"
+                               Points="{Binding WeekPoints}" RangeStart="{Binding WeekStart}" RangeEnd="{Binding WeekEnd}"
+                               WarnLevel="{Binding Header.WarnPercent}" CriticalLevel="{Binding Header.CriticalPercent}"
+                               LineBrush="{DynamicResource MeterBrush}" WarnBrush="{DynamicResource MeterWarningBrush}" CriticalBrush="{DynamicResource MeterCriticalBrush}"
+                               GridBrush="{DynamicResource DividerBrush}" LabelBrush="{DynamicResource MutedTextBrush}" />
+        </StackPanel>
+
+        <!-- History -->
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="24">
+          <StackPanel Spacing="6">
+            <TextBlock Classes="section" Text="Past sessions" />
+            <TextBlock Classes="muted small" Text="None recorded yet." IsVisible="{Binding !PastSessions.Count}" />
+            <ItemsControl ItemsSource="{Binding PastSessions}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:PastWindowRow">
+                  <StackPanel Margin="0,3" Spacing="2">
+                    <TextBlock Classes="small" Text="{Binding When}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                      <ProgressBar Classes="meter" Value="{Binding Percent}" Minimum="0" Maximum="100" Height="4" MinHeight="4" VerticalAlignment="Center"
+                                   Background="{DynamicResource MeterTrackBrush}" Foreground="{DynamicResource MeterBrush}" />
+                      <TextBlock Grid.Column="1" Classes="muted small" Text="{Binding Peak}" />
+                    </Grid>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Classes="flat small" Content="{Binding MoreSessionsText}" Command="{Binding ShowMoreSessionsCommand}" IsVisible="{Binding HasMoreSessions}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="6">
+            <TextBlock Classes="section" Text="Past weeks" />
+            <TextBlock Classes="muted small" Text="None recorded yet." IsVisible="{Binding !PastWeeks.Count}" />
+            <ItemsControl ItemsSource="{Binding PastWeeks}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:PastWindowRow">
+                  <StackPanel Margin="0,3" Spacing="2">
+                    <TextBlock Classes="small" Text="{Binding When}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                      <ProgressBar Value="{Binding Percent}" Minimum="0" Maximum="100" Height="4" MinHeight="4" MinWidth="0" VerticalAlignment="Center"
+                                   Background="{DynamicResource MeterTrackBrush}" Foreground="{DynamicResource MeterBrush}" />
+                      <TextBlock Grid.Column="1" Classes="muted small" Text="{Binding Peak}" />
+                    </Grid>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Classes="flat small" Content="{Binding MoreWeeksText}" Command="{Binding ShowMoreWeeksCommand}" IsVisible="{Binding HasMoreWeeks}" />
+          </StackPanel>
+        </Grid>
+
+        <TextBlock Classes="muted small" Text="{Binding HistoryNote}" />
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
 </Window>

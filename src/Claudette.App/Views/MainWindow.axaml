@@ -166,20 +166,6 @@
     <Style Selector="Border#Header :is(Button), Border#Header TextBlock#ProcessTotals">
       <Setter Property="(chrome:WindowDecorationProperties.ElementRole)" Value="User" />
     </Style>
-    <!-- The window's buttons as Rider's: as tall as the title bar, so their highlight is too, and side by side, as Windows'
-         own are; no title beside the logo, and no full-screen button -->
-    <Style Selector="WindowDrawnDecorations /template/ StackPanel#PART_OverlayPanel">
-      <Setter Property="Spacing" Value="0" />
-    </Style>
-    <Style Selector="WindowDrawnDecorations /template/ Button">
-      <Setter Property="Height" Value="NaN" />
-    </Style>
-    <Style Selector="WindowDrawnDecorations /template/ TextBlock">
-      <Setter Property="IsVisible" Value="False" />
-    </Style>
-    <Style Selector="WindowDrawnDecorations /template/ Button#PART_FullScreenButton">
-      <Setter Property="IsVisible" Value="False" />
-    </Style>
   </Window.Styles>
 
   <!-- Settings → Appearance → Zoom and Ctrl/Cmd +, −, 0 scale everything inside (DESIGN.md §3, "Accessibility") -->

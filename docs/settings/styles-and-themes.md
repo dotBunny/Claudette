@@ -59,7 +59,7 @@ Settings → Appearance → **Density** is **Comfortable** (the default) or **Co
 
 ## The title bar
 
-On Windows and macOS the header is the window's title bar, as in JetBrains Rider: Claudette's logo, the menu, your usage, then the window's buttons. Settings → Appearance → **Use the system's title bar** puts your system's title bar over the header instead. It's this computer's, so it doesn't sync, and Linux always has the system's. See [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header).
+On Windows and macOS the header is the window's title bar, as in JetBrains Rider: Claudette's logo, the menu, your usage, then the window's buttons. Claudette's other windows have title bars of their own too: the diff view's header is its title bar, as are the image viewer's, the agent map's and a tool call's, and Settings, Usage and About Claudette have a slim one with their title. Settings → Appearance → **Use the system's title bar** puts your system's title bar over each window instead. It's this computer's, so it doesn't sync, and Linux always has the system's. See [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header).
 
 ## Fonts
 
