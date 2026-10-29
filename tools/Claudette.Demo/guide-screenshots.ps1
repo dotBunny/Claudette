@@ -371,6 +371,8 @@ foreach ($theme in $Themes) {
             # Last, as it takes the layout with it: the group's Files tab, with a changed file open to show Claude's marks.
             Shot 'project-files/files-tab' {
                 param($path)
+                # Without the tool windows the earlier pictures showed, which would take the editor's width.
+                Hide-ToolWindows $window
                 Invoke-ByText $window 'Project files'
                 Start-Sleep -Seconds 3
                 Invoke-ByText $window 'Find a file by name'
@@ -388,6 +390,7 @@ foreach ($theme in $Themes) {
             # Starfall's README with its preview beside it (DESIGN.md §18, "Markdown preview").
             Shot 'project-files/markdown-preview' {
                 param($path)
+                Hide-ToolWindows $window
                 Invoke-ByText $window 'Project files'
                 Start-Sleep -Seconds 3
                 Invoke-ByText $window 'Find a file by name'

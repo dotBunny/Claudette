@@ -8,7 +8,8 @@ For .github/workflows/screenshots.yml, which keeps each system's pictures as an 
 screenshots.ps1, which takes the README's pictures on Windows through UI Automation and PrintWindow, it drives Claudette
 only through its command channel (CLAUDETTE_AUTOMATION_PIPE), naming windows by their titles, and has Claudette save each
 window as it draws it (the channel's capture command). So it needs only PowerShell 7 and a display, and on Linux a
-virtual one does. The window's buttons, whether the OS or Avalonia draws them, aren't in the pictures, nor are popups.
+virtual one does. The main window is 1920 by 1080 on every system, past the macOS runner's small screen. Popups aren't in
+the pictures; the window's buttons are, macOS's traffic lights drawn in where AppKit has them.
 
 Build Claudette and the demo first, in the configuration given (Debug by default). Claudette runs on the demo with
 fake-claude as Claude Code, so no account and no tokens.
@@ -107,8 +108,10 @@ foreach ($style in 'standard', 'claude') {
         foreach ($name in $environment.Keys) { $start.Environment[$name] = $environment[$name] }
         $claudette = [System.Diagnostics.Process]::Start($start)
         try {
-            # Its main window, ready to draw.
+            # Its main window, ready to draw, at 1920 by 1080 on every system, whatever its screen: macOS fits a window
+            # to its screen as it opens, and the runner's is 1024 by 768.
             Send-WhenReady $pipe @{ verb = 'capture'; path = (Join-Path $Work 'ready.png') } 'the main window' | Out-Null
+            Send-Command $pipe @{ verb = 'resize'; width = 1920; height = 1080 } | Out-Null
             Start-Sleep -Seconds $SettleSeconds
             foreach ($tab in $tabs) {
                 Send-WhenReady $pipe @{ verb = 'click'; name = $tab } $tab | Out-Null
@@ -117,18 +120,22 @@ foreach ($style in 'standard', 'claude') {
             Start-Sleep -Seconds 2
             Send-Command $pipe @{ verb = 'capture'; path = (Join-Path $Out "$style-$theme.png") } | Out-Null
 
-            # Settings on Appearance, whose preview shows the style and theme.
+            # Settings on Appearance, whose preview shows the style and theme, at its own size, which macOS cut to the
+            # screen as it opened.
             Send-Command $pipe @{ verb = 'click'; name = 'Settings' } | Out-Null
             Send-WhenReady $pipe @{ verb = 'click'; title = 'Settings'; name = 'Appearance'; type = 'ListItem' } 'Settings' | Out-Null
+            Send-Command $pipe @{ verb = 'resize'; title = 'Settings'; width = 920; height = 720 } | Out-Null
             Start-Sleep -Seconds 2
             Send-Command $pipe @{ verb = 'capture'; title = 'Settings'; path = (Join-Path $Out "settings-$style-$theme.png") } | Out-Null
             Send-Command $pipe @{ verb = 'close'; title = 'Settings' } | Out-Null
             Start-Sleep -Seconds 1
 
-            # About Claudette, from the header's menu.
+            # About Claudette, from the header's menu, at its own size too.
             Send-Command $pipe @{ verb = 'click'; name = 'Menu' } | Out-Null
             Send-WhenReady $pipe @{ verb = 'click'; name = 'About Claudette' } 'the menu' | Out-Null
-            Send-WhenReady $pipe @{ verb = 'capture'; title = 'About Claudette'; path = (Join-Path $Out "about-$style-$theme.png") } 'the About window' | Out-Null
+            Send-WhenReady $pipe @{ verb = 'resize'; title = 'About Claudette'; width = 720; height = 720 } 'the About window' | Out-Null
+            Start-Sleep -Seconds 1
+            Send-Command $pipe @{ verb = 'capture'; title = 'About Claudette'; path = (Join-Path $Out "about-$style-$theme.png") } | Out-Null
             Send-Command $pipe @{ verb = 'close'; title = 'About Claudette' } | Out-Null
         }
         finally {

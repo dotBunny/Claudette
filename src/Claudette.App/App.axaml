@@ -736,6 +736,8 @@
           <SolidColorBrush x:Key="ToolIconSelectedTextBrush" Color="#FFFFFF" />
           <SolidColorBrush x:Key="TabSelectedBrush" Color="#DFE1E5" />
           <SolidColorBrush x:Key="SidebarBrush" Color="#F7F8FA" />
+          <!-- The Files tab's explorer (DESIGN.md §18, "Project files"): the sidebar's surface, unless a style needs it apart -->
+          <SolidColorBrush x:Key="ExplorerBrush" Color="#F7F8FA" />
           <SolidColorBrush x:Key="ComposerBrush" Color="#FFFFFF" />
           <SolidColorBrush x:Key="ComposerBorderBrush" Color="#C9CCD6" />
           <SolidColorBrush x:Key="DialogBrush" Color="#FFFFFF" />
@@ -854,6 +856,7 @@
           <SolidColorBrush x:Key="ToolIconSelectedTextBrush" Color="#FFFFFF" />
           <SolidColorBrush x:Key="TabSelectedBrush" Color="#33353B" />
           <SolidColorBrush x:Key="SidebarBrush" Color="#1E1F22" />
+          <SolidColorBrush x:Key="ExplorerBrush" Color="#1E1F22" />
           <SolidColorBrush x:Key="ComposerBrush" Color="#1E1F22" />
           <SolidColorBrush x:Key="ComposerBorderBrush" Color="#43454A" />
           <SolidColorBrush x:Key="DialogBrush" Color="#2B2D30" />

@@ -11,13 +11,15 @@
 
   <!-- The agent map's larger view (DESIGN.md §18): the tree beside the selected agent's prompt and result. -->
   <DockPanel>
-    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"), naming what it shows -->
-    <controls:TitleBar DockPanel.Dock="Top" Padding="14,10" ShowsTitle="False">
-      <StackPanel Spacing="2">
-        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-        <TextBlock Classes="muted small" Text="{Binding AgentsHeader}" TextWrapping="Wrap" />
-      </StackPanel>
+    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): the tab's name, in one row, so the
+         window's buttons are as tall as the main window's -->
+    <controls:TitleBar DockPanel.Dock="Top" ShowsTitle="False">
+      <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
     </controls:TitleBar>
+    <!-- Under it, how many agents there are and how they're doing -->
+    <Border DockPanel.Dock="Top" Classes="windowbar">
+      <TextBlock Classes="muted small" Text="{Binding AgentsHeader}" TextWrapping="Wrap" />
+    </Border>
     <Grid ColumnDefinitions="2*,Auto,3*">
       <!-- The same subtle background as the side panel, which the tree's selection is drawn against. -->
       <Border Background="{DynamicResource SubtleBrush}">

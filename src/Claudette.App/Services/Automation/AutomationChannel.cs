@@ -13,7 +13,7 @@ public sealed record AutomationRequest
 {
     /// <summary>
     /// What to do: <c>ping</c>, <c>click</c>, <c>rightclick</c>, <c>toggle</c>, <c>settext</c>, <c>show</c>,
-    /// <c>scroll</c>, <c>hover</c>, <c>unhover</c>, <c>key</c>, <c>capture</c> or <c>close</c>.
+    /// <c>scroll</c>, <c>hover</c>, <c>unhover</c>, <c>key</c>, <c>capture</c>, <c>resize</c> or <c>close</c>.
     /// </summary>
     public string Verb { get; init; } = "";
 
@@ -55,6 +55,12 @@ public sealed record AutomationRequest
 
     /// <summary>For <c>scroll</c>: how many lines, down; up when it's less than zero.</summary>
     public int Lines { get; init; }
+
+    /// <summary>For <c>resize</c>: the window's width, in device-independent pixels.</summary>
+    public double? Width { get; init; }
+
+    /// <summary>For <c>resize</c>: the window's height, in device-independent pixels.</summary>
+    public double? Height { get; init; }
 }
 
 /// <summary>What became of a command: done, or why not; and for <c>toggle</c>, whether the switch is on.</summary>

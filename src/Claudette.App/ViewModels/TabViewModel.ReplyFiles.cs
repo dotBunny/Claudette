@@ -11,7 +11,9 @@ public sealed partial class TabViewModel
 
     /// <summary>The files the tab's replies name: which inline code is a file, and where a clicked link's file is.</summary>
     public ReplyFiles ReplyFiles => _replyFiles ??= new ReplyFiles(
-        new ReplyFileFinder(() => Folder, () => ExtraFolders, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), () => FileIndex),
+        new ReplyFileFinder(() => Folder, () => ExtraFolders, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), () => FileIndex,
+            // The user's environment, as claude has it, for a path such as %TEMP%\shot.png or $TMPDIR/shot.png.
+            name => _services.UserEnvironment.Current is { } environment ? environment.GetValueOrDefault(name) : Environment.GetEnvironmentVariable(name)),
         () => _conversation.FilePaths);
 
     /// <summary>

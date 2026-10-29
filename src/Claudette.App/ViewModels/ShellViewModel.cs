@@ -55,6 +55,7 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         IsFullWidth = services.Settings.Appearance.FullWidthConversation;
         IsQuietSteps = services.Settings.Appearance.QuietSteps;
         IsIndentYou = services.Settings.Appearance.IndentYourMessages;
+        IsIndentSteps = services.Settings.Appearance.IndentClaudesSteps;
         _services.SettingsChanged += (_, _) =>
         {
             OnClaudeProjectsSettingChanged();
@@ -63,6 +64,7 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
             IsFullWidth = _services.Settings.Appearance.FullWidthConversation;
             IsQuietSteps = _services.Settings.Appearance.QuietSteps;
             IsIndentYou = _services.Settings.Appearance.IndentYourMessages;
+            IsIndentSteps = _services.Settings.Appearance.IndentClaudesSteps;
             foreach (var tab in AllTabs)
             {
                 tab.OnSettingsChanged();
@@ -1077,10 +1079,17 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
 
     /// <summary>
     /// Settings → Conversation → Indent your messages (DESIGN.md §18, "Conversation cards"): the view takes the
-    /// <c>indentyou</c> class, whose style starts your messages' cards further in from the left than the others.
+    /// <c>indentyou</c> class, whose style starts your messages' cards far in from the left.
     /// </summary>
     [ObservableProperty]
     public partial bool IsIndentYou { get; private set; }
+
+    /// <summary>
+    /// Settings → Conversation → Indent Claude's steps (DESIGN.md §18, "Conversation cards"): the view takes the
+    /// <c>indentsteps</c> class, whose style starts Claude's thinking, tool calls and subagents a little in.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsIndentSteps { get; private set; }
 
     // ---- Sidebar (DESIGN.md §3, §4, "Sidebar") ----------------------------------------------------------------
 

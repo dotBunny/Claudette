@@ -26,11 +26,14 @@
     </Style>
   </Window.Styles>
   <DockPanel>
-    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"), naming what it shows -->
-    <controls:TitleBar DockPanel.Dock="Top" Padding="14,10" ShowsTitle="False">
-      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
-        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" Margin="12,0,0,0">
+    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): the image's name, which is the
+         window's title, in one row, so the window's buttons are as tall as the main window's -->
+    <controls:TitleBar DockPanel.Dock="Top" />
+    <!-- Under it, the toolbar: where the image came from and its size, what to do with it, and the zoom -->
+    <Border DockPanel.Dock="Top" Classes="windowbar">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="4">
+        <TextBlock Classes="muted small" Text="{Binding Details}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
           <Button Content="{Binding PlayText}" Command="{Binding PlayPauseCommand}" IsVisible="{Binding IsAnimated}"
                   ToolTip.Tip="Play or pause the animation" />
           <Button Command="{Binding CopyCommand}" ToolTip.Tip="Copy the image to the clipboard">
@@ -42,22 +45,21 @@
           <Button Content="Save as…" Command="{Binding SaveAsCommand}" />
           <Button Content="{Binding OpenText}" Command="{Binding OpenCommand}" IsVisible="{Binding CanOpen}"
                   ToolTip.Tip="{Binding OpenTip}" />
+          <!-- The zoom: the mouse wheel over the image, and +, − and 0, do the same -->
+          <StackPanel Orientation="Horizontal" Spacing="2" Margin="8,0,0,0">
+            <Button Classes="flat zoom" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom out (−)" AutomationProperties.Name="Zoom out">
+              <Path Data="{StaticResource IconMinus}" />
+            </Button>
+            <TextBlock Classes="muted small" Text="{Binding ZoomText}" MinWidth="40" TextAlignment="Center" VerticalAlignment="Center" />
+            <Button Classes="flat zoom" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom in (+)" AutomationProperties.Name="Zoom in">
+              <Path Data="{StaticResource IconPlus}" />
+            </Button>
+            <Button Classes="flat" Content="Fit" Command="{Binding FitCommand}" ToolTip.Tip="Show the whole image, fitting the window (0)" />
+          </StackPanel>
         </StackPanel>
-        <TextBlock Grid.Row="1" Classes="muted small" Text="{Binding Details}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-        <!-- The zoom: the mouse wheel over the image, and +, − and 0, do the same -->
-        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="2" Margin="12,0,0,0" HorizontalAlignment="Right">
-          <Button Classes="flat zoom" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom out (−)" AutomationProperties.Name="Zoom out">
-            <Path Data="{StaticResource IconMinus}" />
-          </Button>
-          <TextBlock Classes="muted small" Text="{Binding ZoomText}" MinWidth="40" TextAlignment="Center" VerticalAlignment="Center" />
-          <Button Classes="flat zoom" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom in (+)" AutomationProperties.Name="Zoom in">
-            <Path Data="{StaticResource IconPlus}" />
-          </Button>
-          <Button Classes="flat" Content="Fit" Command="{Binding FitCommand}" ToolTip.Tip="Show the whole image, fitting the window (0)" />
-        </StackPanel>
-        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Classes="small error" Text="{Binding Problem}" TextWrapping="Wrap" IsVisible="{Binding HasProblem}" />
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="small error" Text="{Binding Problem}" TextWrapping="Wrap" IsVisible="{Binding HasProblem}" />
       </Grid>
-    </controls:TitleBar>
+    </Border>
     <!-- Fitting, never larger than it is and smaller to fit the window; zoomed, its size at that step, and dragged
          about once it's larger than the window. The code behind sets which. -->
     <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">

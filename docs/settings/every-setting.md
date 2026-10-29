@@ -65,7 +65,8 @@ The page starts with a preview that shows your choices as you make them.
 | Setting | Section | Default | Syncs | Explained in |
 |---|---|---|---|---|
 | **Quieter in-between steps** | Steps and replies | On | Yes | [Reading the conversation](../conversation/reading-the-conversation.md) |
-| **Indent your messages** | Steps and replies | On | Yes | [Reading the conversation](../conversation/reading-the-conversation.md#indent-your-messages) |
+| **Indent your messages** | Steps and replies | Off | Yes | [Reading the conversation](../conversation/reading-the-conversation.md#indent-your-messages) |
+| **Indent Claude's steps** | Steps and replies | Off | Yes | [Reading the conversation](../conversation/reading-the-conversation.md#indent-your-messages) |
 | **Show tool calls collapsed** | Steps and replies | Off | Yes | [Tool calls](../conversation/tool-calls.md#folding-the-calls) |
 | **Show thinking expanded** | Steps and replies | Off | Yes | [Thinking, notes and hooks](../conversation/thinking-notes-and-hooks.md) |
 | **Show subagents' work** | Steps and replies | Under the tab in the sidebar | Yes | [Subagents](../conversation/subagents.md#subagents-under-their-tab) |
