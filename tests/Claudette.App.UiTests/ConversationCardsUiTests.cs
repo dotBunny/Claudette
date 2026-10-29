@@ -148,7 +148,8 @@ public sealed class ConversationCardsUiTests
     [AvaloniaFact]
     public async Task Your_message_starts_further_in_than_Claudes_reply_and_the_setting_turns_that_off()
     {
-        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        // Off by default; turned on here.
+        await using var h = new TabTestHarness(s => s.Appearance.IndentYourMessages = true, dispatcher: new AvaloniaUiDispatcher());
         var tab = await h.OpenTabAsync();
         var window = UiText.Show(new ShellView { DataContext = h.Shell });
         tab.ComposerText = "Hello";

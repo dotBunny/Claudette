@@ -46,7 +46,7 @@ The steps on the way to an answer are less important than the answer. With **Qui
 Your messages, Claude's answers, changed files, errors and prompts waiting for you always keep their full look.
 
 ## Indent your messages
-Your messages' cards start far in from the left, Claude's replies stay at the left edge, and its thinking, tool calls and subagents start a little in. Every card ends at the same right edge. So you can tell whose turn a card is from its place alone, as you can in a chat, without reading its label. Settings → Conversation → **Indent your messages** is on by default; turn it off to start every card at the same edge.
+Your messages' cards start far in from the left, Claude's replies stay at the left edge, and its thinking, tool calls and subagents start a little in. Every card ends at the same right edge. So you can tell whose turn a card is from its place alone, as you can in a chat, without reading its label. Settings → Conversation → **Indent your messages** turns it on; it's off by default, with every card starting at the same edge.
 
 ## Wide windows
 
@@ -61,7 +61,7 @@ A long conversation, such as a restored session with thousands of tool calls, co
 | Setting | Default | Where |
 |---|---|---|
 | **Quieter in-between steps** | On | Settings → Conversation |
-| **Indent your messages** | On | Settings → Conversation |
+| **Indent your messages** | Off | Settings → Conversation |
 | **Full-width conversation** | Off | Settings → Appearance |
 | **Show thinking expanded** | Off | Settings → Conversation ([Thinking, notes and hooks](thinking-notes-and-hooks.md)) |
 | **Conversation font**, **Conversation font size**, **Code font**, **Code font size** | The defaults | Settings → Appearance ([Styles and themes](../settings/styles-and-themes.md)) |

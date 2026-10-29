@@ -600,9 +600,9 @@ public sealed class AppearanceSettings
 
     /// <summary>
     /// Your messages' cards start further in from the left than Claude's, so whose turn each card is can be told by
-    /// its place alone (DESIGN.md §18, "Conversation cards"). On by default.
+    /// its place alone (DESIGN.md §18, "Conversation cards"). Off by default.
     /// </summary>
-    public bool IndentYourMessages { get; set; } = true;
+    public bool IndentYourMessages { get; set; }
 
     /// <summary>Settings → Appearance → Motion (DESIGN.md §3, "Accessibility").</summary>
     public MotionSetting Motion { get; set; } = MotionSetting.System;
