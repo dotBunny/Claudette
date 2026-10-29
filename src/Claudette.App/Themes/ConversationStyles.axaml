@@ -843,9 +843,6 @@
     <Setter Property="StrokeThickness" Value="1.3" />
     <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
   </Style>
-  <Style Selector="Border.toolgrip">
-    <Setter Property="Background" Value="Transparent" />
-  </Style>
   <!-- Changed files (DESIGN.md §8, "Reviewed"): a small box before each file, and a reviewed file drawn faintly -->
   <Style Selector="CheckBox.reviewed">
     <Setter Property="MinWidth" Value="0" />

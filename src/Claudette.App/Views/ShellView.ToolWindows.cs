@@ -191,10 +191,13 @@ public partial class ShellView
 
     // ---- Unpinned windows --------------------------------------------------------------------------------------------
 
-    /// <summary>A press in the dock area: an unpinned window showing hides, unless the press was in it or on the strip.</summary>
+    /// <summary>
+    /// A press in the dock area: an unpinned window showing hides, unless the press was in it or on the strip. A press on a
+    /// grip is the start of resizing one, so nothing hides.
+    /// </summary>
     private void OnDockPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (Dock is not { } dock || e.Source is not Visual source)
+        if (Dock is not { } dock || e.Source is not Visual source || source == RightGrip || source == BottomGrip || source == SplitGrip)
         {
             return;
         }

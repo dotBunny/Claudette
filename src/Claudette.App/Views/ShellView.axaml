@@ -241,6 +241,14 @@
     <Style Selector="Border#SidebarEdge:pointerover">
       <Setter Property="Background" Value="{DynamicResource DividerBrush}" />
     </Style>
+    <!-- The tool windows' grips, the gaps beside them (DESIGN.md §3, "Tool windows"): painted, so a press finds them, and lit
+         under the pointer as the sidebar's edge is. -->
+    <Style Selector="Border.toolgrip">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.toolgrip:pointerover">
+      <Setter Property="Background" Value="{DynamicResource DividerBrush}" />
+    </Style>
     <!-- Where a dragged tab would open (DESIGN.md §18, "Split panes"): an accent outline over the half or pane it takes. -->
     <Style Selector="Border.panedrop">
       <Setter Property="Background" Value="{DynamicResource SelectedRowBrush}" />
