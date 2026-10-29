@@ -135,6 +135,47 @@ public class ComposerExtrasUiTests
         Assert.True(row.Command!.CanExecute(row.CommandParameter));
     }
 
+    /// <summary>The tab's info card opens from the end of the line under the composer, after the tasks' status (DESIGN.md §5, "Composer").</summary>
+    [AvaloniaFact]
+    public async Task The_tab_info_button_is_last_on_the_line_under_the_composer()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        h.Transport.Emit(new JsonObject
+        {
+            ["type"] = "assistant",
+            ["message"] = new JsonObject
+            {
+                ["content"] = new JsonArray(new JsonObject
+                {
+                    ["type"] = "tool_use", ["id"] = "t1", ["name"] = "TodoWrite",
+                    ["input"] = new JsonObject
+                    {
+                        ["todos"] = new JsonArray(
+                            new JsonObject { ["content"] = "Retake the pictures", ["status"] = "in_progress", ["activeForm"] = "Retaking the pictures" },
+                            new JsonObject { ["content"] = "Merge", ["status"] = "pending", ["activeForm"] = "Merging" }),
+                    },
+                }),
+            },
+        });
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        await UiText.SettleUntilAsync(window, () => tab.TodoList.HasStatus, "the tasks' status");
+        var info = Named<Button>(window, "TabInfo");
+        var tasks = Named<Button>(window, "TaskStatus");
+        var composer = Named<TextBox>(window, "Composer");
+        Point At(Control c) => c.TranslatePoint(default, window)!.Value;
+
+        // Under the box, on the status line, after the tasks: the last thing on it.
+        Assert.True(At(info).Y > At(composer).Y + composer.Bounds.Height);
+        Assert.Equal(At(tasks).Y + tasks.Bounds.Height / 2, At(info).Y + info.Bounds.Height / 2, 1);
+        Assert.True(At(info).X > At(tasks).X + tasks.Bounds.Width);
+        Assert.Equal("Tab info", AutomationProperties.GetName(info));
+        Assert.IsType<Flyout>(info.Flyout);
+        // Not in the composer's bar any more.
+        var bar = Named<Button>(window, "SendButton").GetVisualAncestors().OfType<WrapPanel>().First();
+        Assert.DoesNotContain(bar.GetVisualDescendants().OfType<Button>(), b => AutomationProperties.GetName(b) == "Tab info");
+    }
+
     /// <summary>
     /// The send key chip before Send (DESIGN.md §5, "Composer"): it says which key sends, a click switches Settings →
     /// Keyboard → Send with (§14) and the placeholder and Send's tooltip follow, and the keyboard reaches it.

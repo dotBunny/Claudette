@@ -28,9 +28,9 @@ Updating restarts Claudette with every tab as it was. See [Claudette's updates](
 
 ## Look and feel
 
-- **Windows 11** shows its Mica backdrop in the title bar, header and sidebar in the Standard style. The Claude style is solid.
-- **macOS** has the native title bar and traffic lights, and a menu bar with **File → New Tab**, **Open Recent**, **History…** and **Close Tab**, **Help → User Guide**, **Ask on Discord** and **Report an Issue**, and **Settings…** in the app menu. Each command with a shortcut shows it, from Settings → Keyboard.
-- **Linux** draws Claudette's window through X11, and through XWayland on a Wayland desktop, with your window manager's title bar. Its menu entry is a desktop entry you add ([Installing on Linux](../getting-started/installing-on-linux.md#add-it-to-your-app-menu)).
+- **Windows**: the header is the window's title bar, as in JetBrains Rider, with minimize, maximize and close at its right; drag the header's gaps to move the window. Claudette's other windows have their own title bars too, the same way. Settings → Appearance → **Use the system's title bar** puts Windows' own title bar over each window instead.
+- **macOS**: the header is the window's title bar too, with the traffic lights at its left (or, with **Use the system's title bar**, the native title bar over it), and a menu bar with **File → New Tab**, **Open Recent**, **History…** and **Close Tab**, **Help → User Guide**, **Ask on Discord** and **Report an Issue**, and **Settings…** in the app menu. Each command with a shortcut shows it, from Settings → Keyboard.
+- **Linux** draws Claudette's window through X11, and through XWayland on a Wayland desktop, with your window manager's title bar over the header, always: a window manager may not draw the buttons of a window that takes its title bar. Its menu entry is a desktop entry you add ([Installing on Linux](../getting-started/installing-on-linux.md#add-it-to-your-app-menu)).
 - In the Claude style, Claude's replies are set in a serif: Charter on macOS, Georgia or Cambria on Windows, and Charter, Noto Serif or DejaVu Serif on Linux.
 
 See [Styles and themes](../settings/styles-and-themes.md).
@@ -45,7 +45,7 @@ The command key is `Ctrl` on Windows and Linux and `Cmd` on macOS. A shortcut yo
 - **macOS**: **File → Open Recent** and the Dock icon's menu list them.
 - **Everywhere**: drag a folder onto the sidebar, or start Claudette with `--folder`. See [Opening tabs](../tabs/opening-tabs.md) and [Command line and environment](command-line-and-environment.md).
 
-The project row's **Show in Explorer** is **Show in Finder** on macOS and **Show in file manager** on Linux.
+The project menu's **Show in Explorer** is **Show in Finder** on macOS and **Show in file manager** on Linux.
 
 ## Notifications and the icon
 

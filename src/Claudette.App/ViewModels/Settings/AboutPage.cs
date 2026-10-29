@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace Claudette.App.ViewModels.Settings;
 
 /// <summary>
-/// Settings → About (DESIGN.md §14, "About"): which Claudette this is, where it is on the web and its license; the
+/// About Claudette (DESIGN.md §14, "About"), shown in its own window (Views/AboutWindow): which Claudette this is, where it is on the web and its license; the
 /// trademarks it names or shows, with each owner's notice and that none of them makes or endorses it; and the licenses
 /// of what it's built with, which the build reads from the packages (<see cref="ThirdPartyNotices"/>).
 /// </summary>
@@ -37,7 +37,7 @@ public sealed partial class AboutPage : SettingsPage
             "Trademarks of Perforce Software, Inc. or one of its affiliates. The logo is used with Perforce's permission, as its brand guidelines say."),
     ];
 
-    public AboutPage(SettingsContext context) : base(context, SettingsCategory.About)
+    public AboutPage(SettingsContext context) : base(context, "About Claudette")
     {
         Section("claudette", "Claudette",
         [
@@ -56,6 +56,9 @@ public sealed partial class AboutPage : SettingsPage
     }
 
     public override string IconKey => "IconCardNote";
+
+    /// <summary>Its window has the Claude style's looks when that's the style.</summary>
+    public bool IsClaudeStyle => Services.Settings.Appearance.Style == Claudette.Core.Settings.AppStyle.Claude;
 
     public override string Description => "Which Claudette this is, whose names it uses, and what it's built with.";
 

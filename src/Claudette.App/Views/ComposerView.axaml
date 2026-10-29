@@ -573,46 +573,6 @@
                 </Button.Flyout>
               </Button>
   
-              <Button Classes="flat" ToolTip.Tip="Tab info" AutomationProperties.Name="Tab info">
-                <TextBlock Classes="muted small" Text="ⓘ" />
-                <Button.Flyout>
-                  <Flyout Placement="TopEdgeAlignedRight">
-                    <StackPanel Spacing="8" MinWidth="320" MaxWidth="480">
-                      <ItemsControl ItemsSource="{Binding InfoRows}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate DataType="vm:InfoRow">
-                            <Grid ColumnDefinitions="88,*,Auto" ColumnSpacing="4" Margin="0,1">
-                              <TextBlock Classes="muted small" Text="{Binding Label}" />
-                              <SelectableTextBlock Grid.Column="1" Classes="small" Text="{Binding Value}" TextWrapping="Wrap" />
-                              <!-- The session's ID and the name it's reached by (DESIGN.md §4, "Tab info card") -->
-                              <Button Grid.Column="2" Classes="flat" Padding="4,0" VerticalAlignment="Top" IsVisible="{Binding CanCopy}"
-                                      AutomationProperties.Name="{Binding Label, StringFormat='Copy {0}'}"
-                                      Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).CopyInfoRowCommand}" CommandParameter="{Binding}">
-                                <TextBlock Classes="small" Text="Copy" />
-                              </Button>
-                            </Grid>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                      <!-- Perforce changelists, with Copy and Open in P4V (DESIGN.md §18) -->
-                      <ItemsControl ItemsSource="{Binding Perforce.ChangelistRows}" IsVisible="{Binding Perforce.HasChangelists}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate DataType="vm:ChangelistRow">
-                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
-                              <TextBlock Classes="small" Text="{Binding Text}" VerticalAlignment="Center" />
-                              <Button Grid.Column="1" Classes="flat" Content="Copy" Click="OnFlyoutItemPicked"
-                                      Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).Perforce.CopyChangelistCommand}" CommandParameter="{Binding Number}" />
-                              <Button Grid.Column="2" Classes="flat" Content="Open in P4V" Click="OnFlyoutItemPicked"
-                                      Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).Perforce.OpenChangelistInP4VCommand}" CommandParameter="{Binding Number}" />
-                            </Grid>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                    </StackPanel>
-                  </Flyout>
-                </Button.Flyout>
-              </Button>
-  
               <!-- The send key (DESIGN.md §5, "Composer"; Settings → Keyboard → Send with, §14): which key sends, and a click
                    switches it for every tab. ⏎ comes from Inter on every OS (ShortcutTips.ReturnGlyph says why). -->
               <Button x:Name="SendKeyChip" Classes="flat sendkey" ToolTip.Tip="{Binding Tips.SendKeyTip}" AutomationProperties.Name="{Binding Tips.SendKeyName}"
@@ -636,8 +596,50 @@
                          ThemeBrush="{DynamicResource MutedTextBrush}" HairTie="{Binding GroupColor}" PixelsPerCell="{Binding Mascot.PixelsPerCell}" />
     </Panel>
 
-    <!-- Status line (DESIGN.md §5, "Composer"); at its right, how Claude's plan and tasks are going, which opens the Tasks page -->
+    <!-- Status line (DESIGN.md §5, "Composer"); at its right, how Claude's plan and tasks are going, which opens the Tasks page,
+         then the tab's info -->
     <DockPanel Margin="4,0">
+      <!-- The tab's info card (DESIGN.md §4, "Tab info card"), last on the line -->
+      <Button x:Name="TabInfo" DockPanel.Dock="Right" Classes="flat" Padding="4,2" Margin="6,0,0,0" ToolTip.Tip="Tab info" AutomationProperties.Name="Tab info">
+        <Path Data="{StaticResource IconInfo}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.2" StrokeLineCap="Round"
+              Stretch="Uniform" MaxWidth="12" MaxHeight="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Button.Flyout>
+          <Flyout Placement="TopEdgeAlignedRight">
+            <StackPanel Spacing="8" MinWidth="320" MaxWidth="480">
+              <ItemsControl ItemsSource="{Binding InfoRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="vm:InfoRow">
+                    <Grid ColumnDefinitions="88,*,Auto" ColumnSpacing="4" Margin="0,1">
+                      <TextBlock Classes="muted small" Text="{Binding Label}" />
+                      <SelectableTextBlock Grid.Column="1" Classes="small" Text="{Binding Value}" TextWrapping="Wrap" />
+                      <!-- The session's ID and the name it's reached by (DESIGN.md §4, "Tab info card") -->
+                      <Button Grid.Column="2" Classes="flat" Padding="4,0" VerticalAlignment="Top" IsVisible="{Binding CanCopy}"
+                              AutomationProperties.Name="{Binding Label, StringFormat='Copy {0}'}"
+                              Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).CopyInfoRowCommand}" CommandParameter="{Binding}">
+                        <TextBlock Classes="small" Text="Copy" />
+                      </Button>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <!-- Perforce changelists, with Copy and Open in P4V (DESIGN.md §18) -->
+              <ItemsControl ItemsSource="{Binding Perforce.ChangelistRows}" IsVisible="{Binding Perforce.HasChangelists}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="vm:ChangelistRow">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="4">
+                      <TextBlock Classes="small" Text="{Binding Text}" VerticalAlignment="Center" />
+                      <Button Grid.Column="1" Classes="flat" Content="Copy" Click="OnFlyoutItemPicked"
+                              Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).Perforce.CopyChangelistCommand}" CommandParameter="{Binding Number}" />
+                      <Button Grid.Column="2" Classes="flat" Content="Open in P4V" Click="OnFlyoutItemPicked"
+                              Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).Perforce.OpenChangelistInP4VCommand}" CommandParameter="{Binding Number}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Flyout>
+        </Button.Flyout>
+      </Button>
       <Button x:Name="TaskStatus" DockPanel.Dock="Right" Classes="flat" Padding="4,0" Margin="10,0,0,0" IsVisible="{Binding TodoList.HasStatus}"
               Command="{Binding OpenTasksPageCommand}" ToolTip.Tip="Show the Tasks page">
         <TextBlock Classes="muted small" Text="{Binding TodoList.StatusText}" MaxWidth="360" TextTrimming="CharacterEllipsis" />

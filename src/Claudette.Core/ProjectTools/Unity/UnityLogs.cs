@@ -40,7 +40,7 @@ public static partial class UnityLogs
     public static EditorLogWriter? Writer(SystemProcess process, string root, string? editorLog, ToolOS os)
     {
         var commandLine = process.CommandLine;
-        if (CommandLineOptions.ValueAfter(commandLine, "-projectPath") is not { } opened || !SamePath(opened, root, os))
+        if (!Opens(process, root, os))
         {
             return null;
         }
@@ -72,6 +72,25 @@ public static partial class UnityLogs
             }
         }
         return log is null ? null : new EditorLogWriter(CommandLineOptions.Has(commandLine, "-batchmode") ? "Unity (batch mode)" : "Unity editor", [log]) { CanMove = canMove };
+    }
+
+    /// <summary>
+    /// Whether <paramref name="process"/> has <paramref name="root"/> open: its <c>-projectPath</c> is the folder, either
+    /// slash. A relative one, such as <c>-projectPath .</c> from a batch run in the project's folder, is read against the
+    /// process's working folder; and once Unity has its project open it works in the project's folder, so a working
+    /// folder that's the project's counts too. Without the working folder, a relative one can't be told.
+    /// </summary>
+    public static bool Opens(SystemProcess process, string root, ToolOS os)
+    {
+        if (CommandLineOptions.ValueAfter(process.CommandLine, "-projectPath") is not { } opened)
+        {
+            return false;
+        }
+        if (CommandLineOptions.FullPath(opened, process.WorkingFolder, os) is { } full && SamePath(full, root, os))
+        {
+            return true;
+        }
+        return !os.IsRooted(opened) && process.WorkingFolder is { } folder && SamePath(folder, root, os);
     }
 
     /// <summary>

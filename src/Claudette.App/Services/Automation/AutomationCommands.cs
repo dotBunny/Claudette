@@ -7,6 +7,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 using Claudette.App.Controls;
 
@@ -25,22 +26,27 @@ namespace Claudette.App.Services.Automation;
 public sealed class AutomationCommands
 {
     private readonly Func<long, TopLevel?> _findWindow;
+    private readonly Func<string?, TopLevel?> _findByTitle;
     private readonly Func<IEnumerable<TopLevel>> _popups;
 
     /// <param name="findWindow">The window or popup with a native handle; tests give their own.</param>
     /// <param name="popups">The popups open now, which a control may be in whatever window is named.</param>
-    public AutomationCommands(Func<long, TopLevel?> findWindow, Func<IEnumerable<TopLevel>>? popups = null)
+    /// <param name="findByTitle">The window with a title, or for none the main window, for a request without a handle.</param>
+    public AutomationCommands(Func<long, TopLevel?> findWindow, Func<IEnumerable<TopLevel>>? popups = null, Func<string?, TopLevel?>? findByTitle = null)
     {
         _findWindow = findWindow;
         _popups = popups ?? (() => []);
+        _findByTitle = findByTitle ?? (_ => null);
     }
 
-    /// <summary>Claudette's own windows and the popups open over them, found by native handle.</summary>
-    public static AutomationCommands ForApp() => new(handle =>
+    /// <summary>Claudette's own windows and the popups open over them, found by native handle, or by title.</summary>
+    public static AutomationCommands ForApp()
     {
-        IEnumerable<TopLevel> windows = Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop ? desktop.Windows : [];
-        return windows.Concat(OpenPopups.Roots).FirstOrDefault(t => t.TryGetPlatformHandle()?.Handle == handle);
-    }, () => OpenPopups.Roots);
+        static IClassicDesktopStyleApplicationLifetime? Desktop() => Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+        return new(handle => (Desktop()?.Windows ?? []).Concat(OpenPopups.Roots).FirstOrDefault(t => t.TryGetPlatformHandle()?.Handle == handle),
+            () => OpenPopups.Roots,
+            title => title is null ? Desktop()?.MainWindow : Desktop()?.Windows.FirstOrDefault(w => w.Title == title));
+    }
 
     public AutomationResponse Execute(AutomationRequest request)
     {
@@ -58,6 +64,7 @@ public sealed class AutomationCommands
                 "hover" => Tip(Find(request), true),
                 "unhover" => Tip(Find(request), false),
                 "key" => Press(Window(request), request.Keys ?? throw new AutomationException("key needs keys, such as Ctrl+Shift+P.")),
+                "capture" => Capture(Window(request), request.Path ?? throw new AutomationException("capture needs a path to save the picture at.")),
                 "close" => Close(Window(request)),
                 _ => AutomationResponse.Failed($"There's no command '{request.Verb}'."),
             };
@@ -70,8 +77,11 @@ public sealed class AutomationCommands
 
     // ---- Finding the control ------------------------------------------------------------------------------------------
 
-    private TopLevel Window(AutomationRequest request) =>
-        _findWindow(request.Window) ?? throw new AutomationException($"No window of Claudette's has the handle {request.Window}.");
+    private TopLevel Window(AutomationRequest request) => request.Window != 0
+        ? _findWindow(request.Window) ?? throw new AutomationException($"No window of Claudette's has the handle {request.Window}.")
+        : _findByTitle(request.Title) ?? throw new AutomationException(request.Title is { } title
+            ? $"No window of Claudette's is called '{title}'."
+            : "Claudette has no main window yet.");
 
     private Control Find(AutomationRequest request)
     {
@@ -118,6 +128,22 @@ public sealed class AutomationCommands
     private static IEnumerable<Control> AndAround(Control control) => control.GetSelfAndVisualAncestors().OfType<Control>();
 
     // ---- The commands -------------------------------------------------------------------------------------------------
+
+    /// <summary>
+    /// The window as Claudette draws it, at its scale, saved as a PNG: for screenshots on any OS, where there's no
+    /// PrintWindow to capture with. The OS's own frame, where it draws one, isn't in it, nor are popups.
+    /// </summary>
+    private static AutomationResponse Capture(TopLevel window, string path)
+    {
+        var scale = window.RenderScaling;
+        var size = new PixelSize(Math.Max(1, (int)Math.Ceiling(window.ClientSize.Width * scale)), Math.Max(1, (int)Math.Ceiling(window.ClientSize.Height * scale)));
+        using var bitmap = new RenderTargetBitmap(size, new Vector(96 * scale, 96 * scale));
+        bitmap.Render(window);
+        var full = System.IO.Path.GetFullPath(path);
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(full)!);
+        bitmap.Save(full, PngBitmapEncoderOptions.Default);
+        return AutomationResponse.Done(full);
+    }
 
     /// <summary>
     /// A click, or a right-click, in the middle of the control, scrolled into view first when something else is there.

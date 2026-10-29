@@ -22,7 +22,7 @@ namespace Claudette.App.UiTests;
 public class ProjectToolsUiTests
 {
     [AvaloniaFact]
-    public async Task A_tab_in_an_Unreal_project_shows_the_project_at_the_sidebars_foot_and_its_menu_lists_the_actions()
+    public async Task A_tab_in_an_Unreal_project_shows_the_project_on_its_groups_row_and_its_menu_lists_the_actions()
     {
         await using var h = new TabTestHarness(settings => settings.ProjectTools.SetValue(UnrealProvider.KindId, UnrealProvider.ProjectFilesKey, nameof(ProjectFileFormat.VisualStudio)), dispatcher: new AvaloniaUiDispatcher());
         UnrealFixture.Write(h.Root, h.WorkFolder);
@@ -30,12 +30,22 @@ public class ProjectToolsUiTests
         var window = UiText.Show(new ShellView { DataContext = h.Shell });
         await UiText.SettleUntilAsync(window, () => tab.ProjectTools.Project is not null, "the project");
 
-        // The project's row sits at the sidebar's foot, for the selected tab; the composer's bar has no project chip.
-        var button = window.GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Project tools");
+        // The project's icon sits on its group's row, before the Project files icon, with the project in its tip; the
+        // composer's bar has no project chip.
+        var button = window.GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Project tools" && b.IsEffectivelyVisible);
         Assert.Equal("ProjectButton", button.Name);
-        Assert.True(button.IsEffectivelyVisible);
-        Assert.Equal("[button] Project tools: NightOwl · UE 5.4", UiText.Describe(button).Trim());
+        Assert.StartsWith("NightOwl · UE 5.4 (Unreal Engine)", ToolTip.GetTip(button) as string, StringComparison.Ordinal);
         Assert.Null(button.FindAncestorOfType<TabView>());
+        var files = window.GetVisualDescendants().OfType<Button>().Single(b => b is { Name: "ProjectFilesButton", IsEffectivelyVisible: true });
+        Assert.Same(files.Parent, button.Parent);
+        Assert.True(button.TranslatePoint(default, window)!.Value.X < files.TranslatePoint(default, window)!.Value.X);
+        Assert.Equal(button.TranslatePoint(new Point(0, button.Bounds.Height / 2), window)!.Value.Y, files.TranslatePoint(new Point(0, files.Bounds.Height / 2), window)!.Value.Y, 0.5);
+        // Unreal Engine's logo, at the 14 pixels Epic allowed, in the middle of the button.
+        var logo = button.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Single(p => p.IsEffectivelyVisible);
+        Assert.Contains("unreal", logo.Classes);
+        Assert.Equal(14, Math.Max(logo.RenderedGeometry!.Bounds.Width, logo.RenderedGeometry.Bounds.Height), 0.5);
+        var drawn = logo.TranslatePoint(logo.RenderedGeometry.Bounds.Center, button)!.Value;
+        Assert.Equal(button.Bounds.Width / 2, drawn.X, 0.5);
 
         var flyout = Assert.IsType<Flyout>(button.Flyout);
         flyout.ShowAt(button);
@@ -48,7 +58,7 @@ public class ProjectToolsUiTests
         Assert.Equal("Generate project files first.", ToolTip.GetTip(openSolution));
         flyout.Hide();
 
-        // The tab's menu leaves the project to the row: it has no project entries.
+        // The tab's menu leaves the project to the group's icon: it has no project entries.
         var row = window.GetVisualDescendants().OfType<Button>().First(b => b.Classes.Contains("tab") && b.DataContext == tab);
         var headers = row.ContextMenu!.Items.OfType<MenuItem>().Select(m => m.Header as string).ToList();
         Assert.Contains("Tab settings…", headers);
@@ -379,7 +389,7 @@ public class ProjectToolsUiTests
     private static TextEditor Log(ProjectRunView view) => view.FindControl<TextEditor>("Log")!;
 
     [AvaloniaFact]
-    public async Task A_folder_with_no_project_has_the_row_named_after_it_and_its_menu_lists_the_links()
+    public async Task A_folder_with_no_project_has_the_icon_with_the_folder_in_its_tip_and_its_menu_lists_the_links()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
         File.WriteAllText(Path.Combine(h.WorkFolder, Core.ProjectTools.ProjectFile.SharedName), """
@@ -392,11 +402,9 @@ public class ProjectToolsUiTests
         var window = UiText.Show(new ShellView { DataContext = h.Shell });
         await UiText.SettleUntilAsync(window, () => tab.ProjectTools.HasLinks, "the links");
 
-        // No provider recognized a project, and there are no actions: the row is there all the same, named after the folder.
+        // No provider recognized a project, and there are no actions: the icon is there all the same, with the folder in its tip.
         Assert.Null(tab.ProjectTools.Project);
-        var button = window.GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Project tools");
-        Assert.True(button.IsEffectivelyVisible);
-        Assert.Equal($"[button] Project tools: {tab.FolderName}", UiText.Describe(button).Trim());
+        var button = window.GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Project tools" && b.IsEffectivelyVisible);
         Assert.StartsWith(tab.Folder, ToolTip.GetTip(button) as string, StringComparison.Ordinal);
 
         var flyout = Assert.IsType<Flyout>(button.Flyout);

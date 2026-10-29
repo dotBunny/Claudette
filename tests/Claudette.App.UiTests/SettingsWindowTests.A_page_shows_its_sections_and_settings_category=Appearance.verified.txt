@@ -23,6 +23,10 @@
 "Full-width conversation"
 "Fill the tab's width, rather than stopping at a width that's easy to read."
 [toggle] Full-width conversation
+"Use the system's title bar"
+"This computer"
+"Your system's title bar on each window, rather than Claudette's own.  "
+[toggle] Use the system's title bar
 "Text"
 [button] Reset to defaults
 "Conversation font"

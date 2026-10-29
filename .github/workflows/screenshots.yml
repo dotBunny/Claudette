@@ -1,0 +1,59 @@
+name: Screenshots
+
+# The demo as Claudette draws it on each system, Windows, macOS and Linux, to compare how it looks on each: the main
+# window, Settings on Appearance and About Claudette, in each style and theme. Run it from the Actions tab; each system's
+# pictures are an artifact of the run. tools/Claudette.Demo/ci-screenshots.ps1 takes them through Claudette's command
+# channel, so they need no account and no tokens (fake-claude is Claude Code). The README's and the guide's own pictures
+# still come from screenshots.ps1 and guide-screenshots.ps1 on Windows (DESIGN.md §9, "Working on Claudette").
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    name: Screenshots (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+      - name: Restore
+        run: dotnet restore Claudette.slnx --locked-mode
+      # Claudette and the demo, which builds fake-claude beside itself.
+      - name: Build
+        run: |
+          dotnet build src/Claudette.App/Claudette.App.csproj --no-restore
+          dotnet build tools/Claudette.Demo/Claudette.Demo.csproj --no-restore
+      # Linux has no display on the runner: a virtual one.
+      - name: A display
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Take them
+        shell: pwsh
+        run: |
+          $script = Join-Path 'tools' 'Claudette.Demo' 'ci-screenshots.ps1'
+          $projects = Join-Path $env:RUNNER_TEMP 'Demo'
+          if ($IsLinux) {
+            xvfb-run --auto-servernum --server-args='-screen 0 1920x1200x24' pwsh -NoProfile -File $script -Out screenshots -Projects $projects
+          }
+          else {
+            pwsh -NoProfile -File $script -Out screenshots -Projects $projects
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: screenshots-${{ runner.os }}
+          path: screenshots/
+          if-no-files-found: error
+          retention-days: 30

@@ -1,4 +1,4 @@
-﻿"Claudette"
+﻿[image] "Claudette"
 [toggle] Keep this computer awake
 [button] Claude's service status: Claude has an outage
 [button] Account: me@example.com
@@ -7,10 +7,8 @@
 [button] Status page
 [button] Dismiss
 [button] New tab
-[button] Collapse the sidebar
 [button] History
-[button] Settings
-[button] User Guide
+[button] Collapse the sidebar
 "Start a Claude Code session"
 "Pick the folder Claude should work in."
 [button] New tab

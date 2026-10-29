@@ -13,6 +13,7 @@ History lists your past sessions, grouped by project, so you can pick one up aga
 
 ## Opening History
 
+- Click the clock at the top of the sidebar, beside **New tab**.
 - Press `Ctrl/Cmd+Shift+H`.
 - Choose **Open from History…** in the command palette or the new tab picker.
 - Choose **History for this folder** in a folder group's menu. History opens on that project's sessions only.

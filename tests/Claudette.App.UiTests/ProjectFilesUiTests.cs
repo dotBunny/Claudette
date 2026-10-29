@@ -195,6 +195,82 @@ public sealed class ProjectFilesUiTests
         window.Close();
     }
 
+    /// <summary>
+    /// The find box's × closes it wherever the keyboard is, as after <b>Use theirs</b> on the changed-on-disk banner, whose
+    /// button had it and is gone: AvaloniaEdit's close is a routed command, which looks for its handler from the focus.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task Finds_close_button_closes_it_after_Use_theirs_took_the_keyboard()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var (_, files, player, window) = await ShowAsync(h);
+        var editor = Editor(window);
+        var file = files.Showing!;
+        editor.TextArea.Focus();
+        UiText.Settle(window);
+        var primary = OperatingSystem.IsMacOS() ? RawInputModifiers.Meta : RawInputModifiers.Control;
+        window.KeyPressQwerty(PhysicalKey.F, primary);
+        window.KeyReleaseQwerty(PhysicalKey.F, primary);
+        UiText.Settle(window);
+        window.KeyTextInput("Dash");
+        UiText.Settle(window);
+        Assert.False(editor.SearchPanel.IsClosed);
+
+        // An edit of the user's, then the file changed on disk under it: the banner asks.
+        editor.TextArea.Focus();
+        editor.Document.Insert(0, "// mine\n");
+        File.WriteAllText(player, File.ReadAllText(player).Replace("Dash", "Sprint", StringComparison.Ordinal));
+        await file.CheckDiskAsync();
+        await UiText.SettleUntilAsync(window, () => file.IsChangedBanner, "the banner");
+        var useTheirs = window.GetVisualDescendants().OfType<Button>().Single(b => b.IsEffectivelyVisible && UiText.Describe(b).Contains("Use theirs", StringComparison.Ordinal));
+        Point Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), window)!.Value;
+        window.MouseDown(Middle(useTheirs), MouseButton.Left);
+        window.MouseUp(Middle(useTheirs), MouseButton.Left);
+        await UiText.SettleUntilAsync(window, () => !file.HasBanner, "their text");
+        Assert.DoesNotContain("// mine", editor.Document.Text, StringComparison.Ordinal);
+        Assert.False(editor.SearchPanel.IsClosed);
+
+        // The keyboard somewhere else in the window, as it may be once the banner's button is gone: the × still works.
+        View(window).GetVisualDescendants().OfType<ListBox>().Single(l => l.Name == "TreeList").Focus();
+        UiText.Settle(window);
+        var close = editor.SearchPanel.GetVisualDescendants().OfType<Button>().Last(b => b.IsEffectivelyVisible);
+        Assert.True(close.IsEffectivelyEnabled, "The × should stay enabled with the keyboard elsewhere");
+        window.MouseDown(Middle(close), MouseButton.Left);
+        window.MouseUp(Middle(close), MouseButton.Left);
+        UiText.Settle(window);
+        Assert.True(editor.SearchPanel.IsClosed);
+        window.Close();
+    }
+
+    /// <summary>
+    /// Opened with the keyboard elsewhere, as the Files tab's own Find can, the find box's buttons still work: AvaloniaEdit
+    /// works out once, from what last had the keyboard, whether its routed commands can run.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task Finds_buttons_work_when_it_was_opened_with_the_keyboard_elsewhere()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var (_, files, _, window) = await ShowAsync(h);
+        var editor = Editor(window);
+        View(window).GetVisualDescendants().OfType<ListBox>().Single(l => l.Name == "TreeList").Focus();
+        UiText.Settle(window);
+
+        files.Showing!.RequestFind(replace: false);
+        UiText.Settle(window);
+        Assert.False(editor.SearchPanel.IsClosed);
+        View(window).GetVisualDescendants().OfType<ListBox>().Single(l => l.Name == "TreeList").Focus();
+        UiText.Settle(window);
+
+        var close = editor.SearchPanel.GetVisualDescendants().OfType<Button>().Last(b => b.IsEffectivelyVisible);
+        Assert.True(close.IsEffectivelyEnabled, "The × should be enabled");
+        Point Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), window)!.Value;
+        window.MouseDown(Middle(close), MouseButton.Left);
+        window.MouseUp(Middle(close), MouseButton.Left);
+        UiText.Settle(window);
+        Assert.True(editor.SearchPanel.IsClosed);
+        window.Close();
+    }
+
     private static async Task<TextBox> NewEntryBoxAsync(Window window)
     {
         TextBox? box = null;

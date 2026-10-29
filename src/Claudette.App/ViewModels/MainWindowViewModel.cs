@@ -82,6 +82,28 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
     /// <summary>The header just says Claudette: no plan usage to show, and no API key's spend.</summary>
     public bool ShowsTitle => !HasUsage && !ShowsSpend;
 
+    /// <summary>
+    /// The header is the window's title bar, as in JetBrains Rider (DESIGN.md §3, "Window frame"), with Claudette's logo
+    /// first: where the platform can (<see cref="IPlatformServices.CanMergeTitleBar"/>), unless Settings → Appearance → Use
+    /// the system's title bar is on.
+    /// </summary>
+    public bool MergesTitleBar => services.Platform.CanMergeTitleBar && !services.Settings.Appearance.SystemTitleBar;
+
+    /// <summary>Settings changed: Use the system's title bar applies at once.</summary>
+    public void TitleBarSettingChanged() => OnPropertyChanged(nameof(MergesTitleBar));
+
+    /// <summary>The header says Claudette when there's nothing else to show and no logo saying so.</summary>
+    public bool ShowsHeaderTitle => ShowsTitle && !MergesTitleBar;
+
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (e.PropertyName is nameof(ShowsTitle) or nameof(MergesTitleBar))
+        {
+            base.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(ShowsHeaderTitle)));
+        }
+    }
+
     /// <summary>The sidebar's "Claude Code … is ready" badge and Settings' update section (DESIGN.md §12).</summary>
     [ObservableProperty]
     public partial ClaudeUpdateViewModel? Updates { get; set; }

@@ -1,0 +1,57 @@
+<!-- Claudette's windows' own title bars (DESIGN.md §3, "Window frame"): the TitleBar at the top of each window but the
+     main one, whose header is its title bar, and the window's buttons Avalonia draws on Windows for all of them. -->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Claudette.App.Controls"
+        xmlns:chrome="using:Avalonia.Controls.Chrome">
+  <Styles.Resources>
+    <!-- The window's title at its left, while the window draws it and nothing in it names what the window shows, then
+         what's in it, clear of the window's buttons; a line under it, as under the main window's tool windows' headers -->
+    <ControlTheme x:Key="{x:Type controls:TitleBar}" TargetType="controls:TitleBar">
+      <Setter Property="Padding" Value="14,0" />
+      <Setter Property="MinHeight" Value="40" />
+      <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                  Padding="{TemplateBinding Padding}" MinHeight="{TemplateBinding MinHeight}">
+            <DockPanel Margin="{TemplateBinding ButtonsRoom}">
+              <TextBlock Name="PART_Title" DockPanel.Dock="Left" Text="{TemplateBinding Title}" FontWeight="SemiBold" VerticalAlignment="Center"
+                         Margin="0,0,16,0" TextTrimming="CharacterEllipsis" IsHitTestVisible="False" />
+              <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                VerticalAlignment="Center" />
+            </DockPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:not(:merged) /template/ TextBlock#PART_Title">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+      <Style Selector="^[ShowsTitle=False] /template/ TextBlock#PART_Title">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+    </ControlTheme>
+  </Styles.Resources>
+
+  <!-- Its gaps drag the window; each control in it takes its own clicks -->
+  <Style Selector="controls|TitleBar :is(Button), controls|TitleBar ComboBox, controls|TitleBar TextBox, controls|TitleBar Slider">
+    <Setter Property="(chrome:WindowDecorationProperties.ElementRole)" Value="User" />
+  </Style>
+
+  <!-- The window's buttons as Rider's: as tall as the title bar, so their highlight is too, and side by side, as Windows'
+       own are; no title, which the title bar of the window's own has or the main window's logo says, and no full-screen
+       button -->
+  <Style Selector="WindowDrawnDecorations /template/ StackPanel#PART_OverlayPanel">
+    <Setter Property="Spacing" Value="0" />
+  </Style>
+  <Style Selector="WindowDrawnDecorations /template/ Button">
+    <Setter Property="Height" Value="NaN" />
+  </Style>
+  <Style Selector="WindowDrawnDecorations /template/ TextBlock">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="WindowDrawnDecorations /template/ Button#PART_FullScreenButton">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+</Styles>

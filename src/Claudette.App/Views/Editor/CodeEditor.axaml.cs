@@ -36,6 +36,7 @@ public partial class CodeEditor : UserControl
     public CodeEditor()
     {
         InitializeComponent();
+        SearchPanelButtons.Install(Editor);
         ActualThemeVariantChanged += (_, _) =>
         {
             _coloring?.UseDark(ActualThemeVariant == ThemeVariant.Dark);

@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Claudette.App.Controls"
         xmlns:diffs="using:Claudette.App.Diffs"
         xmlns:views="using:Claudette.App.Views"
         x:Class="Claudette.App.Views.DiffWindow"
@@ -10,7 +11,8 @@
 
   <!-- DESIGN.md §8: the built-in diff view -->
   <DockPanel>
-    <Border DockPanel.Dock="Top" Padding="14,10" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1">
+    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"), naming what it shows -->
+    <controls:TitleBar DockPanel.Dock="Top" Padding="14,10" ShowsTitle="False">
       <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
         <StackPanel Orientation="Horizontal" Spacing="10">
           <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
@@ -70,7 +72,7 @@
                      IsVisible="{Binding Note, Converter={x:Static ObjectConverters.IsNotNull}}" />
         </StackPanel>
       </Grid>
-    </Border>
+    </controls:TitleBar>
 
     <views:DiffLines />
   </DockPanel>

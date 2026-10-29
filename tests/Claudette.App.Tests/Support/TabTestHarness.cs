@@ -449,6 +449,9 @@ internal sealed class InlineDispatcher : IUiDispatcher
 
 internal sealed class NoPlatform : IPlatformServices
 {
+    /// <summary>As on Windows and macOS, on every system, so the header looks the same in every test run.</summary>
+    public bool CanMergeTitleBar => true;
+
     // Work off the test's thread opens and shows things too: what's recorded is read as copies.
     private readonly List<string> _openedUrls = [];
     private readonly List<string> _revealedFolders = [];
@@ -735,7 +738,24 @@ internal sealed class TabTestHarness : IAsyncDisposable
     /// Shows the tool window of <paramref name="kind"/>, as a button or the palette does. Pinned, as a window starts, it stays
     /// as the focus moves, as the side panel did.
     /// </summary>
-    public void ShowToolWindow(ViewModels.ToolWindows.ToolWindowKind kind) => InlineDispatcher.Run(() => Shell.ToolWindows.Show(kind));
+    public void ShowToolWindow(ViewModels.ToolWindows.ToolWindowKind kind) => OnUiThread(() => Shell.ToolWindows.Show(kind));
+
+    /// <summary>
+    /// Runs <paramref name="action"/> as a click does, on the UI thread, so what it starts resumes there after each await,
+    /// as in the app: in rendered UI tests Avalonia's own, which the test is on; in view model tests the inline stand-in's
+    /// (<see cref="InlineDispatcher.Run"/>). The stand-in's in a UI test would resume on the pool, changing lists a window
+    /// shows while the UI thread lays it out.
+    /// </summary>
+    public void OnUiThread(Action action)
+    {
+        if (Services.Dispatcher is AvaloniaUiDispatcher)
+        {
+            Avalonia.Threading.Dispatcher.UIThread.VerifyAccess();
+            action();
+            return;
+        }
+        InlineDispatcher.Run(action);
+    }
 
     public async Task<TabViewModel> OpenTabAsync()
     {
@@ -747,13 +767,13 @@ internal sealed class TabTestHarness : IAsyncDisposable
     }
 
     /// <summary>
-    /// Opens History as a click does, on the UI thread (<see cref="InlineDispatcher.Run"/>): its reading and filtering
+    /// Opens History as a click does, on the UI thread (<see cref="OnUiThread"/>): its reading and filtering
     /// finish there one step at a time, as in the app, so the sessions it shows as it reads them can't land between a
     /// filtering's check and what it writes.
     /// </summary>
     public HistoryViewModel OpenHistory()
     {
-        InlineDispatcher.Run(() => Shell.OpenHistoryCommand.Execute(null));
+        OnUiThread(() => Shell.OpenHistoryCommand.Execute(null));
         return Shell.History!;
     }
 

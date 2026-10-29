@@ -7,7 +7,14 @@ namespace Claudette.Core.ProjectTools;
 /// When it started, if that could be read: with the PID, it tells this process apart from a later one that reuses the
 /// PID after it exits.
 /// </param>
-public sealed record SystemProcess(int Pid, string Name, string? CommandLine, DateTimeOffset? StartedAt = null);
+public sealed record SystemProcess(int Pid, string Name, string? CommandLine, DateTimeOffset? StartedAt = null)
+{
+    /// <summary>
+    /// Its working folder, if that could be read, which a relative path on its command line is read against
+    /// (<see cref="EditorLogs.CommandLineOptions.FullPath"/>): <c>-projectPath .</c> from a batch run in the project's folder.
+    /// </summary>
+    public string? WorkingFolder { get; init; }
+}
 
 /// <summary>
 /// Every running process by name, for project tools (DESIGN.md §18): whether an editor has a project open, and

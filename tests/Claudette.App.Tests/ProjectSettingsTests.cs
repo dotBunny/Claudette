@@ -794,8 +794,8 @@ public class ProjectSettingsTests
         using var settings = new SettingsViewModel(h.Services, null);
 
         Assert.Equal(["Claudette", "Claude", "Your work", SettingsSidebar.ProjectTools, SettingsSidebar.SourceControl], settings.NavEntries.Where(e => e.IsHeading).Select(e => e.Title));
-        // About is the last of Claudette's pages: it has no settings.
-        Assert.Equal(["General", "Appearance", "Conversation", "Notifications", "Keyboard", "About"], PagesUnder(settings, "Claudette"));
+        // About is a window of its own, not a page (DESIGN.md §14, "About").
+        Assert.Equal(["General", "Appearance", "Conversation", "Notifications", "Keyboard"], PagesUnder(settings, "Claudette"));
         // Advanced is the last of Claude's pages: it's mostly about running Claude Code.
         Assert.Equal(["Claude Code", "Accounts", "Tabs", "Usage", "Advanced"], PagesUnder(settings, "Claude"));
         Assert.Equal(["Sessions", "Files and diffs"], PagesUnder(settings, "Your work"));

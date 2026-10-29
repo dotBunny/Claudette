@@ -60,7 +60,7 @@ public class ProjectToolsTests
         var tab = await OpenWithProjectAsync(h);
 
         Assert.True(tab.ProjectTools.HasTools);
-        Assert.Equal("NightOwl · UE 5.4", tab.ProjectTools.ButtonText);
+        Assert.StartsWith("NightOwl · UE 5.4 (Unreal Engine)", tab.ProjectTools.ButtonTip, StringComparison.Ordinal);
         Assert.Equal("NightOwl · Unreal Engine", tab.ProjectTools.HeaderTitle);
         Assert.Equal(["Unreal Engine 5.4.2 · engine in a parent folder", h.Root], tab.ProjectTools.HeaderLines);
         Assert.Contains(tab.ProjectTools.Details, d => d.Label == "Project" && d.Value == uproject);
@@ -85,8 +85,26 @@ public class ProjectToolsTests
         Assert.Equal(Logos.Unreal, tab.ProjectTools.IconKey);
     }
 
+    /// <summary>A group's project icon is for the tab of the group used last, whose jobs it runs and shows (DESIGN.md §18, "Project tools").</summary>
     [Fact]
-    public async Task Without_a_project_or_actions_the_row_is_named_after_the_folder_and_offers_the_first_action_and_link()
+    public async Task A_groups_project_icon_is_for_the_tab_used_last_in_it()
+    {
+        await using var h = new TabTestHarness();
+        h.Factory.ProcessPerSession = true;
+        var first = await h.OpenTabAsync();
+        var second = await h.OpenTabAsync();
+        var group = InlineDispatcher.Read(() => h.Shell.Groups.Single());
+
+        Assert.Same(second, group.ProjectTab);
+        InlineDispatcher.Run(() => h.Shell.SelectedTab = first);
+        Assert.Same(first, group.ProjectTab);
+        // Closed, the group's other tab has it.
+        await h.Shell.CloseTabCommand.ExecuteAsync(first);
+        Assert.Same(second, group.ProjectTab);
+    }
+
+    [Fact]
+    public async Task Without_a_project_or_actions_the_icon_names_the_folder_and_offers_the_first_action_and_link()
     {
         await using var h = new TabTestHarness();
 
@@ -95,8 +113,7 @@ public class ProjectToolsTests
         Assert.False(tab.ProjectTools.HasTools);
         Assert.Null(tab.ProjectTools.Project);
         Assert.DoesNotContain(tab.InfoRows, r => r.Label == "Project");
-        // The sidebar's row is there all the same, for adding actions and links: named after the folder, which it shows.
-        Assert.Equal(tab.FolderName, tab.ProjectTools.ButtonText);
+        // The icon on the group's row is there all the same, for adding actions and links, with the folder in its tip.
         Assert.StartsWith(tab.Folder, tab.ProjectTools.ButtonTip, StringComparison.Ordinal);
         Assert.Equal(tab.FolderName, tab.ProjectTools.HeaderTitle);
         Assert.Equal([tab.Folder], tab.ProjectTools.HeaderLines);
@@ -319,7 +336,7 @@ public class ProjectToolsTests
         Assert.False(spec.Detached);
         Assert.NotNull(spec.Environment);
         Assert.True(tab.ProjectTools.Runs.IsJobRunning);
-        Assert.Equal("Build editor…", tab.ProjectTools.ButtonText);
+        Assert.StartsWith("Build editor… · NightOwl · UE 5.4", tab.ProjectTools.ButtonTip, StringComparison.Ordinal);
         Assert.False(Entry(tab, "Generate project files").IsEnabled);
         Assert.Contains("Stop it first", Entry(tab, "Generate project files").Tip, StringComparison.Ordinal);
         var build = LastRun(tab)!;
@@ -334,7 +351,7 @@ public class ProjectToolsTests
 
         Assert.Equal("Build editor succeeded.", build.Status);
         Assert.False(build.Failed);
-        Assert.Equal("NightOwl · UE 5.4", tab.ProjectTools.ButtonText);
+        Assert.StartsWith("NightOwl · UE 5.4 (Unreal Engine)", tab.ProjectTools.ButtonTip, StringComparison.Ordinal);
 
         await tab.ProjectTools.RunActionCommand.ExecuteAsync(Action(tab, "generate-project-files"));
         launcher.Processes.Last().Exit(6);
@@ -564,7 +581,7 @@ public class ProjectToolsTests
 
         var tab = await OpenWithProjectAsync(h);
 
-        Assert.Equal("work · Unity 2022.3", tab.ProjectTools.ButtonText);
+        Assert.StartsWith("work · Unity 2022.3 (Unity)", tab.ProjectTools.ButtonTip, StringComparison.Ordinal);
         Assert.StartsWith("This is a Unity 2022.3.20f1 project, work, at ", h.Factory.Launches.Single().AppendSystemPrompt, StringComparison.Ordinal);
         await tab.ProjectTools.RunActionCommand.ExecuteAsync(Action(tab, "run-editmode-tests"));
         var spec = launcher.Started.Last();
@@ -593,7 +610,7 @@ public class ProjectToolsTests
         await TabTestHarness.Eventually(() => tab.ProjectTools.HasTools, "the actions");
 
         Assert.Null(tab.ProjectTools.Project);
-        Assert.Equal(tab.FolderName, tab.ProjectTools.ButtonText);
+        Assert.StartsWith(tab.Folder, tab.ProjectTools.ButtonTip, StringComparison.Ordinal);
         Assert.Equal(tab.FolderName, tab.ProjectTools.HeaderTitle);
         Assert.Equal(["Run tests", "-", ShowFolder, "Show output…", "Add an action…", "Add a link…", "Refresh"], tab.ProjectTools.Menu.Select(e => e.IsSeparator ? "-" : e.Label));
         Assert.Equal("Run tests", tab.ProjectTools.MainAction!.Label);
@@ -674,7 +691,7 @@ public class ProjectToolsTests
 
         // Links alone aren't project tools, but the row is there for every tab, named after the folder.
         Assert.False(tab.ProjectTools.HasTools);
-        Assert.Equal(tab.FolderName, tab.ProjectTools.ButtonText);
+        Assert.StartsWith(tab.Folder, tab.ProjectTools.ButtonTip, StringComparison.Ordinal);
         var menu = InlineDispatcher.Read(() => tab.ProjectTools.Menu.ToArray());
         Assert.Equal(["Links", "Pull request", "Changelist", "Local file", "-", ShowFolder, "Add an action…", "Add a link…", "Refresh"], menu.Select(e => e.IsSeparator ? "-" : e.Label));
         var links = menu.Where(e => e.IsLink).ToArray();

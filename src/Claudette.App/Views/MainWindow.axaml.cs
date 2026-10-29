@@ -1,6 +1,8 @@
 using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Claudette.Platform.Shell.Windows;
 using Claudette.App.Services;
 using Claudette.App.ViewModels;
 
@@ -38,6 +40,44 @@ public partial class MainWindow : Window
         Deactivated += (_, _) => _viewModel?.Services.Notifications.SetAppActive(false);
         // A narrow window leaves the busiest tabs, then the weekly chart, out of the detailed header (DESIGN.md §6).
         SizeChanged += (_, e) => _viewModel?.Usage?.SetDetailsWidth(e.NewSize.Width / _zoom);
+        LayoutUpdated += (_, _) => FitTitleBar();
+        // With the header as the title bar, the logo is the window's icon to Windows: a click opens the window menu and a
+        // double-click closes the window, as any window's icon does (DESIGN.md §3, "Window frame"). Avalonia 12.1's
+        // hit-test values stop short of the icon's, which it passes on to Windows all the same. Elsewhere it drags.
+        if (OperatingSystem.IsWindows())
+        {
+            Win32Properties.SetNonClientHitTestResult(HeaderIcon, (Win32Properties.Win32HitTestValue)WindowsTitleBar.WindowIcon);
+        }
+        else
+        {
+            HeaderIcon.IsHitTestVisible = false;
+        }
+    }
+
+    /// <summary>The header's padding, and its gap to the window's buttons.</summary>
+    private const double HeaderPadding = 10;
+
+    /// <summary>
+    /// With the header as the window's title bar (DESIGN.md §3, "Window frame"): the title bar as tall as the header's first
+    /// row, which the window's buttons fill, and the header clear of them, at its right on Windows and its left on macOS.
+    /// The buttons aren't zoomed with the header.
+    /// </summary>
+    private void FitTitleBar()
+    {
+        var merged = IsExtendedIntoWindowDecorations;
+        var room = Controls.WindowFrame.ButtonsRoom(this, _zoom);
+        var left = room.Left > 0 ? room.Left : HeaderPadding;
+        var right = room.Right > 0 ? room.Right + (HeaderPadding / 2) : HeaderPadding;
+        var padding = new Thickness(left, 6, right, 6);
+        if (Header.Padding != padding)
+        {
+            Header.Padding = padding;
+        }
+        var height = (HeaderGrid.RowDefinitions[0].ActualHeight + padding.Top + padding.Bottom) * _zoom;
+        if (merged && height > 0 && Math.Abs(ExtendClientAreaTitleBarHeightHint - height) > 0.5)
+        {
+            ExtendClientAreaTitleBarHeightHint = height;
+        }
     }
 
     private int _zoomPercent = 100;
@@ -70,12 +110,14 @@ public partial class MainWindow : Window
         {
             _viewModel.PropertyChanged -= OnViewModelChanged;
             _viewModel.BringToFrontRequested -= BringToFront;
+            _viewModel.Services.SettingsChanged -= OnSettingsChanged;
         }
         _viewModel = DataContext as MainWindowViewModel;
         if (_viewModel is not null)
         {
             _viewModel.PropertyChanged += OnViewModelChanged;
             _viewModel.BringToFrontRequested += BringToFront;
+            _viewModel.Services.SettingsChanged += OnSettingsChanged;
             _viewModel.Services.Notifications.SetAppActive(IsActive);
             if (_viewModel.Usage is { } usage)
             {
@@ -83,6 +125,9 @@ public partial class MainWindow : Window
             }
         }
     }
+
+    /// <summary>Settings → Appearance → Use the system's title bar applies at once (DESIGN.md §3, "Window frame").</summary>
+    private void OnSettingsChanged(object? sender, EventArgs e) => _viewModel?.TitleBarSettingChanged();
 
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
     {

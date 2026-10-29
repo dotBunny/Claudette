@@ -205,4 +205,43 @@ public class AutomationCommandsUiTests
         Assert.True(page.Run(new() { Verb = "ping" }).Ok);
         page.Window.Close();
     }
+
+    /// <summary>
+    /// Without a handle, as a script has on macOS and Linux: the window by its title, or the main window; and capture
+    /// saves the window as Claudette draws it, for screenshots on every OS (.github/workflows/screenshots.yml).
+    /// </summary>
+    [AvaloniaFact]
+    public void Without_a_handle_the_main_window_or_one_by_its_title_and_capture_saves_its_picture()
+    {
+        var clicks = 0;
+        var main = new Window { Width = 300, Height = 200, Title = "Main", Content = new Button { Content = "Go", Command = new RelayCommand(() => clicks++) } };
+        var other = new Window { Width = 240, Height = 160, Title = "Settings", Content = new Border { Background = Brushes.SteelBlue } };
+        var commands = new AutomationCommands(_ => null, findByTitle: title => title switch { null => main, "Settings" => other, _ => null });
+        main.Show();
+        other.Show();
+        UiText.Settle(main);
+        UiText.Settle(other);
+
+        Assert.True(commands.Execute(new() { Verb = "click", Name = "Go" }).Ok);
+        Assert.Equal(1, clicks);
+        Assert.Contains("called 'Nope'", commands.Execute(new() { Verb = "click", Title = "Nope", Name = "Go" }).Error, StringComparison.Ordinal);
+
+        var folder = Directory.CreateTempSubdirectory("claudette-capture").FullName;
+        try
+        {
+            var path = Path.Combine(folder, "shots", "settings.png");
+            var saved = commands.Execute(new() { Verb = "capture", Title = "Settings", Path = path });
+            Assert.True(saved.Ok, saved.Error);
+            // Saved where it was asked to be. The test platform draws nothing, so the picture itself is the real app's to show.
+            Assert.Equal(path, saved.Value);
+            Assert.True(File.Exists(path));
+            Assert.Contains("needs a path", commands.Execute(new() { Verb = "capture" }).Error, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+            other.Close();
+            main.Close();
+        }
+    }
 }

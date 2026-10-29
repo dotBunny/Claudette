@@ -7,7 +7,7 @@ summary: "A Unity project gets a row with its name and editor version, and actio
 
 # Unity
 
-When a tab's folder holds a Unity project (a folder with `ProjectSettings/ProjectVersion.txt` and `Assets`), the [project row](using-project-tools.md) shows its name and editor version, such as `orbit-game · Unity 2022.3`, and its menu has the actions below.
+When a tab's folder holds a Unity project (a folder with `ProjectSettings/ProjectVersion.txt` and `Assets`), the [project's icon](using-project-tools.md) on its group's row is a cube, with its name and editor version in its tooltip, such as `orbit-game · Unity 2022.3`, and its menu has the actions below.
 
 ## The editor
 

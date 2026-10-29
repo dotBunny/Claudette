@@ -11,7 +11,7 @@ Questions about Claudette go to [dotBunny's Discord](../discord.md). Problems go
 
 ## Asking a question
 
-**Ask on Discord**, under **Help** (the question mark beside the version at the foot of the Settings sidebar), opens dotBunny's Discord in your browser. Ask there how to do something, whether something is meant to work the way it does, or anything else about Claudette. The command palette has it too, and so does the menu bar's **Help** menu on macOS.
+**Ask on Discord**, under **Help** (the question mark beside the version at the foot of the Settings sidebar), opens dotBunny's Discord in your browser. Ask there how to do something, whether something is meant to work the way it does, or anything else about Claudette. The menu at the header's right, the three lines after your plan, has it too, as do the command palette and, on macOS, the menu bar's **Help** menu.
 
 The server's members see what you post, so leave out anything private. If it turns out to be a bug, report it on GitHub too, as below.
 
@@ -32,7 +32,7 @@ Only versions: never paths, names or account details, because it's meant to be p
 
 **Report an issue**, under **Help** at the foot of the Settings sidebar, opens a new issue on Claudette's GitHub page in your browser. It starts with an outline, *what happened*, *what you expected* and *steps to reproduce*, and the same versions filled in. Nothing is sent until you submit it on GitHub.
 
-1. Choose **Report an issue** in Settings, or in the command palette.
+1. Choose **Report an issue** in the header's menu, in Settings, or in the command palette.
 2. Fill in the outline. Say what you were doing, what you expected and what happened instead.
 3. Add what helps: the text of an error the tab showed, the tab's status, and whether it happens every time.
 4. Review everything, then submit.

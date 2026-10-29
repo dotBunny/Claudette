@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace Claudette.App.Tests;
 
 /// <summary>
-/// The menu of the project's row at the sidebar's foot (DESIGN.md §18, "Project tools"), built from what the tab knows
+/// The menu of the project's icon on its group's row (DESIGN.md §18, "Project tools"), built from what the tab knows
 /// about its project, without a tab.
 /// </summary>
 public class ProjectMenuTests

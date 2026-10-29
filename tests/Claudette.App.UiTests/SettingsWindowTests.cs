@@ -298,23 +298,23 @@ public class SettingsWindowTests
     }
 
     /// <summary>
-    /// About (DESIGN.md §14, "About") lists every library with its license, which shows under its row on request; a
-    /// license that asks only for a link, such as the Godot logo's, is a link. Godot's page in the sidebar has its logo,
-    /// filled, where the other pages' icons are strokes.
+    /// About Claudette, a window of its own (DESIGN.md §14, "About"), lists every library with its license, which shows
+    /// under its row on request; a license that asks only for a link, such as the Godot logo's, is a link. Godot's page in
+    /// Settings' sidebar has its logo, filled, where the other pages' icons are strokes.
     /// </summary>
     [AvaloniaFact]
     public async Task About_shows_each_librarys_license_under_its_row_and_Godots_page_has_its_logo()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
-        using var settings = new SettingsViewModel(h.Services, null) { SelectedCategory = SettingsCategory.About };
-        var window = new SettingsWindow { DataContext = settings, Width = 900, Height = 700 };
-        window.Show();
-        UiText.Settle(window);
-        var host = window.GetVisualDescendants().OfType<ContentControl>().Single(c => c.Name == "PageHost");
-        SettingRow Row(string title) => host.GetVisualDescendants().OfType<SettingRow>().Single(r => r.Title == title);
+        var about = new AboutPage(new SettingsContext(h.Services));
+        var aboutWindow = new AboutWindow { DataContext = about, Width = 720, Height = 700 };
+        aboutWindow.Show();
+        UiText.Settle(aboutWindow);
+        Assert.Equal("About Claudette", aboutWindow.Title);
+        SettingRow Row(string title) => aboutWindow.GetVisualDescendants().OfType<SettingRow>().Single(r => r.Title == title);
         IEnumerable<Button> Links(SettingRow row) => row.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("settingslink") && b.IsEffectivelyVisible);
 
-        var avalonia = settings.About.Libraries.Single(r => r.Library.Name == "Avalonia");
+        var avalonia = about.Libraries.Single(r => r.Library.Name == "Avalonia");
         var row = Row(avalonia.Title);
         Assert.Equal(["Website", "License"], Links(row).Select(b => b.Content as string));
         // Not drawn until it's shown, so it's in the row's logical tree.
@@ -322,7 +322,7 @@ public class SettingsWindowTests
         Assert.False(text.GetLogicalAncestors().OfType<Border>().First().IsVisible);
 
         Links(row).OfType<ToggleButton>().Single().IsChecked = true;
-        UiText.Settle(window);
+        UiText.Settle(aboutWindow);
 
         Assert.True(text.IsAttachedToVisualTree());
         Assert.True(text.IsEffectivelyVisible);
@@ -330,7 +330,12 @@ public class SettingsWindowTests
         Assert.Equal(["Website", "License"], Links(logo).Select(b => b.Content as string));
         Assert.IsNotType<ToggleButton>(Links(logo).Last());
         Assert.Equal(AboutPage.TrademarkNotices.Select(t => t.Names), AboutPage.TrademarkNotices.Select(t => Row(t.Names).Title));
+        aboutWindow.Close();
 
+        using var settings = new SettingsViewModel(h.Services, null);
+        var window = new SettingsWindow { DataContext = settings, Width = 900, Height = 700 };
+        window.Show();
+        UiText.Settle(window);
         var sidebar = window.GetVisualDescendants().OfType<ListBox>().Single(l => l.Name == "SidebarList");
         // The list draws only the rows in view.
         sidebar.ScrollIntoView(settings.NavEntries.Single(e => e.Title == "Godot"));

@@ -95,8 +95,8 @@ When a tab is [collapsed](../tabs/the-sidebar.md#collapsing-a-tab), its logs fol
 | Engine | What gets a row | The log |
 |---|---|---|
 | Unreal Engine | The editor, `UnrealEditor-Cmd` and commandlets (`-run=`), `-game` and `-server` runs, with the project's `.uproject` on their command line. | `Saved/Logs/<project>.log`, or `<project>_2.log` and on while another has that one, or the file `-abslog=` or `LOG=` names. |
-| Unity | The editor and batch mode runs with the project after `-projectPath`. | Unity's `Editor.log` (the one **Open Editor log** opens), and from Unity 6.5 the project's `Logs/Editor.log` once the editor has the project open, or the file `-logFile` names. Claudette's own **Run EditMode tests** writes its output to the run instead. |
-| Godot | The editor and the game with the project after `--path`. | `logs/godot.log` in the project's user data folder, or wherever the project's file logging settings or `--log-file` say. |
+| Unity | The editor and batch mode runs with the project after `-projectPath`, or a relative path such as `.` from the project's folder. | Unity's `Editor.log` (the one **Open Editor log** opens), and from Unity 6.5 the project's `Logs/Editor.log` once the editor has the project open, or the file `-logFile` names. Claudette's own **Run EditMode tests** writes its output to the run instead. |
+| Godot | The editor and the game with the project after `--path`, or a relative path such as `.` from the project's folder. | `logs/godot.log` in the project's user data folder, or wherever the project's file logging settings or `--log-file` say. |
 
 Claudette looks at which programs are running every couple of seconds (every five on macOS), so a row appears a moment after the editor starts.
 

@@ -138,6 +138,94 @@ public class MainWindowTests
     }
 
     /// <summary>
+    /// The header as Rider's (DESIGN.md §3, "Window frame"): Claudette's logo and the menu first, the user guide first in
+    /// the menu, and Settings last; on Windows and macOS it's the window's title bar, its controls taking their own clicks,
+    /// unless Settings → Appearance → Use the system's title bar is on, when Settings sits over the strip of icons.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task The_header_has_the_logo_and_menu_first_and_Settings_last_and_is_the_title_bar_unless_the_systems_is_used()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        var main = new MainWindowViewModel(h.Services);
+        main.UseShell(h.Shell);
+        main.Account.Status = new AuthStatus(true, "claude.ai", null, "me@example.com", null, "max", null, null);
+
+        var window = new MainWindow { DataContext = main, Width = 1200, Height = 800 };
+        window.Show();
+        await UiText.SettleUntilAsync(window, () => window.GetVisualDescendants().OfType<Button>().Any(b => b is { Name: "MainMenu", IsEffectivelyVisible: true }), "the menu");
+        var menu = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "MainMenu");
+        var logo = window.GetVisualDescendants().OfType<Image>().Single(i => i.Name == "HeaderLogo");
+        var plan = window.GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Plan usage");
+        var meters = window.GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Usage details");
+        var settings = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "SettingsButton");
+        double Left(Control c) => c.TranslatePoint(default, window)!.Value.X;
+
+        // The menu at the left, and Settings after the plan.
+        Assert.True(Left(menu) < Left(plan) && Left(plan) < Left(settings));
+        Assert.Equal("Settings", AutomationProperties.GetName(settings));
+        Assert.Same(h.Shell.OpenSettingsCommand, settings.Command);
+        Assert.Equal(menu.Bounds.Size, settings.Bounds.Size);
+        Assert.Equal("Menu", AutomationProperties.GetName(menu));
+        // Its three lines, wider than tall, in the middle of it, not drawn from its top.
+        var lines = menu.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Single();
+        var drawn = lines.TranslatePoint(lines.RenderedGeometry!.Bounds.Center, menu)!.Value;
+        Assert.Equal(menu.Bounds.Width / 2, drawn.X, 0.5);
+        Assert.Equal(menu.Bounds.Height / 2, drawn.Y, 0.5);
+        // Its sections under small titles, which can't be picked, and an icon before each entry.
+        var entries = Assert.IsType<MenuFlyout>(menu.Flyout).Items.OfType<MenuItem>().ToList();
+        var sections = entries.Where(e => e.Classes.Contains("menusection")).ToList();
+        var items = entries.Except(sections).ToList();
+        Assert.Equal(["Help", "Claudette"], sections.Select(s => s.Header as string));
+        Assert.All(sections, s => Assert.False(s.IsEnabled));
+        Assert.Equal(["User Guide", "Ask on Discord", "Report an issue", "About Claudette"], items.Select(i => i.Header as string));
+        Assert.All(items, i => Assert.IsType<Avalonia.Controls.Shapes.Path>(i.Icon));
+        menu.Flyout!.ShowAt(menu);
+        await UiText.SettleUntilAsync(window, () => items[0].Command is not null && items[0].IsEffectivelyVisible, "the open menu");
+        Assert.Same(h.Shell.OpenGuideCommand, items[0].Command);
+        Assert.Same(h.Shell.OpenAboutCommand, items[3].Command);
+        // The line between them runs from edge to edge.
+        var presenter = items[0].GetVisualAncestors().OfType<MenuFlyoutPresenter>().First();
+        var line = presenter.GetVisualDescendants().OfType<Separator>().Single();
+        Assert.Equal(presenter.Bounds.Width - presenter.BorderThickness.Left - presenter.BorderThickness.Right, line.Bounds.Width, 1);
+        menu.Flyout.Hide();
+        var sidebar = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "Sidebar");
+        Assert.DoesNotContain(sidebar.GetVisualDescendants().OfType<Button>(), b => AutomationProperties.GetName(b) is "Settings" or "User Guide");
+
+        // The title bar, as on Windows and macOS, which the tests' platform says it can be: the logo first, which drags the
+        // window as the header's gaps do, and the header's controls taking their own clicks.
+        Assert.True(main.MergesTitleBar);
+        Assert.True(window.ExtendClientAreaToDecorationsHint);
+        Assert.True(logo.IsEffectivelyVisible);
+        Assert.True(Left(logo) < Left(menu));
+        Assert.False(logo.IsHitTestVisible);
+        // On Windows the logo, with room around it, is the window's icon: the window menu and double-click to close.
+        var icon = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "HeaderIcon");
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Equal(3, (int)Win32Properties.GetNonClientHitTestResult(icon));
+            Assert.True(icon.IsHitTestVisible);
+        }
+        else
+        {
+            Assert.False(icon.IsHitTestVisible);
+        }
+        Assert.Equal(WindowDecorationsElementRole.User, Avalonia.Controls.Chrome.WindowDecorationProperties.GetElementRole(settings));
+        Assert.Equal(WindowDecorationsElementRole.User, Avalonia.Controls.Chrome.WindowDecorationProperties.GetElementRole(meters));
+
+        // The system's title bar: no logo, and Settings over the strip of icons, as wide as one, its middle on theirs.
+        h.Services.Settings.Appearance.SystemTitleBar = true;
+        h.Services.SaveSettings();
+        await UiText.SettleUntilAsync(window, () => !logo.IsEffectivelyVisible, "the system's title bar");
+        Assert.False(window.ExtendClientAreaToDecorationsHint);
+        var stripIcon = window.GetVisualDescendants().OfType<Button>().First(b => b.Classes.Contains("stripicon") && b.IsEffectivelyVisible);
+        double Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, 0), window)!.Value.X;
+        Assert.Equal(stripIcon.Bounds.Width, settings.Bounds.Width);
+        Assert.Equal(Middle(stripIcon), Middle(settings), 0.5);
+        window.Close();
+    }
+
+    /// <summary>
     /// The header's cup after the processes' total turns Keep this computer awake on and off, and steams while the
     /// computer is kept awake (DESIGN.md §9, "Keeping the computer awake").
     /// </summary>

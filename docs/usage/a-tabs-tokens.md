@@ -20,7 +20,7 @@ Click the count (its tip says **Tokens used by this tab**) to open a breakdown:
 
 Each turn adds what it used, subagents and compaction included, so a long session isn't counted again with every turn.
 
-The tab's info card (hover over its row, or the **ⓘ** button in the composer bar) has a **Tokens** row with the same count and the number of turns.
+The tab's info card (hover over its row, or the **ⓘ** button at the end of the line under the message box) has a **Tokens** row with the same count and the number of turns.
 
 ## Where else the numbers show
 
