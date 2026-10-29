@@ -53,6 +53,10 @@
                   <MenuFlyout>
                     <MenuItem Header="New folder" Command="{Binding NewFolderCommand}" CommandParameter="{Binding SelectedRow}" />
                     <Separator />
+                    <!-- Finding in files, in the whole project (§18, "Finding in files") -->
+                    <MenuItem Header="Find in files…" Command="{Binding FindInProjectCommand}" />
+                    <MenuItem Header="Replace in files…" Command="{Binding ReplaceInProjectCommand}" />
+                    <Separator />
                     <MenuItem Header="Show only changed files" ToggleType="CheckBox" IsChecked="{Binding ShowOnlyChanged, Mode=OneWay}" Command="{Binding ToggleShowOnlyChangedCommand}" />
                     <Separator IsVisible="{Binding IsGitRepository}" />
                     <MenuItem Header="Claude's changes" ToggleType="Radio" IsChecked="{Binding AgainstClaudeChanges}" IsVisible="{Binding IsGitRepository}"
@@ -105,7 +109,12 @@
           <!-- Finding a file by name ("Finding a file by name") -->
           <TextBox x:Name="FindBox" DockPanel.Dock="Top" Classes="findfile" Text="{Binding FindText}" IsVisible="{Binding IsFinding}"
                    PlaceholderText="Find a file by name" AutomationProperties.Name="Find a file by name" KeyDown="OnFindKeyDown" />
-          <TextBlock DockPanel.Dock="Bottom" Classes="muted small" Margin="12,4,12,8" Text="{Binding FindSummary}" TextWrapping="Wrap"
+          <!-- Under them, how many, and what's typed looked for in the files' text instead ("Finding in files") -->
+          <Button DockPanel.Dock="Bottom" Classes="findtyped" Command="{Binding FindTypedInFilesCommand}" ToolTip.Tip="{Binding FindTypedInFilesTip}"
+                  IsVisible="{Binding IsListingFound}">
+            <TextBlock Classes="small" Text="{Binding FindTypedInFilesText}" TextTrimming="CharacterEllipsis" />
+          </Button>
+          <TextBlock DockPanel.Dock="Bottom" Classes="muted small" Margin="12,4,12,0" Text="{Binding FindSummary}" TextWrapping="Wrap"
                      IsVisible="{Binding IsListingFound}" />
           <Panel>
             <!-- The tree -->
@@ -116,6 +125,9 @@
                 <ContextMenu>
                   <MenuItem Header="New file" Command="{Binding NewFileCommand}" />
                   <MenuItem Header="New folder" Command="{Binding NewFolderCommand}" />
+                  <Separator />
+                  <MenuItem Header="Find in files…" Command="{Binding FindInProjectCommand}" />
+                  <MenuItem Header="Replace in files…" Command="{Binding ReplaceInProjectCommand}" />
                 </ContextMenu>
               </ListBox.ContextMenu>
               <ListBox.DataTemplates>
@@ -332,11 +344,19 @@
           </DockPanel>
         </Border>
         <Panel>
+          <!-- With nothing open: what to do next, each with its shortcut as it's bound now, as Rider's empty editor has it -->
           <StackPanel Classes="nofile" IsVisible="{Binding !HasShowing}">
             <TextBlock Classes="muted" Text="No files open" HorizontalAlignment="Center" />
-            <TextBlock Classes="muted small" TextWrapping="Wrap" TextAlignment="Center"
-                       Text="Pick a file in the explorer, or find one by name." />
-            <Button HorizontalAlignment="Center" Content="Go to file…" Command="{Binding StartFindCommand}" />
+            <Grid x:Name="NoFileActions" Classes="nofileactions" ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+              <Button Content="Go to file" Command="{Binding StartFindCommand}" />
+              <TextBlock Grid.Column="1" Classes="keys" Text="{Binding Tips.GoToFileKeys}" />
+              <Button Grid.Row="1" Content="Find in files" Command="{Binding FindInProjectCommand}" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Classes="keys" Text="{Binding Tips.FindInFilesKeys}" />
+              <Button Grid.Row="2" Content="Replace in files" Command="{Binding ReplaceInProjectCommand}" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Classes="keys" Text="{Binding Tips.ReplaceInFilesKeys}" />
+              <Button Grid.Row="3" Content="Command palette" Command="{Binding OpenPaletteCommand}" />
+              <TextBlock Grid.Row="3" Grid.Column="1" Classes="keys" Text="{Binding Tips.CommandPaletteKeys}" />
+            </Grid>
           </StackPanel>
           <ItemsControl x:Name="OpenFileViews" ItemsSource="{Binding OpenFiles}">
             <ItemsControl.Styles>

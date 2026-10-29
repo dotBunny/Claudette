@@ -30,9 +30,10 @@ public sealed partial class ShellViewModel : IFindInFilesHost, IFindResultsHost
 
     /// <summary>
     /// Opens the popup for <paramref name="group"/>'s project, or the focused tab's: in <paramref name="folder"/> when a
-    /// folder's menu named one, and with the text selected in the editor in its box when that's one line.
+    /// folder's menu named one, and with <paramref name="start"/> in its box, or else what the focused Files tab offers
+    /// (what's typed in the box with the keyboard, or the text selected in the editor), when that's one line.
     /// </summary>
-    internal void ShowFindInFiles(bool replace, string? folder = null, TabGroupViewModel? group = null)
+    internal void ShowFindInFiles(bool replace, string? folder = null, TabGroupViewModel? group = null, FindStart? start = null)
     {
         group ??= SelectedFiles?.Group ?? (SelectedTab is { } tab ? Groups.FirstOrDefault(g => g.Tabs.Contains(tab)) : Groups.FirstOrDefault());
         if (group is null)
@@ -40,13 +41,10 @@ public sealed partial class ShellViewModel : IFindInFilesHost, IFindResultsHost
             return;
         }
         Palette = null;
-        var selected = SelectedFiles?.Showing?.SelectionText?.Invoke();
-        if (selected is not { Length: > 0 } || selected.Contains('\n', StringComparison.Ordinal) || selected.Contains('\r', StringComparison.Ordinal))
-        {
-            selected = null;
-        }
+        start ??= SelectedFiles?.FindInFilesStart();
         FindInFiles?.Dispose();
-        FindInFiles = new FindInFilesViewModel(_services, this, this, group.Folder, group.Label, _services.State.FindInFiles, replace, folder, selected, CloseFindInFiles);
+        FindInFiles = new FindInFilesViewModel(_services, this, this, group.Folder, group.Label, _services.State.FindInFiles, replace, folder,
+            start is { IsUsable: true } ? start : null, CloseFindInFiles);
     }
 
     /// <summary>Esc, a click outside it, or a match opened: it goes, and what it had is kept for the next time.</summary>

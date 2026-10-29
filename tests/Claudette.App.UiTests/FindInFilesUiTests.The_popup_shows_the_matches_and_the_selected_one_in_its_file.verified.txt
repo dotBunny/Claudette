@@ -1,5 +1,6 @@
 ﻿"Replace in files"
 "work"
+[toggle on] Replace
 [field] "speed"
 [toggle] Match case: Aa
 [toggle] Words: W
@@ -14,7 +15,7 @@
 [field] "{root}/work"
 [button] Choose a folder: ⋯
 "2 matches in 2 files"
-"Enter opens · ↑↓ choose · Esc closes"
+"Enter opens · ↑↓ choose · Ctrl+Shift+F hides Replace · Esc closes"
 [button] Open in Find window
 "#define SPEED 600"
 "Config.h 1"

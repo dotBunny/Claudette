@@ -1,11 +1,16 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 using AvaloniaEdit;
 using Claudette.App.Services;
 using Claudette.App.Tests.Support;
 using Claudette.App.ViewModels;
 using Claudette.App.Views;
+using Claudette.Core.Settings;
 
 namespace Claudette.App.UiTests;
 
@@ -46,8 +51,46 @@ public sealed class FindInFilesUiTests
         // The keyboard is in its box.
         Assert.True(view.GetVisualDescendants().OfType<TextBox>().Single(b => b.Name == "QueryBox").IsFocused);
 
+        // The keys at its foot as Windows and Linux write them, so the snapshot is one on every system.
+        (string, string)[] asOnWindows = Shortcuts.IsMac
+            ? [($"{ShortcutTips.Key("Enter")} opens", "Enter opens"), (h.Services.Tips.Text(KeyboardShortcuts.FindInFiles)!, "Ctrl+Shift+F"), ($"{ShortcutTips.Key("Escape")} closes", "Esc closes")]
+            : [];
         // Verify resumes off the UI thread, so it comes last.
-        await Verify(UiText.Describe(view, (h.Root, "{root}")));
+        await Verify(UiText.Describe(view, [(h.Root, "{root}"), .. asOnWindows]));
+    }
+
+    [AvaloniaFact]
+    public async Task The_chevron_shows_the_replacement_and_hides_it_again()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        Write(Path.Combine(h.WorkFolder, "Config.h"), "#define SPEED 600\n");
+        await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell }, width: 1300, height: 900);
+        h.Shell.OpenFindInFilesCommand.Execute(null);
+        var find = h.Shell.FindInFiles!;
+        UiText.Settle(window);
+        var view = window.GetVisualDescendants().OfType<FindInFilesView>().Single();
+        var chevron = view.GetVisualDescendants().OfType<ToggleButton>().Single(b => b.Name == "ModeToggle");
+        var replaceBox = view.GetVisualDescendants().OfType<TextBox>().Single(b => b.Name == "ReplaceBox");
+        Point Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), window)!.Value;
+        Assert.False(replaceBox.IsEffectivelyVisible);
+        Assert.Equal(h.Services.Tips.ShowReplace, ToolTip.GetTip(chevron));
+
+        window.MouseDown(Middle(chevron), MouseButton.Left);
+        window.MouseUp(Middle(chevron), MouseButton.Left);
+        UiText.Settle(window);
+
+        Assert.True(find.IsReplaceMode);
+        Assert.True(replaceBox.IsEffectivelyVisible);
+        Assert.Equal("Replace in files", find.Title);
+        Assert.Equal(h.Services.Tips.HideReplace, ToolTip.GetTip(chevron));
+
+        window.MouseDown(Middle(chevron), MouseButton.Left);
+        window.MouseUp(Middle(chevron), MouseButton.Left);
+        UiText.Settle(window);
+        Assert.False(find.IsReplaceMode);
+        Assert.False(replaceBox.IsEffectivelyVisible);
+        window.Close();
     }
 
     [AvaloniaFact]

@@ -81,7 +81,7 @@ Her hair tie is the color of the tab's folder group in the sidebar, and so are t
 
 ## Games
 
-The right-click menu also has **Play tic-tac-toe**, **Play Connect Four** and **Play hangman**. See [Games with Claudette](games-with-claudette.md).
+The right-click menu also has **Play tic-tac-toe**, **Play Connect Four**, **Play hangman** and **Play Minesweeper**. See [Games with Claudette](games-with-claudette.md).
 
 ## Hide her, and bring her back
 

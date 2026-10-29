@@ -192,7 +192,7 @@ One page, out of the sidebar and linked from both footers and the privacy chapte
 | Opening project files | The **Project files** button, **Open project files**, **Go to file…** (`Ctrl/Cmd+P`), its sidebar row, panes, and what it doesn't do (no language features, terminal or source control). | [Project files](DESIGN.md#project-files) |
 | The explorer | The tree, dimmed and linked entries, following the disk, new files and folders, renaming and deleting, its menus, **Show only changed files**, its side and width, hiding it. | [Project files](DESIGN.md#project-files) |
 | Finding a file by name | The find box, `name:42`, its keys and messages. | [Project files](DESIGN.md#project-files) |
-| Finding in files | **Find in files** and **Replace in files** (`Ctrl/Cmd+Shift+F`, `Ctrl/Cmd+Shift+R`), the palette and **Find in folder…**; the popup: the box and its options, **File mask**, **In project** and **Directory**, the matches and the preview, opening one; **Replace** and **Replace all**, open files changed unsaved, the rest on disk; **Open in Find window**. | [Project files](DESIGN.md#project-files) ("Finding in files") |
+| Finding in files | **Find in files** and **Replace in files** (`Ctrl/Cmd+Shift+F`, `Ctrl/Cmd+Shift+R`), the palette and **Find in folder…**; where a Files tab offers it (with nothing open, Go to file's link, the editor's find box's button, the explorer's menus); the popup: the chevron between finding and replacing, the box and its options, **File mask**, **In project** and **Directory**, the matches and the preview, opening one; **Replace** and **Replace all**, open files changed unsaved, the rest on disk; **Open in Find window**. | [Project files](DESIGN.md#project-files) ("Finding in files") |
 | File tabs | Preview and kept tabs, **Pin**, the **Close…** commands, moving between files. | [Project files](DESIGN.md#project-files) |
 | Editing | The editor, **Wrap long lines**, languages and colors, the chip (line endings, indentation, encoding), files that open read-only or not at all. | [Project files](DESIGN.md#project-files) |
 | Markdown files | **Edit**, **Preview** and **Edit and preview**, what the preview shows, scrolling together, links and images in it, files too large to preview. | [Markdown preview](DESIGN.md#markdown-preview) |
@@ -263,7 +263,7 @@ One page, out of the sidebar and linked from both footers and the privacy chapte
 | Page | Covers | From |
 |---|---|---|
 | Claudette on the composer | What she does and why, poking and carrying her, her hats, her settings, **Hide Claudette**. | [Claudette on the composer](DESIGN.md#claudette-on-the-composer) |
-| Games with Claudette | Starting a game, the three games and their levels, the score. | [Games with Claudette](DESIGN.md#games-with-claudette) |
+| Games with Claudette | Starting a game, the four games and their levels, the score. | [Games with Claudette](DESIGN.md#games-with-claudette) |
 
 ### Settings (`settings/`)
 

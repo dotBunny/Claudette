@@ -171,6 +171,7 @@ public sealed partial class ShellViewModel
                 Command("Play tic-tac-toe with Claudette", () => tab.PlayGame(GameKind.TicTacToe));
                 Command("Play Connect Four with Claudette", () => tab.PlayGame(GameKind.ConnectFour));
                 Command("Play hangman with Claudette", () => tab.PlayGame(GameKind.Hangman));
+                Command("Play Minesweeper with Claudette", () => tab.PlayGame(GameKind.Minesweeper));
             }
             Command("Tab settings…", () => OpenTabSettingsCommand.Execute(tab));
             // DESIGN.md §4, "Sidebar": what's under its row.

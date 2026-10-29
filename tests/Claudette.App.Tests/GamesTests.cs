@@ -326,4 +326,103 @@ public class GamesTests
             Assert.Contains(HangmanWords.Pick(random, recent).Word, new[] { "QUEUE", "ZEBRA" });
         }
     }
+
+    // ---- Minesweeper ---------------------------------------------------------------------------------------------------
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(4)]
+    [InlineData(40)]
+    [InlineData(80)]
+    public void She_hides_her_mines_as_the_first_square_opens_never_in_it_or_next_to_it(int first)
+    {
+        for (var seed = 0; seed < 30; seed++)
+        {
+            var field = new Minesweeper(Minesweeper.MinesFor(GameLevel.Hard));
+            Assert.False(field.HasMines);
+
+            var opened = field.Open(first, new Random(seed));
+
+            Assert.True(field.HasMines);
+            Assert.Equal(GameOutcome.Playing, field.Outcome);
+            Assert.Equal(16, Enumerable.Range(0, Minesweeper.Size).Count(field.IsMine));
+            Assert.Equal(0, field.MinesAround(first));
+            // With none around it, the first square opens those around it too.
+            Assert.Contains(first, opened);
+            Assert.All(Minesweeper.Around(first), s => Assert.True(field.IsOpen(s)));
+            Assert.Equal(Minesweeper.Size - 16 - opened.Count, field.SafeLeft);
+        }
+    }
+
+    [Fact]
+    public void A_square_with_no_mines_around_opens_the_squares_around_it_and_opening_every_safe_one_wins()
+    {
+        var field = Field(0, 80);
+
+        // The middle opens everything but the corners' mines, stopping at the squares that touch them.
+        var opened = field.Open(40, new Random(0));
+
+        Assert.Equal(Minesweeper.Size - 2, opened.Count);
+        Assert.False(field.IsOpen(0));
+        Assert.Equal(1, field.MinesAround(10));
+        Assert.Equal(0, field.SafeLeft);
+        Assert.Equal(GameOutcome.Won, field.Outcome);
+        Assert.Empty(field.Open(0, new Random(0)));
+    }
+
+    [Fact]
+    public void A_flag_keeps_a_square_shut_and_a_number_with_as_many_flags_opens_the_rest_around_it()
+    {
+        // Mines at the top left and two along: the square between them has two around it.
+        var field = Field(0, 2);
+        Assert.Equal([1], field.Open(1, new Random(0)));
+        Assert.Equal(2, field.MinesAround(1));
+        // Without its flags, a click on the number does nothing.
+        Assert.Empty(field.OpenAround(1, new Random(0)));
+
+        Assert.True(field.ToggleFlag(0));
+        Assert.Empty(field.Open(0, new Random(0)));
+        Assert.True(field.ToggleFlag(2));
+        Assert.False(field.ToggleFlag(1));
+        Assert.Equal(2, field.Flags);
+
+        Assert.Equal([9, 10, 11], field.OpenAround(1, new Random(0)).Order());
+        Assert.Equal(GameOutcome.Playing, field.Outcome);
+        // Under them, nothing touches a mine: the rest of the field opens, and the round is won.
+        field.OpenAround(10, new Random(0));
+        Assert.Equal(GameOutcome.Won, field.Outcome);
+    }
+
+    [Fact]
+    public void Opening_around_a_flag_in_the_wrong_place_opens_a_mine_and_loses()
+    {
+        var field = Field(0, 2);
+        field.Open(1, new Random(0));
+        field.ToggleFlag(0);
+        field.ToggleFlag(9);
+
+        field.OpenAround(1, new Random(0));
+
+        Assert.Equal(GameOutcome.Lost, field.Outcome);
+        Assert.Equal(2, field.Exploded);
+        Assert.False(field.ToggleFlag(20));
+        Assert.Empty(field.Open(20, new Random(0)));
+    }
+
+    [Fact]
+    public void Harder_levels_hide_more_mines()
+    {
+        int[] mines = [.. new[] { GameLevel.Easy, GameLevel.Normal, GameLevel.Hard }.Select(Minesweeper.MinesFor)];
+        Assert.Equal(mines.Order(), mines);
+        Assert.Equal(mines.Length, mines.Distinct().Count());
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Minesweeper(Minesweeper.Size - 8));
+    }
+
+    /// <summary>A field with its mines laid where a test wants them.</summary>
+    private static Minesweeper Field(params int[] mines)
+    {
+        var field = new Minesweeper(mines.Length);
+        field.Lay(mines);
+        return field;
+    }
 }

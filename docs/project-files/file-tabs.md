@@ -7,7 +7,7 @@ summary: "A row of tabs sits over the editor, one for each open file."
 
 # File tabs
 
-A row of tabs sits over the editor, one for each open file. With no file open, the space under it says *No files open* and offers a **Go to file…** button.
+A row of tabs sits over the editor, one for each open file. With no file open, the space under it says *No files open* and lists what to do next, each with its shortcut: **Go to file**, **Find in files**, **Replace in files** and **Command palette**.
 
 ## What a tab shows
 

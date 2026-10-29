@@ -131,6 +131,7 @@ public sealed partial class MascotService : ObservableObject, IMascotLines, IDis
             (Key(KeyboardShortcuts.NextTabNeedingInput), "{0} goes to the next tab waiting for you"),
             (Key(KeyboardShortcuts.CommandPalette), "{0} opens the command palette"),
             (Key(KeyboardShortcuts.Find), "{0} finds things in the conversation"),
+            (Key(KeyboardShortcuts.FindInFiles), "{0} finds text in every file of the project"),
             (Key(KeyboardShortcuts.Stash), "{0} puts what you're typing aside for later"),
             (Key(KeyboardShortcuts.Suffixes), "{0} adds a quick suffix to your message"),
             (Key(KeyboardShortcuts.History), "{0} finds a past session"),

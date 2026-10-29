@@ -212,6 +212,98 @@ public class GameServiceTests
     }
 
     [Fact]
+    public async Task Minesweeper_opens_and_flags_squares_and_counts_a_cleared_field_as_a_win()
+    {
+        await using var h = new TabTestHarness();
+        h.Services.Random = new Random(8);
+        var tab = await h.OpenTabAsync();
+        var announced = new List<string>();
+        h.Services.Games.Announcer = announced.Add;
+        tab.PlayGame(GameKind.Minesweeper);
+        var game = Assert.IsType<MinesweeperViewModel>(h.Services.Games.Game);
+        Assert.Equal("Claudette hid 13 mines. Open a square.", game.Status);
+        Assert.Equal("Row 1, column 1, not opened", game.Squares[0].Name);
+        // The number keys and letters are the squares' own: the page doesn't take them.
+        Assert.False(game.Press('1'));
+
+        game.Squares[40].OpenCommand.Execute(null);
+
+        Assert.True(game.Squares[40].IsOpen);
+        Assert.Equal("Row 5, column 5, empty", game.Squares[40].Name);
+        Assert.Equal("13 mines left to flag.", game.Status);
+        Assert.Matches("^\\d+ squares opened\\.$", announced.Last());
+        var mines = game.Squares.Where(s => game.Field.IsMine(s.Index)).ToList();
+        Assert.Equal(13, mines.Count);
+
+        // A flag on a mine: one fewer to flag, and the square stays shut.
+        mines[0].FlagCommand.Execute(null);
+        Assert.Equal("12 mines left to flag.", game.Status);
+        Assert.EndsWith(", flagged", announced.Last());
+        mines[0].OpenCommand.Execute(null);
+        Assert.True(mines[0].ShowsFlag);
+        Assert.False(game.IsOver);
+
+        // Every square without a mine opened: the user wins, and her mines show flagged.
+        foreach (var square in game.Squares.Where(s => !game.Field.IsMine(s.Index) && !s.IsOpen))
+        {
+            square.OpenCommand.Execute(null);
+        }
+
+        Assert.Equal(GameOutcome.Won, game.Outcome);
+        Assert.Equal("You cleared the field: you win!", game.Status);
+        Assert.All(mines, m => Assert.True(m.ShowsFlag));
+        Assert.Equal("You 1 · Claudette 0", game.ScoreText);
+        Assert.Equal(1, h.Services.State.Games.Scores["Minesweeper"].Wins);
+    }
+
+    [Fact]
+    public async Task Opening_one_of_her_mines_loses_and_shows_where_they_were_and_the_wrong_flags()
+    {
+        await using var h = new TabTestHarness();
+        h.Services.Random = new Random(12);
+        var tab = await h.OpenTabAsync();
+        tab.PlayGame(GameKind.Minesweeper);
+        var game = (MinesweeperViewModel)h.Services.Games.Game!;
+        game.Squares[0].OpenCommand.Execute(null);
+        var mines = game.Squares.Where(s => game.Field.IsMine(s.Index)).ToList();
+        var wrong = game.Squares.First(s => !game.Field.IsMine(s.Index) && !s.IsOpen);
+        wrong.FlagCommand.Execute(null);
+
+        mines[0].OpenCommand.Execute(null);
+
+        Assert.Equal(GameOutcome.Lost, game.Outcome);
+        Assert.Equal("Boom! Claudette wins.", game.Status);
+        Assert.True(mines[0].IsExploded);
+        Assert.EndsWith(", the mine you opened", mines[0].Name);
+        Assert.All(mines.Skip(1), m => Assert.Equal(MinesweeperSquareState.Mine, m.State));
+        Assert.True(wrong.IsWrongFlag);
+        Assert.Equal(1, h.Services.State.Games.Scores["Minesweeper"].Losses);
+        // Over, the field takes no more.
+        var shut = game.Squares.First(s => s.State == MinesweeperSquareState.Mine);
+        shut.OpenCommand.Execute(null);
+        Assert.Equal(MinesweeperSquareState.Mine, shut.State);
+    }
+
+    [Fact]
+    public async Task Another_level_in_minesweeper_is_another_number_of_mines_on_a_new_field()
+    {
+        await using var h = new TabTestHarness();
+        h.Services.Random = new Random(1);
+        var tab = await h.OpenTabAsync();
+        tab.PlayGame(GameKind.Minesweeper);
+        var game = (MinesweeperViewModel)h.Services.Games.Game!;
+        game.Squares[40].OpenCommand.Execute(null);
+
+        game.Level = game.Levels.Single(l => l.Level == GameLevel.Hard);
+
+        Assert.Equal("Claudette hid 16 mines. Open a square.", game.Status);
+        Assert.All(game.Squares, s => Assert.Equal(MinesweeperSquareState.Shut, s.State));
+        Assert.False(game.Field.HasMines);
+        // The round dropped wasn't counted.
+        Assert.False(h.Services.State.Games.Scores.ContainsKey("Minesweeper"));
+    }
+
+    [Fact]
     public async Task While_tabs_wait_on_the_user_a_line_over_the_board_says_where_with_Go_there()
     {
         await using var h = new TabTestHarness();
@@ -273,8 +365,8 @@ public class GameServiceTests
     {
         await using var h = new TabTestHarness();
         var tab = await h.OpenTabAsync();
-        string[] labels = ["Play tic-tac-toe with Claudette", "Play Connect Four with Claudette", "Play hangman with Claudette"];
-        foreach (var (label, type) in labels.Zip(new[] { typeof(TicTacToeViewModel), typeof(ConnectFourViewModel), typeof(HangmanViewModel) }))
+        string[] labels = ["Play tic-tac-toe with Claudette", "Play Connect Four with Claudette", "Play hangman with Claudette", "Play Minesweeper with Claudette"];
+        foreach (var (label, type) in labels.Zip(new[] { typeof(TicTacToeViewModel), typeof(ConnectFourViewModel), typeof(HangmanViewModel), typeof(MinesweeperViewModel) }))
         {
             await h.Shell.PaletteEntries().Single(e => e.Label == label).Run();
             Assert.IsType(type, h.Services.Games.Game);

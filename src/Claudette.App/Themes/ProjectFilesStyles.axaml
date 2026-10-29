@@ -132,6 +132,29 @@
     <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
     <Setter Property="FontSize" Value="12" />
   </Style>
+  <!-- The chevron at the box's left, which shows and hides the replacement: flat, open or not, as the editor's find box's is -->
+  <Style Selector="ToggleButton.findmode">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="7" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="ToggleButton.findmode:checked /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="ToggleButton.findmode:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+  </Style>
+  <Style Selector="ToggleButton.findmode Path">
+    <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
+    <Setter Property="StrokeThickness" Value="1.4" />
+    <Setter Property="Width" Value="9" />
+    <Setter Property="Height" Value="9" />
+    <Setter Property="Stretch" Value="Uniform" />
+  </Style>
   <Style Selector="Border.findquestion">
     <Setter Property="Background" Value="{DynamicResource CautionBackgroundBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CautionBorderBrush}" />
@@ -396,11 +419,51 @@
     <Setter Property="Background" Value="{DynamicResource DiffRemovedBrush}" />
   </Style>
 
-  <!-- With nothing open. -->
+  <!-- Under Go to file's list: what's typed, looked for in the files' text instead. A link, with a link's underline under
+       the pointer and no button's room around it. -->
+  <Style Selector="Button.findtyped">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Margin" Value="12,2,12,8" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="Button.findtyped:pointerover /template/ ContentPresenter#PART_ContentPresenter, Button.findtyped:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.findtyped TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource AccentStatusBrush}" />
+  </Style>
+  <Style Selector="Button.findtyped:pointerover TextBlock">
+    <Setter Property="TextDecorations" Value="Underline" />
+  </Style>
+
+  <!-- With nothing open: what to do next, as Rider's empty editor has it, each with its shortcut. -->
   <Style Selector="StackPanel.nofile">
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Spacing" Value="8" />
     <Setter Property="MaxWidth" Value="360" />
+  </Style>
+  <Style Selector="Grid.nofileactions">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="ColumnSpacing" Value="16" />
+    <Setter Property="RowSpacing" Value="2" />
+  </Style>
+  <Style Selector="Grid.nofileactions Button">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="6,3" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+  </Style>
+  <Style Selector="Grid.nofileactions Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+  </Style>
+  <Style Selector="Grid.nofileactions TextBlock.keys">
+    <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 </Styles>

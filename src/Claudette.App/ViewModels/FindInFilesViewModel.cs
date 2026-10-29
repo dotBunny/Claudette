@@ -1,16 +1,29 @@
 using System.Collections.ObjectModel;
 using Claudette.App.Services;
 using Claudette.Core.ProjectFiles;
+using Claudette.Core.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Claudette.App.ViewModels;
 
 /// <summary>
+/// What Find in files starts with in place of what it had last (DESIGN.md §18, "Finding in files"): the text selected in
+/// the editor, what the editor's find box has, with its options and, while it's replacing, its replacement, or what Go to
+/// file has typed. Null options keep the popup's own.
+/// </summary>
+public sealed record FindStart(string Query, bool? MatchCase = null, bool? WholeWords = null, bool? Regex = null, string? Replacement = null)
+{
+    /// <summary>Something to look for, on one line: Find in files looks within lines.</summary>
+    public bool IsUsable => Query.Length > 0 && Query.IndexOfAny(['\n', '\r']) < 0;
+}
+
+/// <summary>
 /// Find in files and Replace in files (DESIGN.md §18, "Project files", "Finding in files"): a popup over the window, as
 /// Rider's is, with the query and its options, the replacement, the file mask and where to look, the matches coming in
 /// as it's typed, and the selected one's file under them. <c>Enter</c> opens a match in the project's Files tab;
-/// <b>Open in Find window</b> keeps the results in a tool window.
+/// <b>Open in Find window</b> keeps the results in a tool window. The chevron at the box's left shows the replacement, as
+/// the editor's find box's does, and hides it.
 /// </summary>
 public sealed partial class FindInFilesViewModel : ViewModelBase, IDisposable
 {
@@ -22,6 +35,7 @@ public sealed partial class FindInFilesViewModel : ViewModelBase, IDisposable
     private readonly Action _close;
     private readonly UiTimeout _searchWait;
     private readonly InlineConfirmation _replaceAll;
+    private readonly ShortcutTips _tips;
     private CancellationTokenSource? _searching;
     private FindMatcher? _matcher;
     private FindSettings? _searched;
@@ -32,7 +46,7 @@ public sealed partial class FindInFilesViewModel : ViewModelBase, IDisposable
     private readonly List<FindFileMatches> _files = [];
 
     internal FindInFilesViewModel(AppServices services, IFindInFilesHost host, IFindResultsHost results, string project, string projectName,
-        FindInFilesState remembered, bool replace, string? folder, string? selectedText, Action close)
+        FindInFilesState remembered, bool replace, string? folder, FindStart? start, Action close)
     {
         _search = new FindInFilesSearch(services, host);
         _results = results;
@@ -42,12 +56,14 @@ public sealed partial class FindInFilesViewModel : ViewModelBase, IDisposable
         _replaceAll.PropertyChanged += (_, _) => OnPropertyChanged(nameof(IsAskingToReplaceAll));
         Project = project;
         ProjectName = projectName;
-        // What it had last, with the text selected in the editor in place of the query, and the folder its menu named.
-        Query = selectedText ?? remembered.Query;
-        MatchCase = remembered.MatchCase;
-        WholeWords = remembered.WholeWords;
-        IsRegex = remembered.Regex;
-        Replacement = remembered.Replacement;
+        _tips = services.Tips;
+        // What it had last, with what it was opened with in place of the query (and the options and replacement it brought),
+        // and the folder its menu named.
+        Query = start?.Query ?? remembered.Query;
+        MatchCase = start?.MatchCase ?? remembered.MatchCase;
+        WholeWords = start?.WholeWords ?? remembered.WholeWords;
+        IsRegex = start?.Regex ?? remembered.Regex;
+        Replacement = start?.Replacement ?? remembered.Replacement;
         FileMask = remembered.FileMask;
         var directory = folder ?? (remembered.Directory is { } last && IsIn(last, project) ? last : null);
         Directory = directory ?? project;
@@ -77,9 +93,28 @@ public sealed partial class FindInFilesViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     public partial bool IsRegex { get; set; }
 
+    /// <summary>Replace in files: the replacement shows, under the box. The chevron, and the two shortcuts, switch it.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(Title))]
+    [NotifyPropertyChangedFor(nameof(Title), nameof(ModeTip), nameof(KeysText))]
     public partial bool IsReplaceMode { get; set; }
+
+    /// <summary>The chevron's tip: what a click does, and its shortcut.</summary>
+    public string ModeTip => IsReplaceMode ? _tips.HideReplace : _tips.ShowReplace;
+
+    /// <summary>
+    /// The keys, at the foot: <i>Enter opens · ↑↓ choose · Ctrl+Shift+R shows Replace · Esc closes</i>, as they're bound
+    /// now and as this OS writes them.
+    /// </summary>
+    public string KeysText
+    {
+        get
+        {
+            var mode = IsReplaceMode
+                ? _tips.Text(KeyboardShortcuts.FindInFiles) is { } find ? $"{find} hides Replace" : null
+                : _tips.Text(KeyboardShortcuts.ReplaceInFiles) is { } replace ? $"{replace} shows Replace" : null;
+            return string.Join(" · ", new[] { $"{ShortcutTips.Key("Enter")} opens", "↑↓ choose", mode, $"{ShortcutTips.Key("Escape")} closes" }.OfType<string>());
+        }
+    }
 
     [ObservableProperty]
     public partial string Replacement { get; set; } = "";

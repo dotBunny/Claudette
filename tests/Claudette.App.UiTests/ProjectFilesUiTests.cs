@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -192,6 +193,83 @@ public sealed class ProjectFilesUiTests
         Assert.False(editor.SearchPanel.IsClosed);
         Assert.Equal("Dash", editor.SearchPanel.SearchPattern);
         Assert.Equal(File.ReadAllText(Path.Combine(h.WorkFolder, "Source", "Player.cpp")), editor.Document.Text);
+        window.Close();
+    }
+
+    /// <summary>
+    /// The find box's <b>Find in files</b>, before its ×, takes what it has to Find in files, its options too; and so does
+    /// Find in files' shortcut, pressed with the keyboard in the box (DESIGN.md §18, "Finding in files").
+    /// </summary>
+    [AvaloniaFact]
+    public async Task Finds_Find_in_files_button_and_shortcut_take_what_it_has_to_Find_in_files()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var (_, _, _, window) = await ShowAsync(h);
+        var editor = Editor(window);
+        editor.TextArea.Focus();
+        UiText.Settle(window);
+        var primary = OperatingSystem.IsMacOS() ? RawInputModifiers.Meta : RawInputModifiers.Control;
+        window.KeyPressQwerty(PhysicalKey.F, primary);
+        window.KeyReleaseQwerty(PhysicalKey.F, primary);
+        UiText.Settle(window);
+        window.KeyTextInput("Dash");
+        editor.SearchPanel.MatchCase = true;
+        UiText.Settle(window);
+
+        var buttons = editor.SearchPanel.GetVisualDescendants().OfType<Button>().Where(b => b.IsEffectivelyVisible).ToList();
+        var findInFiles = buttons.Single(b => b.Name == SearchPanelButtons.FindInFilesName);
+        // Just before ×, which stays last.
+        Assert.Equal(buttons.IndexOf(findInFiles) + 1, buttons.Count - 1);
+        Assert.Equal("Find in files", AutomationProperties.GetName(findInFiles));
+        Assert.Equal(h.Services.Tips.FindInFiles, ToolTip.GetTip(findInFiles));
+        Point Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), window)!.Value;
+        window.MouseDown(Middle(findInFiles), MouseButton.Left);
+        window.MouseUp(Middle(findInFiles), MouseButton.Left);
+        UiText.Settle(window);
+
+        Assert.Equal(("Dash", true, false), (h.Shell.FindInFiles!.Query, h.Shell.FindInFiles.MatchCase, h.Shell.FindInFiles.IsReplaceMode));
+        h.Shell.CloseFindInFiles();
+        UiText.Settle(window);
+
+        // The shortcut, with the keyboard in the box.
+        editor.SearchPanel.GetVisualDescendants().OfType<TextBox>().First().Focus();
+        editor.SearchPanel.SearchPattern = "Spend";
+        UiText.Settle(window);
+        window.KeyPressQwerty(PhysicalKey.F, primary | RawInputModifiers.Shift);
+        window.KeyReleaseQwerty(PhysicalKey.F, primary | RawInputModifiers.Shift);
+        UiText.Settle(window);
+        Assert.Equal("Spend", h.Shell.FindInFiles!.Query);
+        window.Close();
+    }
+
+    /// <summary>With nothing open, the tab offers what to do next, each with its shortcut as it's bound now.</summary>
+    [AvaloniaFact]
+    public async Task With_nothing_open_it_offers_Go_to_file_Find_and_Replace_in_files_and_the_palette()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        Write(Path.Combine(h.WorkFolder, "Starfall.uproject"), "{}\n");
+        h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single());
+        var files = h.Shell.Groups.Single().Files!;
+        var window = UiText.Show(new ShellView { DataContext = h.Shell }, 1400, 800);
+        await UiText.SettleUntilAsync(window, () => files.Rows.Count == 1, "the explorer");
+
+        var actions = View(window).GetVisualDescendants().OfType<Grid>().Single(g => g.Name == "NoFileActions");
+        Assert.True(actions.IsEffectivelyVisible);
+        var text = UiText.Describe(actions);
+        var tips = h.Services.Tips;
+        foreach (var (label, keys) in new[] { ("Go to file", tips.GoToFileKeys), ("Find in files", tips.FindInFilesKeys), ("Replace in files", tips.ReplaceInFilesKeys), ("Command palette", tips.CommandPaletteKeys) })
+        {
+            Assert.Contains(label, text, StringComparison.Ordinal);
+            Assert.Contains(keys, text, StringComparison.Ordinal);
+        }
+
+        var find = actions.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Find in files"));
+        Point Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), window)!.Value;
+        window.MouseDown(Middle(find), MouseButton.Left);
+        window.MouseUp(Middle(find), MouseButton.Left);
+        UiText.Settle(window);
+        Assert.Equal(h.WorkFolder, h.Shell.FindInFiles?.Project);
         window.Close();
     }
 

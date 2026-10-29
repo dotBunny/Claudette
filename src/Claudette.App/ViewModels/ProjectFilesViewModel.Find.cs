@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Claudette.App.Services;
 using Claudette.Core.Composer;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -41,7 +42,7 @@ public sealed partial class ProjectFilesViewModel
     public partial bool IsFinding { get; private set; }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsListingFound), nameof(ShowsTree), nameof(ShowsChangedList))]
+    [NotifyPropertyChangedFor(nameof(IsListingFound), nameof(ShowsTree), nameof(ShowsChangedList), nameof(FindTypedInFilesText))]
     public partial string FindText { get; set; } = "";
 
     /// <summary>Something's typed: the list shows in the tree's place.</summary>
@@ -58,6 +59,41 @@ public sealed partial class ProjectFilesViewModel
 
     /// <summary><b>Find file</b>'s tip, with its shortcut.</summary>
     public string FindTip => _services.Tips.GoToFile;
+
+    /// <summary>The shortcuts as they're bound now, for the tab with nothing open.</summary>
+    public ShortcutTips Tips => _services.Tips;
+
+    /// <summary>
+    /// Under the list, while something's typed: <i>Find “health” in files</i>, which looks for it in the files' text
+    /// instead (DESIGN.md §18, "Finding in files"). Find in files' shortcut does the same with the keyboard in the box.
+    /// </summary>
+    public string FindTypedInFilesText => $"Find “{SplitLine(FindText.Trim()).Query}” in files";
+
+    public string FindTypedInFilesTip => _services.Tips.FindInFiles;
+
+    /// <summary>The link under the list: Find in files, with what's typed, and the tree back.</summary>
+    [RelayCommand]
+    private void FindTypedInFiles()
+    {
+        if (SplitLine(FindText.Trim()).Query is not { Length: > 0 } typed)
+        {
+            return;
+        }
+        StopFind();
+        FindInFiles(new FindStart(typed), replace: false);
+    }
+
+    /// <summary>
+    /// What Find in files starts with from this tab: what's typed in Go to file's box while the keyboard's there, or what
+    /// the editor showing offers.
+    /// </summary>
+    internal FindStart? FindInFilesStart() =>
+        FindBoxHasKeyboard?.Invoke() == true && SplitLine(FindText.Trim()).Query is { Length: > 0 } typed
+            ? new FindStart(typed)
+            : Showing?.FindInFilesStart?.Invoke();
+
+    /// <summary>Whether the keyboard's in Go to file's box; null without a view.</summary>
+    internal Func<bool>? FindBoxHasKeyboard { get; set; }
 
     /// <summary>Asks the view to put the keyboard in the box.</summary>
     public event Action? FindFocusRequested;
