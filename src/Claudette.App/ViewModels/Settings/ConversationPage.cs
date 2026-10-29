@@ -23,8 +23,11 @@ public sealed class ConversationPage : SettingsPage
                 "Tool calls, thinking, hooks, notes and the replies Claude carried on after are drawn without their card's tint and outline. Pointing at one brings it back.",
                 ["cards", "tint", "outline", "quiet"]),
             Setting("appearance.indentYourMessages", "Indent your messages", s => s.Appearance.IndentYourMessages, (s, v) => s.Appearance.IndentYourMessages = v,
-                "Your messages stand far in from the left, Claude's replies at the left, and its thinking and tool calls a little in, so you can tell whose turn it is at a glance.",
+                "Your messages stand far in from the left, and Claude's replies at the left edge, so you can tell whose turn it is at a glance.",
                 keywords: ["cards", "you", "margin", "offset", "indent"]),
+            Setting("appearance.indentClaudesSteps", "Indent Claude's steps", s => s.Appearance.IndentClaudesSteps, (s, v) => s.Appearance.IndentClaudesSteps = v,
+                "Claude's thinking, tool calls and subagents start a little in from its replies, so the replies stand out.",
+                keywords: ["cards", "thinking", "tools", "subagents", "margin", "offset", "indent"]),
             Setting("appearance.collapseToolCalls", "Show tool calls collapsed", s => s.Appearance.CollapseToolCalls, (s, v) => s.Appearance.CollapseToolCalls = v,
                 "Each Tool calls card starts as its header line, rather than with its tiles open.",
                 "The chevron before a card's icon opens it. Right-click a card for Collapse all tool calls or Expand all tool calls, which changes every card in that tab and the ones to come, as thinking's menu does.",
@@ -85,11 +88,18 @@ public sealed class ConversationPage : SettingsPage
         set => Set(value, v => Settings.Appearance.QuietSteps = v);
     }
 
-    /// <summary>Your messages' cards start further in than Claude's (DESIGN.md §18, "Conversation cards").</summary>
+    /// <summary>Your messages' cards start far in from the left (DESIGN.md §18, "Conversation cards").</summary>
     public bool IndentYourMessages
     {
         get => Settings.Appearance.IndentYourMessages;
         set => Set(value, v => Settings.Appearance.IndentYourMessages = v);
+    }
+
+    /// <summary>Claude's thinking, tool calls and subagents start a little in from its replies (DESIGN.md §18, "Conversation cards").</summary>
+    public bool IndentClaudesSteps
+    {
+        get => Settings.Appearance.IndentClaudesSteps;
+        set => Set(value, v => Settings.Appearance.IndentClaudesSteps = v);
     }
 
     /// <summary>Tool calls cards start folded to their header line (DESIGN.md §18, "Conversation cards").</summary>

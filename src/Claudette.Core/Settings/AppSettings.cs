@@ -599,10 +599,16 @@ public sealed class AppearanceSettings
     public bool CollapseToolCalls { get; set; }
 
     /// <summary>
-    /// Your messages' cards start further in from the left than Claude's, so whose turn each card is can be told by
-    /// its place alone (DESIGN.md §18, "Conversation cards"). Off by default.
+    /// Your messages' cards start far in from the left, so whose turn each card is can be told by its place alone
+    /// (DESIGN.md §18, "Conversation cards"). Off by default.
     /// </summary>
     public bool IndentYourMessages { get; set; }
+
+    /// <summary>
+    /// Claude's steps between its replies, its thinking, tool calls and subagents, start a little in from its replies
+    /// (DESIGN.md §18, "Conversation cards"). Off by default.
+    /// </summary>
+    public bool IndentClaudesSteps { get; set; }
 
     /// <summary>Settings → Appearance → Motion (DESIGN.md §3, "Accessibility").</summary>
     public MotionSetting Motion { get; set; } = MotionSetting.System;

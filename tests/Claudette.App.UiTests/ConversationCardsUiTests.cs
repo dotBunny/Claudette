@@ -146,9 +146,9 @@ public sealed class ConversationCardsUiTests
     }
 
     [AvaloniaFact]
-    public async Task Your_message_starts_further_in_than_Claudes_reply_and_the_setting_turns_that_off()
+    public async Task Your_messages_and_Claudes_steps_each_start_further_in_with_their_own_setting()
     {
-        // Off by default; turned on here.
+        // Both off by default; your messages' turned on here.
         await using var h = new TabTestHarness(s => s.Appearance.IndentYourMessages = true, dispatcher: new AvaloniaUiDispatcher());
         var tab = await h.OpenTabAsync();
         var window = UiText.Show(new ShellView { DataContext = h.Shell });
@@ -162,16 +162,27 @@ public sealed class ConversationCardsUiTests
         var (you, reply) = (YourCards(window)[0], Replies(window)[0]);
         var (thinking, tools) = (Named(window, "thinking")[0], Named(window, "tools")[0]);
 
+        // Your messages alone: Claude's steps stay at its replies' edge.
         Assert.Equal(new Thickness(96, 0, 0, 0), you.Margin);
         Assert.Equal(new Thickness(0), reply.Margin);
         Assert.Equal(96, you.Bounds.Left - reply.Bounds.Left);
+        Assert.Equal(reply.Bounds.Left, thinking.Bounds.Left);
+        Assert.Equal(reply.Bounds.Left, tools.Bounds.Left);
+        Assert.Equal(you.Bounds.Right, reply.Bounds.Right);
+
+        // Claude's steps alone: a little in, ending at the same right edge; your messages back at the left.
+        h.Services.Settings.Appearance.IndentYourMessages = false;
+        h.Services.Settings.Appearance.IndentClaudesSteps = true;
+        h.Services.SaveSettings();
+        UiText.Settle(window);
+        Assert.Equal(reply.Bounds.Left, you.Bounds.Left);
         Assert.Equal(24, thinking.Bounds.Left - reply.Bounds.Left);
         Assert.Equal(24, tools.Bounds.Left - reply.Bounds.Left);
-        Assert.Equal(you.Bounds.Right, reply.Bounds.Right);
         Assert.Equal(thinking.Bounds.Right, reply.Bounds.Right);
         Assert.Equal(tools.Bounds.Right, reply.Bounds.Right);
 
-        h.Services.Settings.Appearance.IndentYourMessages = false;
+        // Both off: every card at the same edge.
+        h.Services.Settings.Appearance.IndentClaudesSteps = false;
         h.Services.SaveSettings();
         UiText.Settle(window);
         Assert.Equal(new Thickness(0), you.Margin);
