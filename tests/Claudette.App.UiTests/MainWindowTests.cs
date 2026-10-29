@@ -163,6 +163,11 @@ public class MainWindowTests
         double Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, 0), window)!.Value.X;
         Assert.Equal(icon.Bounds.Width, menu.Bounds.Width);
         Assert.Equal(Middle(icon), Middle(menu), 0.5);
+        // Its three lines, wider than tall, in the middle of it too, not drawn from its top.
+        var lines = menu.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Single();
+        var drawn = lines.TranslatePoint(lines.RenderedGeometry!.Bounds.Center, menu)!.Value;
+        Assert.Equal(menu.Bounds.Width / 2, drawn.X, 0.5);
+        Assert.Equal(menu.Bounds.Height / 2, drawn.Y, 0.5);
         var items = Assert.IsType<MenuFlyout>(menu.Flyout).Items.OfType<MenuItem>().ToList();
         Assert.Equal(["Settings", "User Guide", "Ask on Discord", "Report an issue", "About Claudette"], items.Select(i => i.Header as string));
         // Opened, its entries take their commands.

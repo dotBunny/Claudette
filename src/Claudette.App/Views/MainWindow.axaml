@@ -299,7 +299,8 @@
               <!-- The menu (DESIGN.md §3): Settings and the user guide first, then the rest of Help -->
               <Button Name="MainMenu" Classes="flat" VerticalAlignment="Center" ToolTip.Tip="Menu" AutomationProperties.Name="Menu"
                       IsVisible="{Binding Shell, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
-                <Path Data="{StaticResource IconMenu}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" StrokeLineCap="Round" Width="13" Height="13" Stretch="Uniform" />
+                <Path Data="{StaticResource IconMenu}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" StrokeLineCap="Round" Stretch="Uniform"
+                      MaxWidth="13" MaxHeight="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <Button.Flyout>
                   <MenuFlyout Placement="BottomEdgeAlignedRight">
                     <MenuItem Header="Settings" Command="{Binding Shell.OpenSettingsCommand, FallbackValue={x:Null}}" />

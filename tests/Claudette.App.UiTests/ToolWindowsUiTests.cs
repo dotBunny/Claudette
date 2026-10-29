@@ -101,6 +101,28 @@ public class ToolWindowsUiTests
 
     private static ToolPanelView Panel(Window window, string name) => window.GetVisualDescendants().OfType<ToolPanelView>().Single(v => v.Name == name);
 
+    [AvaloniaFact]
+    public async Task Each_strip_icons_glyph_is_drawn_in_the_middle_of_it_whatever_its_shape()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        UiText.Settle(window);
+
+        // Changed files and Scratch pad are taller than wide, Agents as wide as tall.
+        var icons = window.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("stripicon") && b.IsEffectivelyVisible).ToList();
+        Assert.Equal(["Changed files", "Agents", "Scratch pad"], icons.Select(AutomationProperties.GetName));
+        foreach (var icon in icons)
+        {
+            var glyph = icon.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Single(p => p.Classes.Contains("stripglyph"));
+            var drawn = glyph.TranslatePoint(glyph.RenderedGeometry!.Bounds.Center, icon)!.Value;
+            Assert.Equal(icon.Bounds.Width / 2, drawn.X, 0.5);
+            Assert.Equal(icon.Bounds.Height / 2, drawn.Y, 0.5);
+            // As big as fits its 16 pixels.
+            Assert.Equal(16, Math.Max(glyph.RenderedGeometry.Bounds.Width, glyph.RenderedGeometry.Bounds.Height), 0.5);
+        }
+    }
+
     /// <summary>A drag with the mouse from <paramref name="from"/>, by <paramref name="by"/>, as the user does it.</summary>
     private static void Drag(Window window, Point from, Vector by)
     {

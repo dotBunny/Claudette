@@ -734,9 +734,13 @@
   <Style Selector="Button.stripicon.showing /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource ToolIconSelectedBrush}" />
   </Style>
+  <!-- Fitted into its 16 pixels and in the middle of them: a shape stretched into a fixed size draws from its top left,
+       so a glyph taller than wide (Changed files, MCP, Scratch pad) would sit left of the others, and a wider one high. -->
   <Style Selector="Path.stripglyph">
-    <Setter Property="Width" Value="16" />
-    <Setter Property="Height" Value="16" />
+    <Setter Property="MaxWidth" Value="16" />
+    <Setter Property="MaxHeight" Value="16" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Stretch" Value="Uniform" />
     <Setter Property="StrokeThickness" Value="1.3" />
     <Setter Property="StrokeLineCap" Value="Round" />
