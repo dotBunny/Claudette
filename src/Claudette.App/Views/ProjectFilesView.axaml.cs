@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -32,10 +33,11 @@ public partial class ProjectFilesView : UserControl
         ExplorerEdge.PointerReleased += (_, e) => EndResize(e.Pointer);
         ExplorerEdge.PointerCaptureLost += (_, _) => EndResize(null);
         ExplorerEdge.DoubleTapped += (_, _) => _files?.ResetExplorerWidth();
-        // Dragging a file's tab along the row moves it there; its button keeps the pointer, so the row listens first.
+        // Dragging a file's tab along the row moves it there, and out of the window, into a window of its own; its button
+        // keeps the pointer, so the row listens first.
         FileTabs.AddHandler(PointerPressedEvent, OnFileTabsPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         FileTabs.AddHandler(PointerMovedEvent, OnFileTabsMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
-        FileTabs.AddHandler(PointerReleasedEvent, (_, _) => _tabDrag = null, RoutingStrategies.Tunnel, handledEventsToo: true);
+        FileTabs.AddHandler(PointerReleasedEvent, OnFileTabsReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
         ActualThemeVariantChanged += (_, _) => TellTheme();
     }
 
@@ -396,29 +398,44 @@ public partial class ProjectFilesView : UserControl
         }
     }
 
-    /// <summary>The tab being dragged and where the press was; null when none is.</summary>
-    private (ProjectFileViewModel File, Point From, bool Moving)? _tabDrag;
+    /// <summary>The tab being dragged and where the press was, and whether it's outside the window; null when none is.</summary>
+    private (ProjectFileViewModel File, Point From, bool Moving, bool Outside)? _tabDrag;
 
     private void OnFileTabsPressed(object? sender, PointerPressedEventArgs e)
     {
         _tabDrag = e.GetCurrentPoint(FileTabs).Properties.IsLeftButtonPressed && (e.Source as StyledElement)?.DataContext is ProjectFileViewModel file
-            ? (file, e.GetPosition(FileTabs), false)
+            ? (file, e.GetPosition(FileTabs), false, false)
             : null;
     }
 
-    /// <summary>Past a few pixels, the dragged tab takes the place of the tab under the pointer.</summary>
+    /// <summary>
+    /// Past a few pixels, the dragged tab takes the place of the tab under the pointer. Outside the window, it fades: let
+    /// go there, its file opens in a window of its own (DESIGN.md §18, "A file in a window of its own").
+    /// </summary>
     private void OnFileTabsMoved(object? sender, PointerEventArgs e)
     {
-        if (_tabDrag is not { } drag || _files is null || !e.GetCurrentPoint(FileTabs).Properties.IsLeftButtonPressed)
+        if (_tabDrag is not { } drag || _files is null)
         {
+            return;
+        }
+        // Let go where the row didn't hear it (the focus went elsewhere mid-drag).
+        if (!e.GetCurrentPoint(FileTabs).Properties.IsLeftButtonPressed)
+        {
+            EndTabDrag();
             return;
         }
         var at = e.GetPosition(FileTabs);
-        if (!drag.Moving && Math.Abs(at.X - drag.From.X) < 6)
+        var outside = IsOutsideWindow(e);
+        if (!drag.Moving && !outside && Math.Abs(at.X - drag.From.X) < 6)
         {
             return;
         }
-        _tabDrag = drag with { Moving = true };
+        _tabDrag = drag with { Moving = true, Outside = outside };
+        (FileTabs.ContainerFromItem(drag.File) as ContentPresenter)?.Child?.Classes.Set("dragout", outside);
+        if (outside)
+        {
+            return;
+        }
         for (var i = 0; i < _files.OpenFiles.Count; i++)
         {
             if (FileTabs.ContainerFromIndex(i) is { } tab && tab.TranslatePoint(default, FileTabs) is { } left && at.X >= left.X && at.X < left.X + tab.Bounds.Width)
@@ -427,6 +444,61 @@ public partial class ProjectFilesView : UserControl
                 return;
             }
         }
+    }
+
+    /// <summary>
+    /// Let go outside the window: the file opens in a window of its own there, its title bar under the pointer. The tab's
+    /// button still takes the release, to let the pointer go; outside it, that isn't a click.
+    /// </summary>
+    private void OnFileTabsReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_tabDrag is { Moving: true, Outside: true } drag && _files is not null && IsOutsideWindow(e)
+            && TopLevel.GetTopLevel(this) is { } top && NewWindowPlace(offset: 0) is { } size)
+        {
+            var scaling = top.RenderScaling;
+            var screen = top.PointToScreen(e.GetPosition(top));
+            var place = size with { X = screen.X - (int)(120 * scaling), Y = screen.Y - (int)(16 * scaling) };
+            EndTabDrag();
+            _files.PopOut(drag.File, place);
+            return;
+        }
+        EndTabDrag();
+    }
+
+    private void EndTabDrag()
+    {
+        if (_tabDrag is { } drag)
+        {
+            (FileTabs.ContainerFromItem(drag.File) as ContentPresenter)?.Child?.Classes.Set("dragout", false);
+        }
+        _tabDrag = null;
+    }
+
+    /// <summary>The pointer is past the edge of Claudette's window.</summary>
+    private bool IsOutsideWindow(PointerEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is not { } top)
+        {
+            return false;
+        }
+        var at = e.GetPosition(top);
+        return at.X < 0 || at.Y < 0 || at.X >= top.Bounds.Width || at.Y >= top.Bounds.Height;
+    }
+
+    /// <summary>
+    /// A window of its own for a file popped out of this tab: over the editor's place, <paramref name="offset"/> pixels down
+    /// and to the right, at its size, and no smaller than the window's least. Null while it isn't on screen.
+    /// </summary>
+    internal Core.Development.WindowPlacement? NewWindowPlace(double offset)
+    {
+        if (TopLevel.GetTopLevel(this) is not { } top || !Files.IsEffectivelyVisible
+            || Files.TranslatePoint(default, top) is not { } from || Files.TranslatePoint(new Point(Files.Bounds.Width, Files.Bounds.Height), top) is not { } to)
+        {
+            return null;
+        }
+        var screen = top.PointToScreen(from);
+        var shift = (int)(offset * top.RenderScaling);
+        return new Core.Development.WindowPlacement(screen.X + shift, screen.Y + shift, Math.Max(to.X - from.X, 480), Math.Max(to.Y - from.Y, 300), false);
     }
 
     /// <summary>A middle click on a tab closes its file.</summary>

@@ -47,7 +47,7 @@ public sealed partial class ProjectFilesViewModel
 
     /// <summary>The file showing.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(RowDetail), nameof(HasShowing))]
+    [NotifyPropertyChangedFor(nameof(RowDetail), nameof(HasShowing), nameof(OpenInWindowTip))]
     public partial ProjectFileViewModel? Showing { get; set; }
 
     public bool HasShowing => Showing is not null;
@@ -75,7 +75,7 @@ public sealed partial class ProjectFilesViewModel
     /// <summary>
     /// Opens <paramref name="path"/>, or shows it if it's open: in the preview tab, which the next file opened that way
     /// replaces, or to stay. Goes to <paramref name="line"/> (and selects through <paramref name="endLine"/>, or up to
-    /// <paramref name="endColumn"/>) when given.
+    /// <paramref name="endColumn"/>) when given. One in a window of its own is gone to there, its window brought forward.
     /// </summary>
     public async Task<ProjectFileViewModel> OpenFileAsync(string path, bool preview, int? line = null, int? column = null, int? endLine = null, bool focus = false,
         int? endColumn = null)
@@ -108,7 +108,7 @@ public sealed partial class ProjectFilesViewModel
                 Watch(folder);
             }
         }
-        Showing = file;
+        Show(file);
         if (!file.IsLoaded)
         {
             if (_started)
@@ -145,13 +145,13 @@ public sealed partial class ProjectFilesViewModel
         }
     }
 
-    /// <summary>A click on a file's tab.</summary>
+    /// <summary>A click on a file's tab, or choosing it in <b>⋯</b>'s list: one in a window brings the window forward.</summary>
     [RelayCommand]
     private void ShowFile(ProjectFileViewModel? file)
     {
         if (file is not null)
         {
-            Showing = file;
+            Show(file);
         }
     }
 
@@ -188,9 +188,12 @@ public sealed partial class ProjectFilesViewModel
 
     /// <summary>
     /// <c>Ctrl/Cmd+W</c> with the Project Files tab focused: the file showing, and once none is open, the tab itself
-    /// (straight away when it's beside another tab with its explorer hidden).
+    /// (straight away when it's beside another tab with its explorer hidden). Files in windows of their own are open.
     /// </summary>
-    internal Task CloseShowingOrTabAsync() => Showing is { } showing ? CloseFilesAsync([showing]) : _shell.CloseProjectFilesAsync(this);
+    internal Task CloseShowingOrTabAsync() =>
+        Showing is { } showing ? CloseFilesAsync([showing])
+        : OpenFiles.Count == 0 ? _shell.CloseProjectFilesAsync(this)
+        : Task.CompletedTask;
 
     /// <summary>
     /// Closes <paramref name="files"/>, asking once about the ones with unsaved edits. False when it didn't. The last one
@@ -269,7 +272,7 @@ public sealed partial class ProjectFilesViewModel
         {
             if (!await file.SaveAsync())
             {
-                Showing = file;
+                Show(file);
                 question.Settle(false);
                 return;
             }
@@ -303,11 +306,13 @@ public sealed partial class ProjectFilesViewModel
             return;
         }
         OpenFiles.RemoveAt(index);
+        // Its window, if it's in one, closes with it.
         file.Dispose();
         if (ReferenceEquals(Showing, file))
         {
-            Showing = OpenFiles.Count == 0 ? null : OpenFiles[Math.Min(index, OpenFiles.Count - 1)];
+            Showing = NearestInTab(index);
         }
+        OnPropertyChanged(nameof(NoFileText));
         if (Path.GetDirectoryName(file.Path) is { } folder)
         {
             Unwatch(folder);
@@ -334,7 +339,10 @@ public sealed partial class ProjectFilesViewModel
         // Pinned, it goes last among the pinned; unpinned, first after them.
         OpenFiles.Remove(file);
         OpenFiles.Insert(OpenFiles.Count(f => f.IsPinned), file);
-        Showing = file;
+        if (!file.IsInWindow)
+        {
+            Showing = file;
+        }
         OnFileStateChanged();
     }
 
@@ -354,7 +362,7 @@ public sealed partial class ProjectFilesViewModel
         return true;
     }
 
-    /// <summary><c>Ctrl+PageDown</c>: the next file, going round.</summary>
+    /// <summary><c>Ctrl+PageDown</c>: the next file, going round, past those in windows of their own.</summary>
     [RelayCommand]
     internal void NextFile() => ShowOffset(1);
 
@@ -364,12 +372,13 @@ public sealed partial class ProjectFilesViewModel
 
     private void ShowOffset(int offset)
     {
-        if (OpenFiles.Count == 0)
+        var inTab = OpenFiles.Where(f => !f.IsInWindow).ToList();
+        if (inTab.Count == 0)
         {
             return;
         }
-        var at = Showing is null ? 0 : OpenFiles.IndexOf(Showing);
-        Showing = OpenFiles[(at + offset + OpenFiles.Count) % OpenFiles.Count];
+        var at = Showing is null ? 0 : inTab.IndexOf(Showing);
+        Showing = inTab[(at + offset + inTab.Count) % inTab.Count];
     }
 
     // ---- Saving --------------------------------------------------------------------------------------------------

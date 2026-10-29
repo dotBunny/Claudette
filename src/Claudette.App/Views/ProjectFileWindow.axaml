@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Claudette.App.ViewModels"
+        xmlns:views="using:Claudette.App.Views"
+        xmlns:controls="using:Claudette.App.Controls"
+        x:Class="Claudette.App.Views.ProjectFileWindow"
+        x:DataType="vm:ProjectFileViewModel"
+        Title="{Binding WindowTitle}"
+        Width="900" Height="700" MinWidth="480" MinHeight="300">
+  <!-- A Project Files tab's file in a window of its own (DESIGN.md §18, "Project files", "A file in a window of its own").
+       The file's own look is in Themes/ProjectFilesStyles.axaml, which only the Files tab loads otherwise. -->
+  <Window.Styles>
+    <StyleInclude Source="avares://Claudette/Themes/ConversationStyles.axaml" />
+    <StyleInclude Source="avares://Claudette/Themes/ProjectFilesStyles.axaml" />
+  </Window.Styles>
+
+  <DockPanel>
+    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): the file's name, a dot while it
+         has unsaved edits, and its project's -->
+    <controls:TitleBar DockPanel.Dock="Top" ShowsTitle="False">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Text="{Binding TabLabel}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <Ellipse Classes="unsaved" IsVisible="{Binding IsModified}" ToolTip.Tip="Unsaved edits" />
+        <TextBlock Classes="muted" Text="{Binding ProjectName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+      </StackPanel>
+    </controls:TitleBar>
+    <!-- Settings → Appearance → Zoom, as in the main window, under the title bar -->
+    <LayoutTransformControl x:Name="Zoomed">
+      <DockPanel>
+        <!-- Under it, the toolbar: where the file is, and Put back -->
+        <Border DockPanel.Dock="Top" Classes="windowbar">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock Classes="muted small" Text="{Binding RelativePath}" TextTrimming="PathSegmentEllipsis" VerticalAlignment="Center"
+                       ToolTip.Tip="{Binding Path}" />
+            <Button x:Name="PutBackButton" Grid.Column="1" Content="Put back" Command="{Binding PutBackCommand}" ToolTip.Tip="{Binding PutBackTip}" />
+          </Grid>
+        </Border>
+        <views:ProjectFileView x:Name="FileView" />
+      </DockPanel>
+    </LayoutTransformControl>
+  </DockPanel>
+</Window>

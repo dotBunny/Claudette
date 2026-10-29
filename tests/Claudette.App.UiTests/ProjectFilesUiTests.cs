@@ -94,6 +94,56 @@ public sealed class ProjectFilesUiTests
         await Verify(shown);
     }
 
+    /// <summary>
+    /// A file popped out by the row's button (DESIGN.md §18, "A file in a window of its own"): its window has the editor,
+    /// colored, and the toolbar's Put back; the tab keeps its tab, marked, and lets go of the editor until it's put back.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task The_rows_button_opens_the_file_in_a_window_and_Put_back_brings_it_back()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var (_, files, player, window) = await ShowAsync(h);
+        var shell = window.GetVisualDescendants().OfType<ShellView>().Single();
+        var file = files.Showing!;
+        Point Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), TopLevel.GetTopLevel(c)!)!.Value;
+        // The row's ⋯ and the button beside it, centered in the row.
+        var row = View(window).GetVisualDescendants().OfType<Border>().Single(b => b.Classes.Contains("filetabs"));
+        foreach (var name in new[] { "Every open file", "Open in a window" })
+        {
+            var icon = View(window).GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == name).GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Single();
+            Assert.Equal(Middle(row).Y, Middle(icon).Y, 1);
+        }
+
+        var button = View(window).GetVisualDescendants().OfType<Button>().Single(b => b.Name == "OpenInWindowButton");
+        window.MouseDown(Middle(button), MouseButton.Left);
+        window.MouseUp(Middle(button), MouseButton.Left);
+        var popped = Assert.Single(shell.FileWindows).Value;
+        await UiText.SettleUntilAsync(popped, () => popped.GetVisualDescendants().OfType<TextEditor>().Any(e => e.Document is not null), "the window's editor");
+        UiText.Settle(window);
+
+        Assert.True(file.IsInWindow);
+        var editor = popped.GetVisualDescendants().OfType<TextEditor>().Single(e => e.Document is not null);
+        Assert.Equal(File.ReadAllText(player), editor.Document.Text);
+        // The tab's editor let go of it, and its tab stays, marked.
+        Assert.DoesNotContain(View(window).GetVisualDescendants().OfType<TextEditor>(), e => e.Document is not null);
+        var tab = View(window).GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("filetab"));
+        Assert.True(tab.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Single(p => p.Classes.Contains("inwindow")).IsEffectivelyVisible);
+        Assert.Contains("\"Player.cpp is in a window of its own\"", UiText.Describe(View(window)), StringComparison.Ordinal);
+        var shown = UiText.Describe(popped, (h.WorkFolder, "{work}"));
+
+        var putBack = popped.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "PutBackButton");
+        popped.MouseDown(Middle(putBack), MouseButton.Left);
+        popped.MouseUp(Middle(putBack), MouseButton.Left);
+        UiText.Settle(window);
+
+        Assert.Empty(shell.FileWindows);
+        Assert.False(file.IsInWindow);
+        Assert.Same(file, files.Showing);
+        Assert.Equal(File.ReadAllText(player), Editor(window).Document.Text);
+        window.Close();
+        await Verify(shown);
+    }
+
     [AvaloniaFact]
     public async Task A_click_on_a_changes_bar_shows_what_was_there_under_it()
     {

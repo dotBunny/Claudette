@@ -63,10 +63,10 @@ public sealed partial class ProjectFilesViewModel : ViewModelBase, IShellTab, IA
     // ---- In the sidebar ------------------------------------------------------------------------------------------------
 
     /// <summary>
-    /// Its row's second line: the file showing, or <i>No files open</i>; while files have unsaved edits, how many, in the
-    /// caution color.
+    /// Its row's second line: the file showing (with none, the first open, in a window of its own), or <i>No files
+    /// open</i>; while files have unsaved edits, how many, in the caution color.
     /// </summary>
-    public string RowDetail => UnsavedCount > 0 ? $"{UnsavedCount} unsaved" : Showing?.TabLabel ?? "No files open";
+    public string RowDetail => UnsavedCount > 0 ? $"{UnsavedCount} unsaved" : (Showing ?? OpenFiles.FirstOrDefault())?.TabLabel ?? "No files open";
 
     /// <summary>How many open files have edits not saved yet.</summary>
     public int UnsavedCount => OpenFiles.Count(f => f.IsModified);
