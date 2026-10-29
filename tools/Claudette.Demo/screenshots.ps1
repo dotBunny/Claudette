@@ -18,7 +18,7 @@ composer's right rather than being caught part-way through falling off it). Then
   the key's spend in the header and the account's tags, as accounts-<style>-<theme>.png;
 - opens Settings on Appearance, with its preview, and captures that window as settings-<style>-<theme>.png;
 - selects Grappling hook, opens History, picks starfall's chip and captures the window as history-<style>-<theme>.png;
-- closes History, opens starfall's Project Files tab, opens StarfallCharacter.cpp from its explorer and captures the
+- closes History, hides the tool windows, opens starfall's Project Files tab, opens StarfallCharacter.cpp from its explorer and captures the
   window, with Claude's changes marked in the explorer and the editor's gutter, as files-<style>-<theme>.png;
 and closes Claudette by its window, as a user would. Last, it has MascotPictureTests draw Claudette on the composer's
 animation from her art and steps, as claudette.gif, and social-card.ps1 draw the site's social card with the new
@@ -151,6 +151,8 @@ foreach ($style in 'standard', 'claude') {
             Set-Step 'Project files'
             Send-WindowKey $window 'Esc'
             Wait-Until { -not (Find-ById $window 'SearchBox') } 'History to close' 20
+            # Without the tool windows the earlier pictures showed, which would take the editor's width.
+            Hide-ToolWindows $window
             Invoke-ByText $window 'Project files'
             Wait-Until { Find-ById $window 'TreeList' } 'the explorer' 20
             $explorer = Find-ById $window 'TreeList'
