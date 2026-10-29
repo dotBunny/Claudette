@@ -50,6 +50,7 @@ internal sealed class LogMirror
     {
         _view = view;
         _editor = editor;
+        Editor.SearchPanelButtons.Install(editor);
         view.AddHandler(InputElement.PointerPressedEvent, (_, _) => _log?.FocusPane(), RoutingStrategies.Tunnel, handledEventsToo: true);
         view.AddHandler(InputElement.GotFocusEvent, (_, _) => _log?.FocusPane(), RoutingStrategies.Bubble, handledEventsToo: true);
         // Its own links are drawn below; AvaloniaEdit's would open themselves, in a fixed blue.
