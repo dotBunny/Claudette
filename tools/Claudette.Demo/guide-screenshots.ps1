@@ -291,8 +291,7 @@ foreach ($theme in $Themes) {
             # About Claudette, a window of its own, from the header's menu.
             Shot 'settings/about' {
                 param($path)
-                Invoke-ByText $window 'Menu'
-                $menu = Get-OtherWindow $claudette $window 'the menu'
+                $menu = Open-Menu $claudette $window (Find-ByText $window 'Menu') 'About Claudette'
                 Start-Sleep -Seconds 1
                 Send-Click (Find-ByText $menu 'About Claudette')
                 $about = Get-OtherWindow $claudette $window 'the About window'

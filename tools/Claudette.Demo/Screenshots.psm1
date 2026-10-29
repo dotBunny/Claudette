@@ -434,6 +434,21 @@ function Get-OtherWindow($claudette, [IntPtr] $main, [string] $what, [int] $seco
     $other
 }
 
+# Clicks $element to open its menu and returns where to find the menu's entries, once $entry is there: a window of its
+# own, as a context menu has, or the window it was opened from, whose automation tree has the header's menu's entries
+# (its button is in the title bar), which a click reaches as it does the others.
+function Open-Menu($claudette, [IntPtr] $window, $element, [string] $entry) {
+    Send-Click $element
+    $script:menuRoot = $null
+    Wait-Until {
+        $other = [WindowShot]::OtherWindow($claudette.Id, $window)
+        if ($other -ne [IntPtr]::Zero -and (Find-ByText $other $entry -Optional)) { $script:menuRoot = $other }
+        elseif (Find-ByText $window $entry -Optional) { $script:menuRoot = $window }
+        $null -ne $script:menuRoot
+    } "the menu with $entry" 20
+    $script:menuRoot
+}
+
 # Waits while the pointer is over Claudette, where a window of it shows past the user's: what's under it would show lit.
 function Wait-PointerAway([IntPtr] $hwnd, [string] $path) {
     $deadline = (Get-Date).AddSeconds(5)
@@ -572,5 +587,5 @@ function Stop-Claudette($claudette) {
 
 Export-ModuleMember -Function Get-Root, Get-Parent, Find-ByText, Find-ByPrefix, Find-ByType, Find-ById, Find-Lowest, Find-LowestByText, Show-Tree, Invoke-ByText, Invoke-Element,
     Select-TreeItem, Select-ListItem, Show-Element, Set-ElementText, Set-Toggle, Send-Click, Send-RightClick, Send-Message, Show-Tip, Hide-Tip, Send-Keys,
-    Send-WindowKey, Send-Command, Send-ElementCommand, Set-Step, Get-OtherWindow, Wait-PointerAway, Save-Window, Get-Bounds, Save-Rect, Save-Elements, Save-Element, Close-Window,
+    Send-WindowKey, Send-Command, Send-ElementCommand, Set-Step, Get-OtherWindow, Open-Menu, Wait-PointerAway, Save-Window, Get-Bounds, Save-Rect, Save-Elements, Save-Element, Close-Window,
     Wait-Until, Build-Claudette, New-DemoContent, Start-Claudette, Stop-Claudette
