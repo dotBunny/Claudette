@@ -439,6 +439,47 @@ internal sealed class WindowsProcessTree : ProcessTree
         return null;
     }
 
+    /// <summary>
+    /// The working folder, the <c>CurrentDirectory</c> in the process's parameters, read from its PEB; it needs
+    /// PROCESS_VM_READ. Only a 64-bit process's, from a 64-bit Claudette, whose layouts these are; null otherwise, or when
+    /// it can't be read.
+    /// </summary>
+    internal static unsafe string? WorkingFolder(SafeProcessHandle handle)
+    {
+        if (!Environment.Is64BitProcess || !IsWow64Process(handle, out var wow64) || wow64)
+        {
+            return null;
+        }
+        ProcessBasicInformation basic;
+        if (NtQueryInformationProcess(handle, ProcessBasicInformationClass, &basic, (uint)sizeof(ProcessBasicInformation), out _) < 0
+            || basic.PebBaseAddress == 0)
+        {
+            return null;
+        }
+        nint parameters;
+        if (!ReadProcessMemory(handle, basic.PebBaseAddress + PebProcessParameters, &parameters, (nuint)sizeof(nint), out _) || parameters == 0)
+        {
+            return null;
+        }
+        UnicodeString folder;
+        if (!ReadProcessMemory(handle, parameters + ParametersCurrentDirectory, &folder, (nuint)sizeof(UnicodeString), out _)
+            || folder.Buffer is null || folder.Length == 0)
+        {
+            return null;
+        }
+        var text = new char[folder.Length / sizeof(char)];
+        fixed (char* p = text)
+        {
+            if (!ReadProcessMemory(handle, (nint)folder.Buffer, p, folder.Length, out _))
+            {
+                return null;
+            }
+        }
+        var path = new string(text);
+        // Windows keeps a backslash at its end, which only a drive's root keeps here.
+        return path.Length > 3 ? path.TrimEnd('\\') : path;
+    }
+
     private static bool TryCloseMainWindow(int pid)
     {
         try

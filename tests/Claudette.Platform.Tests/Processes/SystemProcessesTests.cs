@@ -88,6 +88,33 @@ public sealed class SystemProcessesTests
     }
 
     [Fact]
+    public void Found_processes_carry_their_working_folder()
+    {
+        // Where a relative -projectPath is read from (DESIGN.md §18, "Editor logs"): the PEB on Windows, /proc/<pid>/cwd
+        // on Linux, proc_pidinfo on macOS.
+        var folder = Directory.CreateTempSubdirectory("claudette-cwd").FullName;
+        var system = new SystemProcesses(new Core.Processes.ProcessLauncher(), TimeProvider.System);
+        var (program, arguments, name) = OperatingSystem.IsWindows()
+            ? ("ping.exe", new[] { "-n", "60", "127.0.0.1" }, "ping")
+            : ("sleep", new[] { "30" }, "sleep");
+        var start = new System.Diagnostics.ProcessStartInfo(program, arguments) { WorkingDirectory = folder, CreateNoWindow = true, RedirectStandardOutput = true };
+        using var process = System.Diagnostics.Process.Start(start)!;
+        try
+        {
+            var found = Assert.Single(system.Find([name]), p => p.Pid == process.Id);
+            Assert.NotNull(found.WorkingFolder);
+            // macOS's temporary folder is a link, /var to /private/var, which the OS gives resolved.
+            Assert.True(Core.Files.RealPath.Same(folder, found.WorkingFolder), $"{found.WorkingFolder} isn't {folder}");
+        }
+        finally
+        {
+            process.Kill();
+            process.WaitForExit();
+            Directory.Delete(folder);
+        }
+    }
+
+    [Fact]
     public void Found_processes_carry_their_start_time()
     {
         Assert.SkipUnless(OperatingSystem.IsLinux(), "Reading every process runs ps on macOS, and Windows has no sleep.");

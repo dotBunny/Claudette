@@ -7,7 +7,6 @@ using Claudette.Core.Processes;
 using Claudette.Core.ProjectTools;
 using Claudette.Platform.Processes.Unix;
 using Claudette.Platform.Processes.Windows;
-using Microsoft.Win32.SafeHandles;
 using static Claudette.Platform.Processes.Windows.WindowsNative;
 
 namespace Claudette.Platform.Processes;
@@ -15,7 +14,8 @@ namespace Claudette.Platform.Processes;
 /// <summary>
 /// Every running process by name (DESIGN.md §18, "Project tools"), with the process monitor's own ways of reading them:
 /// a Toolhelp snapshot and <c>NtQueryInformationProcess</c> on Windows, <c>/proc</c> on Linux, and one <c>ps</c> run
-/// on macOS. Killing a tree uses .NET's <see cref="Process.Kill(bool)"/>, which finds the children on each OS.
+/// on macOS; and each found process's working folder, which a relative path on its command line is read against: from
+/// its PEB on Windows, <c>/proc/&lt;pid&gt;/cwd</c> on Linux and <c>proc_pidinfo</c> on macOS. Killing a tree uses .NET's <see cref="Process.Kill(bool)"/>, which finds the children on each OS.
 /// </summary>
 public sealed class SystemProcesses : ISystemProcesses
 {
@@ -140,14 +140,23 @@ public sealed class SystemProcesses : ISystemProcesses
                 continue;
             }
             string? commandLine = null;
-            using (SafeProcessHandle handle = OpenProcess(ProcessQueryLimitedInformation, false, pid))
+            string? folder = null;
+            var handle = OpenProcess(ProcessQueryLimitedInformation | ProcessVmRead, false, pid);
+            if (handle.IsInvalid)
+            {
+                // Some processes refuse PROCESS_VM_READ, which only the working folder needs.
+                handle.Dispose();
+                handle = OpenProcess(ProcessQueryLimitedInformation, false, pid);
+            }
+            using (handle)
             {
                 if (!handle.IsInvalid)
                 {
                     commandLine = WindowsProcessTree.CommandLine(handle);
+                    folder = WindowsProcessTree.WorkingFolder(handle);
                 }
             }
-            found.Add(new SystemProcess(pid, Bare(name), commandLine, StartTimeOf(pid)));
+            found.Add(new SystemProcess(pid, Bare(name), commandLine, StartTimeOf(pid)) { WorkingFolder = folder });
         }
         return found;
     }
@@ -175,7 +184,10 @@ public sealed class SystemProcesses : ISystemProcesses
             {
                 continue;
             }
-            found.Add(new SystemProcess(pid, name, arguments.Count > 0 ? string.Join(' ', arguments) : null, StartTimeOf(pid)));
+            found.Add(new SystemProcess(pid, name, arguments.Count > 0 ? string.Join(' ', arguments) : null, StartTimeOf(pid))
+            {
+                WorkingFolder = ReadLink($"/proc/{pid}/cwd"),
+            });
         }
         return found;
     }
@@ -196,7 +208,9 @@ public sealed class SystemProcesses : ISystemProcesses
         var result = ProcessRunner.RunAsync(_launcher, new ProcessStartSpec("/bin/ps", PsOutput.Arguments) { Environment = environment }, PsTimeout, _time)
             .GetAwaiter()
             .GetResult();
-        return result.ExitCode == 0 ? MatchPs(PsOutput.Parse(result.StandardOutput), names, _self, File.Exists) : [];
+        return result.ExitCode == 0
+            ? [.. MatchPs(PsOutput.Parse(result.StandardOutput), names, _self, File.Exists).Select(p => p with { WorkingFolder = LibProc.WorkingFolder(p.Pid) })]
+            : [];
     }
 
     /// <summary>

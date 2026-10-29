@@ -133,6 +133,40 @@ public static class CommandLineOptions
     }
 
     /// <summary>
+    /// <paramref name="path"/>, from a process's command line, as a full path: as it is when it's full, else read against
+    /// the process's <paramref name="workingFolder"/>, with <c>.</c> and <c>..</c> taken out and either slash. Null when
+    /// it's relative and the working folder isn't known.
+    /// </summary>
+    public static string? FullPath(string path, string? workingFolder, ToolOS os)
+    {
+        if (os.IsRooted(path))
+        {
+            return path;
+        }
+        if (workingFolder is null)
+        {
+            return null;
+        }
+        var parts = workingFolder.Replace('\\', '/').TrimEnd('/').Split('/').ToList();
+        foreach (var part in path.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (part == "..")
+            {
+                // Never past the drive or the root.
+                if (parts.Count > 1)
+                {
+                    parts.RemoveAt(parts.Count - 1);
+                }
+            }
+            else if (part != ".")
+            {
+                parts.Add(part);
+            }
+        }
+        return string.Join(os == ToolOS.Windows ? '\\' : '/', parts) is { Length: > 0 } full ? full : "/";
+    }
+
+    /// <summary>
     /// The value of a word such as <c>-abslog=C:\Logs\Game.log</c> for <paramref name="key"/> <c>abslog</c>, with or
     /// without the dash, as Unreal reads it; null when there's none.
     /// </summary>

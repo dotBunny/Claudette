@@ -33,6 +33,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- A Unity or Godot run started in the project's folder with a relative path, such as `Unity -batchmode -projectPath .` that Claude runs, now shows its log under the tab. Claudette reads the path from where the run was started, where it used to look for the project's whole path on the command line.
 - The marks for your messages, prompts, errors and changed files are in the conversation's scroll bar, as in Rider, as wide as the bar, thin while it rests and wide when you point at it, rather than beside it, where they touched the cards, and in Compact density overlapped them. The scroll bar works as ever: its thumb drags even over a mark, and a click on a mark still goes there.
 - Pointing at a changed setting in Settings, or moving to it with Tab, no longer moves its words when its **Reset** button shows: **Reset** keeps its place beside the setting whether it shows or not, so the title and its line don't wrap again and the row stays the same height. A setting under another, such as **When** under **Keep this computer awake**, shows its own **Reset** while you point at it, not the one above's too.
 - A tool call's tip, which shows its whole command or path, is wider, so a long command, such as one writing a file, no longer wraps into a narrow column.
