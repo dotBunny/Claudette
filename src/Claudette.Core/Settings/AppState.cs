@@ -60,6 +60,15 @@ public sealed class AppState
     /// <summary>Folder groups the user collapsed.</summary>
     public List<string> CollapsedGroups { get; set; } = [];
 
+    /// <summary>Folder groups whose past sessions the user unfolded (DESIGN.md §4, "Claude Code's projects").</summary>
+    public List<string> ExpandedPastSessions { get; set; } = [];
+
+    /// <summary>
+    /// The sidebar has offered to show Claude Code's projects, or the user chose in Settings (DESIGN.md §4, "Claude
+    /// Code's projects"): the offer isn't made again.
+    /// </summary>
+    public bool ClaudeProjectsOffered { get; set; }
+
     /// <summary>The user collapsed the sidebar to its rail of status icons (DESIGN.md §4, "Sidebar").</summary>
     public bool SidebarCollapsed { get; set; }
 

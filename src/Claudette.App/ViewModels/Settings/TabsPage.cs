@@ -125,6 +125,13 @@ public sealed partial class TabsPage : SettingsPage
             // This machine's folders, not a setting: never reset.
             Setting("state.favoriteFolders", "Favorite folders", null, null, "Always at the top of the new tab picker.", keywords: ["pinned folders", "favourites"]),
         ]);
+        Section("claudeProjects", "Claude Code's projects",
+        [
+            Setting("sidebar.showClaudeProjects", "Show Claude Code's projects in the sidebar", s => s.Sidebar.ShowClaudeProjects, (s, v) => s.Sidebar.ShowClaudeProjects = v,
+                "Every folder Claude Code has sessions in gets a group, with its past sessions under it, tab or no tab.",
+                "The sessions are the ones History lists: Claude Code's own on this machine, including ones started in a terminal, and the session library's. A group's past sessions fold away under its tabs; click one to pick it up in a new tab. Turning this off closes the groups that have nothing open.",
+                ["claude projects", "past sessions", "folders", "history", "sidebar"]),
+        ], description: "Work in the folders Claude Code already knows, straight from the sidebar.");
         LoadFavorites();
     }
 
@@ -264,6 +271,14 @@ public sealed partial class TabsPage : SettingsPage
     {
         get => Settings.Processes.ShowMonitor;
         set => Set(value, v => Settings.Processes.ShowMonitor = v);
+    }
+
+    // ---- Claude Code's projects (DESIGN.md §4, "Claude Code's projects") -----------------------------------------
+
+    public bool ShowClaudeProjects
+    {
+        get => Settings.Sidebar.ShowClaudeProjects;
+        set => Set(value, v => Settings.Sidebar.ShowClaudeProjects = v);
     }
 
     public decimal? ProcessRefreshSeconds

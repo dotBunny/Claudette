@@ -113,5 +113,12 @@
         </c:SettingRow.Details>
       </c:SettingRow>
     </c:SettingsSection>
+
+    <!-- The folders Claude Code has sessions in, as groups (DESIGN.md §4, "Claude Code's projects") -->
+    <c:SettingsSection Key="claudeProjects">
+      <c:SettingRow Key="sidebar.showClaudeProjects">
+        <ToggleSwitch IsChecked="{Binding ShowClaudeProjects}" />
+      </c:SettingRow>
+    </c:SettingsSection>
   </StackPanel>
 </UserControl>

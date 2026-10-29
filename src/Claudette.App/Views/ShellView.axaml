@@ -347,6 +347,18 @@
         <!-- Groups and their tabs. Drag a tab to reorder it in its group, or a group's label to move the group
              (DESIGN.md §4). -->
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding Layout.IsSidebarExpanded}">
+          <StackPanel>
+          <!-- Once, until the user has chosen: the folders Claude Code has sessions in (DESIGN.md §4, "Claude Code's projects") -->
+          <Border x:Name="ClaudeProjectsOffer" Classes="sidecard" Margin="6,8,6,0" IsVisible="{Binding HasClaudeProjectsOffer}">
+            <StackPanel Spacing="8">
+              <TextBlock TextWrapping="Wrap" Text="{Binding ClaudeProjectsOffer.Text, FallbackValue=''}" />
+              <TextBlock Classes="muted small" TextWrapping="Wrap" Text="Show them here as groups, with their past sessions, to work in them straight from the sidebar?" />
+              <WrapPanel ItemSpacing="6" LineSpacing="6">
+                <Button Classes="accent" Content="Show them in the sidebar" Command="{Binding AcceptClaudeProjectsCommand}" />
+                <Button Content="Not now" Command="{Binding DeclineClaudeProjectsCommand}" ToolTip.Tip="Settings → Tabs has the switch" />
+              </WrapPanel>
+            </StackPanel>
+          </Border>
           <ItemsControl x:Name="GroupList" ItemsSource="{Binding Groups}" Margin="6,0,6,8">
             <ItemsControl.ItemTemplate>
               <DataTemplate DataType="vm:TabGroupViewModel">
@@ -392,7 +404,8 @@
                           <MenuItem Header="Account" ItemsSource="{Binding AccountMenu}" IsVisible="{Binding HasAccountMenu}"
                                     ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}" />
                           <Separator />
-                          <MenuItem Header="Close group" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseGroupCommand}" CommandParameter="{Binding}" />
+                          <MenuItem Header="Close group" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseGroupCommand}" CommandParameter="{Binding}"
+                                    IsVisible="{Binding CanClose}" />
                         </ContextMenu>
                       </Button.ContextMenu>
                     </Button>
@@ -799,12 +812,60 @@
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <!-- The folder's past sessions, folded away under its tabs (DESIGN.md §4, "Claude Code's projects") -->
+                    <StackPanel x:Name="PastSessions" Spacing="1" IsVisible="{Binding HasPastSessions}">
+                      <Button Classes="flat pastsessions" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="6,3,4,3"
+                              ToolTip.Tip="{Binding PastSessionsTip}" AutomationProperties.Name="{Binding PastSessionsText}"
+                              Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).TogglePastSessionsCommand}" CommandParameter="{Binding}">
+                        <DockPanel>
+                          <Panel DockPanel.Dock="Left" Width="12" Margin="0,0,4,0">
+                            <Path Data="{StaticResource IconChevronDown}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="9" Height="9" Stretch="Uniform"
+                                  IsVisible="{Binding IsPastSessionsExpanded}" VerticalAlignment="Center" />
+                            <Path Data="{StaticResource IconChevronRight}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="9" Height="9" Stretch="Uniform"
+                                  IsVisible="{Binding !IsPastSessionsExpanded}" VerticalAlignment="Center" />
+                          </Panel>
+                          <TextBlock Classes="muted small" Text="{Binding PastSessionsText}" VerticalAlignment="Center" />
+                        </DockPanel>
+                      </Button>
+                      <ItemsControl ItemsSource="{Binding ShownPastSessions}" IsVisible="{Binding IsPastSessionsExpanded}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <StackPanel Spacing="1" />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate DataType="vm:PastSessionRow">
+                            <Button Classes="tab tabrow pastsession" ToolTip.Tip="{Binding Tip}" ToolTip.ShowDelay="600" ToolTip.Placement="Right"
+                                    AutomationProperties.Name="{Binding AccessibleName}"
+                                    Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenPastSessionCommand}" CommandParameter="{Binding}">
+                              <Grid ColumnDefinitions="14,*" ColumnSpacing="6">
+                                <Panel VerticalAlignment="Top" Margin="0,3,0,0">
+                                  <Path Data="{StaticResource IconHistory}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.2" Width="11" Height="11" Stretch="Uniform"
+                                        IsVisible="{Binding !HasMark}" />
+                                  <views:MarkIcon Mark="{Binding Mark}" ToolTip.Tip="{Binding MarkTip}" IsVisible="{Binding HasMark}" />
+                                </Panel>
+                                <StackPanel Grid.Column="1" Spacing="1">
+                                  <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                                  <TextBlock Classes="muted small" Text="{Binding Detail}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                              </Grid>
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <Button Classes="flat pastsessions" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="22,3,4,3" IsVisible="{Binding ShowsMorePastSessions}"
+                              ToolTip.Tip="History, listing only this folder's sessions"
+                              Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenHistoryForGroupCommand}" CommandParameter="{Binding}">
+                        <TextBlock Classes="muted small" Text="Show all in History…" />
+                      </Button>
+                    </StackPanel>
                     </StackPanel>
                   </controls:SideLine>
                 </StackPanel>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
+          </StackPanel>
         </ScrollViewer>
 
         <!-- The rail: each group's color, then a square per tab with its initial and status. A collapsed group shows
@@ -838,7 +899,8 @@
                         <MenuItem Header="Account" ItemsSource="{Binding AccountMenu}" IsVisible="{Binding HasAccountMenu}"
                                   ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}" />
                         <Separator />
-                        <MenuItem Header="Close group" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseGroupCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="Close group" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseGroupCommand}" CommandParameter="{Binding}"
+                                  IsVisible="{Binding CanClose}" />
                       </ContextMenu>
                     </Button.ContextMenu>
                   </Button>

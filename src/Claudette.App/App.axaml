@@ -170,6 +170,14 @@
       <Setter Property="Padding" Value="24" />
       <Setter Property="MaxWidth" Value="520" />
     </Style>
+    <!-- A card in the sidebar, such as the offer to show Claude Code's projects (DESIGN.md §4, "Claude Code's projects") -->
+    <Style Selector="Border.sidecard">
+      <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="10" />
+    </Style>
 
     <!-- :is() so the classes also apply to SelectableTextBlock. -->
     <Style Selector=":is(TextBlock).title">

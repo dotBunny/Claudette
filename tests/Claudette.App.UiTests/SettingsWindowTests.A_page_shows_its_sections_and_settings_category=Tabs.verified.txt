@@ -73,6 +73,13 @@
 [button] Move api up
 [button] Move api down
 [button] Remove api from favorites
+"Claude Code's projects"
+"This computer"
+[button] Reset to defaults
+"Work in the folders Claude Code already knows, straight from the sidebar."
+"Show Claude Code's projects in the sidebar"
+"Every folder Claude Code has sessions in gets a group, with its past sessions under it, tab or no tab.  "
+[toggle] Show Claude Code's projects in the sidebar
 [button] Line up
 [button] Page up
 [button] Page down

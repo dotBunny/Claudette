@@ -154,6 +154,7 @@ What each new tab starts with, and the folders you open them in.
 | **Recent folders to keep** | New tab picker | 20 (from 1 to 100) | Yes | No | [Opening tabs](../tabs/opening-tabs.md) |
 | **Clear recent folders** | New tab picker | | No | No | [Opening tabs](../tabs/opening-tabs.md) |
 | **Favorite folders**, with **Add folder…** | New tab picker | None | No | No | [Opening tabs](../tabs/opening-tabs.md) |
+| **Show Claude Code's projects in the sidebar** | Claude Code's projects | Off | No | No | [Folder groups](../tabs/folder-groups.md#claude-codes-projects) |
 
 Your favorite and recent folders belong to this machine. They stay put when settings sync is on, and **Reset to defaults** leaves them.
 

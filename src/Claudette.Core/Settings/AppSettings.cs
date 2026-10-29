@@ -18,6 +18,9 @@ public sealed class AppSettings
 
     public NewTabSettings NewTabs { get; set; } = new();
 
+    /// <summary>Settings → Tabs → Claude Code's projects (DESIGN.md §4, "Claude Code's projects"). Per machine, as folders are.</summary>
+    public SidebarSettings Sidebar { get; set; } = new();
+
     public AppearanceSettings Appearance { get; set; } = new();
 
     public SessionSettings Sessions { get; set; } = new();
@@ -465,6 +468,19 @@ public sealed class NewTabSettings
     public string? DefaultPermissionMode { get; set; }
 
     public int RecentFolderLimit { get; set; } = 20;
+}
+
+/// <summary>
+/// The sidebar's own settings (DESIGN.md §4, "Claude Code's projects"). Not synced: which folders Claude Code has
+/// sessions in differs from one machine to the next.
+/// </summary>
+public sealed class SidebarSettings
+{
+    /// <summary>
+    /// Every folder Claude Code has sessions in on this machine has a group in the sidebar, with its past sessions
+    /// under it, whether or not a tab is open there. Off until the user chooses it, from the offer or Settings → Tabs.
+    /// </summary>
+    public bool ShowClaudeProjects { get; set; }
 }
 
 public enum ThemeChoice
