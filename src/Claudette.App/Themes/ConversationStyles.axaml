@@ -151,35 +151,38 @@
           <!-- The stripe covers the outline's left edge, curving with the corners. -->
           <Border Name="PART_Stripe" BorderBrush="{TemplateBinding StripeBrush}" BorderThickness="3,0,0,0" Margin="-1,-1,0,-1"
                   CornerRadius="{TemplateBinding CornerRadius}">
-            <Grid Name="PART_Body" Margin="{TemplateBinding Padding}" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto" RowDefinitions="Auto,Auto">
-              <!-- The chevron of a card whose content folds away (a Tool calls card's tiles). -->
-              <Button Name="PART_Toggle" Classes="flat" Padding="2" Margin="-4,-3,2,-3" VerticalAlignment="Center"
-                      Command="{TemplateBinding ToggleCommand}" IsVisible="{TemplateBinding IsCollapsible}"
-                      AutomationProperties.Name="Show or hide the calls" ToolTip.Tip="Show or hide the calls">
-                <Panel>
-                  <Path Classes="toolicon" Data="{DynamicResource IconChevronRight}" IsVisible="{TemplateBinding IsCollapsed}" />
-                  <Path Classes="toolicon" Data="{DynamicResource IconChevronDown}" IsVisible="{TemplateBinding IsCollapsed, Converter={x:Static BoolConverters.Not}}" />
-                </Panel>
-              </Button>
-              <Path Name="PART_Icon" Grid.Column="1" Classes="toolicon" Data="{TemplateBinding Icon}" Stroke="{TemplateBinding LabelBrush}" Margin="0,0,6,0"
+            <Grid Name="PART_Body" Margin="{TemplateBinding Padding}" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowDefinitions="Auto,Auto">
+              <Path Name="PART_Icon" Classes="toolicon" Data="{TemplateBinding Icon}" Stroke="{TemplateBinding LabelBrush}" Margin="0,0,6,0"
                     IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-              <TextBlock Name="PART_Label" Grid.Column="2" Classes="small" FontWeight="SemiBold" Foreground="{TemplateBinding LabelBrush}"
+              <TextBlock Name="PART_Label" Grid.Column="1" Classes="small" FontWeight="SemiBold" Foreground="{TemplateBinding LabelBrush}"
                          Text="{TemplateBinding Label}" VerticalAlignment="Center"
                          IsVisible="{TemplateBinding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
               <!-- What shows on the line all the time, after the label: a reply's chain of steps (DESIGN.md §18) -->
-              <ContentPresenter Name="PART_Extra" Grid.Column="3" Content="{TemplateBinding Extra}" ContentTemplate="{TemplateBinding ExtraTemplate}"
+              <ContentPresenter Name="PART_Extra" Grid.Column="2" Content="{TemplateBinding Extra}" ContentTemplate="{TemplateBinding ExtraTemplate}"
                                 Margin="8,-4,0,-4" VerticalAlignment="Center"
                                 IsVisible="{TemplateBinding Extra, Converter={x:Static ObjectConverters.IsNotNull}}" />
-              <TextBlock Name="PART_Detail" Grid.Column="4" Classes="muted small" Text="{TemplateBinding Detail}" TextTrimming="CharacterEllipsis"
-                         Margin="8,0,0,0" VerticalAlignment="Center" ToolTip.Tip="{TemplateBinding Detail}"
-                         IsVisible="{TemplateBinding Detail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-              <ContentPresenter Name="PART_Actions" Grid.Column="5" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}"
+              <!-- The detail, and right after it the chevron of a card whose content folds away (a Tool calls card's tiles),
+                   as thinking's comes after its label. The detail gives way first when the line is short. -->
+              <DockPanel Grid.Column="3" HorizontalAlignment="Left">
+                <Button Name="PART_Toggle" DockPanel.Dock="Right" Classes="flat" Padding="2" Margin="4,-3,0,-3" VerticalAlignment="Center"
+                        Command="{TemplateBinding ToggleCommand}" IsVisible="{TemplateBinding IsCollapsible}"
+                        AutomationProperties.Name="Show or hide the calls" ToolTip.Tip="Show or hide the calls">
+                  <Panel>
+                    <Path Classes="toolicon" Data="{DynamicResource IconChevronRight}" IsVisible="{TemplateBinding IsCollapsed}" />
+                    <Path Classes="toolicon" Data="{DynamicResource IconChevronDown}" IsVisible="{TemplateBinding IsCollapsed, Converter={x:Static BoolConverters.Not}}" />
+                  </Panel>
+                </Button>
+                <TextBlock Name="PART_Detail" Classes="muted small" Text="{TemplateBinding Detail}" TextTrimming="CharacterEllipsis"
+                           Margin="8,0,0,0" VerticalAlignment="Center" ToolTip.Tip="{TemplateBinding Detail}"
+                           IsVisible="{TemplateBinding Detail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              </DockPanel>
+              <ContentPresenter Name="PART_Actions" Grid.Column="4" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}"
                                 Margin="8,-4,0,-4" VerticalAlignment="Center"
                                 IsVisible="{TemplateBinding Actions, Converter={x:Static ObjectConverters.IsNotNull}}" />
-              <TextBlock Name="PART_Time" Grid.Column="6" Classes="muted small" Text="{TemplateBinding TimeText}" ToolTip.Tip="{TemplateBinding TimeTip}"
+              <TextBlock Name="PART_Time" Grid.Column="5" Classes="muted small" Text="{TemplateBinding TimeText}" ToolTip.Tip="{TemplateBinding TimeTip}"
                          Background="Transparent" Margin="8,0,0,0" VerticalAlignment="Center"
                          IsVisible="{TemplateBinding TimeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-              <ContentPresenter Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="7" Margin="0,6,0,0"
+              <ContentPresenter Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="6" Margin="0,6,0,0"
                                 Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
             </Grid>
           </Border>
@@ -233,7 +236,7 @@
   <!-- A one-line card: the step on the header line, after the label. -->
   <Style Selector="controls|Card.inline /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Grid.Row" Value="0" />
-    <Setter Property="Grid.Column" Value="4" />
+    <Setter Property="Grid.Column" Value="3" />
     <Setter Property="Grid.ColumnSpan" Value="1" />
     <Setter Property="Margin" Value="8,0,0,0" />
     <Setter Property="VerticalAlignment" Value="Top" />

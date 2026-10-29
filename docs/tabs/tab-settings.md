@@ -30,12 +30,14 @@ Each one starts at **Default**, which says what the default is, such as *Default
 | **At a usage limit** | **Continue tasks when a usage limit resets** | Default, **On**, **Off** | Settings → Tabs → At a usage limit → **Continue tasks when a usage limit resets** |
 | | **Use usage credits** | Default, **On**, **Off** | Settings → Tabs → At a usage limit → **Use usage credits once a limit is used up** |
 | **Process monitor** | **Show the process monitor** | Default, **On**, **Off** | Settings → Tabs → Process monitor → **Show the process monitor** |
+| **Conversation** | **Steps** | Default, **Folded**, **All** | Settings → Conversation → Steps and replies → **Fold each chain of steps** |
 
 - **Model** and **Effort** are explained in [Model, effort and output style](../composer/model-effort-and-output-style.md), and **Permission mode** in [Permission modes](../permissions/permission-modes.md). A change reaches the running session at once.
 - **Subagents** is whether Claude hands parts of its work to subagents in this tab. It applies at once, and Claude hears about it with your next message. See [Discouraging or turning off subagents](../conversation/subagents.md#discouraging-or-turning-off-subagents).
 - **Continue tasks when a usage limit resets** is whether Claude carries on a task by itself when a usage limit resets. See [When a limit stops a task](../usage/when-a-limit-stops-a-task.md).
 - **Use usage credits** is whether the tab carries on with your plan's usage credits once a limit is used up, or stops and waits for the reset. The tab's menu has it too, and a tab on an API-key account doesn't have it. See [Tabs that don't use usage credits](../usage/tabs-that-dont-use-usage-credits.md).
 - **Show the process monitor** turns the [Processes](processes.md) page and the composer bar's summary on or off for this tab.
+- **Steps** folds each chain of Claude's steps between two messages into one line in this tab, or shows every step. **Steps** in the tab's menu is the same choice. See [Folding a chain of steps](../conversation/tool-calls.md#folding-a-chain-of-steps).
 
 ### Check-ins on long turns
 

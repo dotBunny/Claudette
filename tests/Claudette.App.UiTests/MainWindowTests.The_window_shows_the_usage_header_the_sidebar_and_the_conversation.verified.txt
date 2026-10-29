@@ -40,7 +40,6 @@
 [button] Opus ▾
 [button] Default effort ▾
 [button] Manual ▾
-[button] Steps: all
 [button] Files (0)
 [button] Context 1%
 "Cache 60m"

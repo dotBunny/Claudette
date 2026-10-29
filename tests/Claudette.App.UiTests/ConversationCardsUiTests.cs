@@ -218,12 +218,13 @@ public sealed class ConversationCardsUiTests
         Assert.True(marker.IsOpen);
         Assert.True(marker.Rows.Single(r => ReferenceEquals(r.Source, target)).IsExpanded);
 
-        // Back to showing every step, from the message box's bar: no line, nothing folded.
+        // Back to showing every step in this tab, from the message box's bar: no line, nothing folded, and Settings as they were.
         var stepsButton = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "StepsButton" && b.IsEffectivelyVisible);
         Assert.Equal("Steps: folded", tab.StepsButtonText);
         stepsButton.Command!.Execute(null);
         UiText.Settle(window);
-        Assert.False(h.Services.Settings.Appearance.FoldChains);
+        Assert.True(h.Services.Settings.Appearance.FoldChains);
+        Assert.False(tab.State.Overrides.FoldChains);
         Assert.Equal("Steps: all", tab.StepsButtonText);
         Assert.Empty(Named(window, "steps"));
         Assert.DoesNotContain(tab.Items, i => i is StepsMarkerItem);

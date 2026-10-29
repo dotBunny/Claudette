@@ -442,7 +442,7 @@
         <controls:Card.ContextMenu>
           <ContextMenu>
             <MenuItem Header="Show every step" Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).ShowEveryStepCommand}"
-                      ToolTip.Tip="Turn off Fold each chain of steps" />
+                      ToolTip.Tip="Show every step in this tab, whatever Settings → Conversation says" />
           </ContextMenu>
         </controls:Card.ContextMenu>
         <ScrollViewer MaxHeight="340" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding IsOpen}">

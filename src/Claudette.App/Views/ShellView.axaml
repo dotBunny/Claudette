@@ -739,6 +739,15 @@
                                   <MenuItem Header="Connect to the Claude app" ToggleType="CheckBox" IsChecked="{Binding RemoteControl.IsOn, Mode=OneWay}"
                                             Command="{Binding RemoteControl.ToggleCommand}" ToolTip.Tip="{Binding RemoteControl.ToggleTip}" ToolTip.ShowOnDisabled="True" />
                                   <MenuItem Header="Open in the Claude app" Command="{Binding RemoteControl.OpenInClaudeAppCommand}" IsVisible="{Binding RemoteControl.HasUrl}" />
+                                  <!-- Folding each chain of steps in this tab, or Settings → Conversation's default (DESIGN.md §18, "Conversation cards") -->
+                                  <MenuItem Header="Steps">
+                                    <MenuItem Header="{Binding StepsDefaultText}" ToggleType="Radio" IsChecked="{Binding StepsByDefault, Mode=OneWay}" Command="{Binding UseDefaultStepsCommand}"
+                                              ToolTip.Tip="Fold the steps as Settings → Conversation → Fold each chain of steps says" />
+                                    <MenuItem Header="Folded" ToggleType="Radio" IsChecked="{Binding StepsFolded, Mode=OneWay}" Command="{Binding FoldStepsCommand}"
+                                              ToolTip.Tip="Fold each chain of Claude's steps between two messages into one line, in this tab" />
+                                    <MenuItem Header="All" ToggleType="Radio" IsChecked="{Binding StepsAll, Mode=OneWay}" Command="{Binding ShowAllStepsCommand}"
+                                              ToolTip.Tip="Show every step in this tab" />
+                                  </MenuItem>
                                   <MenuItem Header="Tab settings…" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenTabSettingsCommand}" CommandParameter="{Binding}">
                                     <MenuItem.Icon>
                                       <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentStatusBrush}" IsVisible="{Binding HasOverrides}"
@@ -1088,6 +1097,15 @@
                               <MenuItem Header="Connect to the Claude app" ToggleType="CheckBox" IsChecked="{Binding RemoteControl.IsOn, Mode=OneWay}"
                                         Command="{Binding RemoteControl.ToggleCommand}" ToolTip.Tip="{Binding RemoteControl.ToggleTip}" ToolTip.ShowOnDisabled="True" />
                               <MenuItem Header="Open in the Claude app" Command="{Binding RemoteControl.OpenInClaudeAppCommand}" IsVisible="{Binding RemoteControl.HasUrl}" />
+                              <!-- Folding each chain of steps in this tab, or Settings → Conversation's default (DESIGN.md §18, "Conversation cards") -->
+                              <MenuItem Header="Steps">
+                                <MenuItem Header="{Binding StepsDefaultText}" ToggleType="Radio" IsChecked="{Binding StepsByDefault, Mode=OneWay}" Command="{Binding UseDefaultStepsCommand}"
+                                          ToolTip.Tip="Fold the steps as Settings → Conversation → Fold each chain of steps says" />
+                                <MenuItem Header="Folded" ToggleType="Radio" IsChecked="{Binding StepsFolded, Mode=OneWay}" Command="{Binding FoldStepsCommand}"
+                                          ToolTip.Tip="Fold each chain of Claude's steps between two messages into one line, in this tab" />
+                                <MenuItem Header="All" ToggleType="Radio" IsChecked="{Binding StepsAll, Mode=OneWay}" Command="{Binding ShowAllStepsCommand}"
+                                          ToolTip.Tip="Show every step in this tab" />
+                              </MenuItem>
                               <MenuItem Header="Tab settings…" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenTabSettingsCommand}" CommandParameter="{Binding}">
                                   <MenuItem.Icon>
                                     <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentStatusBrush}" IsVisible="{Binding HasOverrides}"

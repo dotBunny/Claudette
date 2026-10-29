@@ -1,5 +1,4 @@
 ﻿With Enter:
-[button] Steps: all
 [button] Files (0)
 [button] Context 1%
 [button] 0 tok
@@ -10,7 +9,6 @@ Send tip: Send (Enter)
 placeholder: Message Claude…  (Enter to send, Shift+Enter for a new line, Esc to stop)
 
 With Ctrl+Enter:
-[button] Steps: all
 [button] Files (0)
 [button] Context 1%
 [button] 0 tok

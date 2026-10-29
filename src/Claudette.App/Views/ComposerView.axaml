@@ -496,9 +496,10 @@
                 </Button.Flyout>
               </Button>
   
-              <!-- Fold each chain of steps, for every tab, as Settings → Conversation does (DESIGN.md §18) -->
-              <Button Name="StepsButton" Classes="flat" Command="{Binding ToggleFoldChainsCommand}"
-                      ToolTip.Tip="Fold each chain of steps into the reply after it, or show every step. Settings → Conversation has it too.">
+              <!-- Folds this tab's chains of steps, or shows every step (DESIGN.md §18): only while Settings → Conversation
+                   folds them, so it's in no one's way who hasn't turned folding on -->
+              <Button Name="StepsButton" Classes="flat" Command="{Binding ToggleFoldChainsCommand}" IsVisible="{Binding ShowsStepsButton}"
+                      ToolTip.Tip="Fold each chain of steps in this tab into the reply after it, or show every step. Steps in the tab's menu has it too.">
                 <TextBlock Classes="muted small" Text="{Binding StepsButtonText}" />
               </Button>
 

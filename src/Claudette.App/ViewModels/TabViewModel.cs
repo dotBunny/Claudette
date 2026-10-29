@@ -125,7 +125,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         {
             ExpandThinking = state.ExpandThinking ?? services.Settings.Appearance.ExpandThinking,
             CollapseToolCalls = state.CollapseToolCalls ?? services.Settings.Appearance.CollapseToolCalls,
-            FoldChains = services.Settings.Appearance.FoldChains,
+            FoldChains = state.Overrides.FoldChains ?? services.Settings.Appearance.FoldChains,
             ShowUnsupportedMessages = services.Settings.Advanced.LogProtocol,
             ShowAllHookRuns = services.Settings.ClaudeCode.ShowAllHookRuns,
             OpenUrl = services.Platform.OpenUrlAsync,
@@ -938,13 +938,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         OnPropertyChanged(nameof(SuffixMenu));
         _conversation.ExpandThinking = State.ExpandThinking ?? _services.Settings.Appearance.ExpandThinking;
         _conversation.CollapseToolCalls = State.CollapseToolCalls ?? _services.Settings.Appearance.CollapseToolCalls;
-        if (_conversation.FoldChains != _services.Settings.Appearance.FoldChains)
-        {
-            // Turned on or off in Settings, or from a chain's menu: every run follows.
-            _conversation.ApplyFoldChains(_services.Settings.Appearance.FoldChains);
-            OnPropertyChanged(nameof(FoldsChains));
-            OnPropertyChanged(nameof(StepsButtonText));
-        }
+        OnFoldChainsChanged();
         _conversation.ShowAllHookRuns = _services.Settings.ClaudeCode.ShowAllHookRuns;
         _conversation.ShowUnsupportedMessages = _services.Settings.Advanced.LogProtocol;
         Context.OnSettingsChanged();
@@ -999,29 +993,79 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         _services.SaveState();
     }
 
-    /// <summary>Settings → Conversation → Fold each chain of steps, which the message box's bar switches too.</summary>
-    public bool FoldsChains => _services.Settings.Appearance.FoldChains;
+    /// <summary>
+    /// The tab folds each chain of steps (DESIGN.md §18, "Conversation cards"): its own choice, else Settings →
+    /// Conversation → Fold each chain of steps.
+    /// </summary>
+    public bool FoldsChains => State.Overrides.FoldChains ?? _services.Settings.Appearance.FoldChains;
+
+    /// <summary>
+    /// The message box's <b>Steps</b> is in its bar only while Settings → Conversation folds chains, so it isn't in the way
+    /// of anyone who hasn't turned folding on. A tab that folds its own way has <b>Steps</b> in its menu.
+    /// </summary>
+    public bool ShowsStepsButton => _services.Settings.Appearance.FoldChains;
 
     /// <summary>The message box's bar: "Steps: folded" or "Steps: all".</summary>
     public string StepsButtonText => FoldsChains ? "Steps: folded" : "Steps: all";
 
+    /// <summary>The tab menu's <b>Steps</b>: the first choice, which follows Settings, says what Settings says.</summary>
+    public string StepsDefaultText => _services.Settings.Appearance.FoldChains ? "Default (folded)" : "Default (all)";
+
+    /// <summary>The tab menu's <b>Steps</b>: which of its three choices is ticked.</summary>
+    public bool StepsByDefault => State.Overrides.FoldChains is null;
+
+    public bool StepsFolded => State.Overrides.FoldChains == true;
+
+    public bool StepsAll => State.Overrides.FoldChains == false;
+
     /// <summary>
-    /// The message box's bar: folds each chain of steps, or shows every step, for every tab, as Settings → Conversation
-    /// → Fold each chain of steps does (DESIGN.md §18).
+    /// The message box's <b>Steps</b>: folds this tab's chains of steps, or shows every step, kept only while it differs
+    /// from Settings → Conversation.
     /// </summary>
     [RelayCommand]
-    private void ToggleFoldChains()
+    private void ToggleFoldChains() => SetFoldChains(!FoldsChains);
+
+    /// <summary>A chain's line menu: every step in this tab shows again.</summary>
+    [RelayCommand]
+    private void ShowEveryStep() => SetFoldChains(false);
+
+    /// <summary>The tab menu's <b>Steps</b> → <b>Default</b>: the tab folds as Settings → Conversation says.</summary>
+    [RelayCommand]
+    private void UseDefaultSteps() => ChooseFoldChains(null);
+
+    /// <summary>The tab menu's <b>Steps</b> → <b>Folded</b>, whatever Settings → Conversation says.</summary>
+    [RelayCommand]
+    private void FoldSteps() => ChooseFoldChains(true);
+
+    /// <summary>The tab menu's <b>Steps</b> → <b>All</b>, whatever Settings → Conversation says.</summary>
+    [RelayCommand]
+    private void ShowAllSteps() => ChooseFoldChains(false);
+
+    /// <summary>A switch between the two: the tab's own choice, kept only while it differs from Settings.</summary>
+    private void SetFoldChains(bool fold) => ChooseFoldChains(fold == _services.Settings.Appearance.FoldChains ? null : fold);
+
+    private void ChooseFoldChains(bool? fold)
     {
-        _services.Settings.Appearance.FoldChains = !_services.Settings.Appearance.FoldChains;
-        _services.SaveSettings();
+        State.Overrides.FoldChains = fold;
+        _services.SaveState();
+        OnPropertyChanged(nameof(HasOverrides));
+        OnFoldChainsChanged();
     }
 
-    /// <summary>A chain's line menu: back to every step showing (Settings → Conversation → Fold each chain of steps off).</summary>
-    [RelayCommand]
-    private void ShowEveryStep()
+    /// <summary>The tab's choice or Settings changed: every run in the conversation folds, or opens again, to match.</summary>
+    private void OnFoldChainsChanged()
     {
-        _services.Settings.Appearance.FoldChains = false;
-        _services.SaveSettings();
+        if (_conversation.FoldChains != FoldsChains)
+        {
+            _conversation.ApplyFoldChains(FoldsChains);
+        }
+        OnPropertyChanged(nameof(FoldsChains));
+        OnPropertyChanged(nameof(ShowsStepsButton));
+        OnPropertyChanged(nameof(StepsButtonText));
+        OnPropertyChanged(nameof(StepsDefaultText));
+        OnPropertyChanged(nameof(StepsByDefault));
+        OnPropertyChanged(nameof(StepsFolded));
+        OnPropertyChanged(nameof(StepsAll));
     }
 
     private void SetAllThinking(bool expanded)
@@ -2389,6 +2433,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         ProcessMonitor.UpdateSampler();
         _autoContinue.SettingsChanged();
         OnUsageCreditsChoiceChanged();
+        OnFoldChainsChanged();
         if (_session is null)
         {
             ShowStartingModel();
