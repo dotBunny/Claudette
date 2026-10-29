@@ -123,6 +123,8 @@ public sealed partial class ShellViewModel
                 position++;
             }
         }
+        // Pinned groups go first, however they were left.
+        OrderGroups();
     }
 
     /// <summary>

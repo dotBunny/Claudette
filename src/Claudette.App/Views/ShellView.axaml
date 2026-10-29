@@ -448,7 +448,7 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate DataType="vm:TabGroupViewModel">
                 <StackPanel Margin="0,6,0,0">
-                  <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                  <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
                     <!-- Group label: click to collapse; right-click for group actions -->
                     <Button Classes="flat grouplabel" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="4,4"
                             ToolTip.Tip="{Binding Summary}"
@@ -480,6 +480,7 @@
                           <MenuItem Header="History for this folder" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenHistoryForGroupCommand}" CommandParameter="{Binding}" />
                           <MenuItem Header="Open project files" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenProjectFilesCommand}" CommandParameter="{Binding}" />
                           <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ToggleGroupCollapsedCommand}" CommandParameter="{Binding}" />
+                          <MenuItem Header="{Binding PinMenuText}" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).TogglePinGroupCommand}" CommandParameter="{Binding}" />
                           <!-- A name of the user's own in place of the folder's (DESIGN.md §4, "Grouped by folder") -->
                           <MenuItem Header="Rename…" Click="OnRenameGroup" />
                           <MenuItem Header="Reset name" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ResetGroupNameCommand}" CommandParameter="{Binding}"
@@ -494,9 +495,21 @@
                         </ContextMenu>
                       </Button.ContextMenu>
                     </Button>
+                    <!-- Pins the group to the top of the sidebar, or lets it go (DESIGN.md §4, "Grouped by folder"): an outline while
+                         it isn't pinned, solid in the accent color while it is -->
+                    <Button x:Name="PinGroupButton" Grid.Column="1" Classes="flat" Padding="6" VerticalAlignment="Center"
+                            ToolTip.Tip="{Binding PinMenuText}" AutomationProperties.Name="{Binding PinMenuText}"
+                            Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).TogglePinGroupCommand}" CommandParameter="{Binding}">
+                      <Panel>
+                        <Path Data="{StaticResource IconPin}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.1" Width="9" Height="12" Stretch="Uniform"
+                              IsVisible="{Binding !IsPinned}" />
+                        <Path Data="{StaticResource IconPin}" Fill="{DynamicResource AccentStatusBrush}" Stroke="{DynamicResource AccentStatusBrush}" StrokeThickness="1.1"
+                              Width="9" Height="12" Stretch="Uniform" IsVisible="{Binding IsPinned}" />
+                      </Panel>
+                    </Button>
                     <!-- The project's tools and links (DESIGN.md §18, "Project tools"), from the group's tab used last: a click
                          opens its menu -->
-                    <Button x:Name="ProjectButton" Grid.Column="1" Classes="flat" Padding="5" VerticalAlignment="Center"
+                    <Button x:Name="ProjectButton" Grid.Column="2" Classes="flat" Padding="5" VerticalAlignment="Center"
                             IsVisible="{Binding ProjectTab, Converter={x:Static ObjectConverters.IsNotNull}}"
                             ToolTip.Tip="{Binding ProjectTab.ProjectTools.ButtonTip, FallbackValue={x:Null}}" AutomationProperties.Name="Project tools">
                       <ContentControl Content="{Binding ProjectTab}" ContentTemplate="{StaticResource ProjectIcon}" />
@@ -507,11 +520,11 @@
                       </Button.Flyout>
                     </Button>
                     <!-- The group's Project Files tab (DESIGN.md §18, "Project files"): opens it, or selects it -->
-                    <Button x:Name="ProjectFilesButton" Grid.Column="2" Classes="flat" Padding="6" ToolTip.Tip="Project files" AutomationProperties.Name="Project files"
+                    <Button x:Name="ProjectFilesButton" Grid.Column="3" Classes="flat" Padding="6" ToolTip.Tip="Project files" AutomationProperties.Name="Project files"
                             Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenProjectFilesCommand}" CommandParameter="{Binding}" VerticalAlignment="Center">
                       <Path Data="{StaticResource IconFiles}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.2" Width="11" Height="11" Stretch="Uniform" />
                     </Button>
-                    <Button Grid.Column="3" Classes="flat" Padding="6" ToolTip.Tip="New tab in this folder" AutomationProperties.Name="New tab in this folder"
+                    <Button Grid.Column="4" Classes="flat" Padding="6" ToolTip.Tip="New tab in this folder" AutomationProperties.Name="New tab in this folder"
                             Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewTabInGroupCommand}" CommandParameter="{Binding}" VerticalAlignment="Center">
                       <Path Data="{StaticResource IconPlus}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="9" Height="9" Stretch="Uniform" />
                     </Button>

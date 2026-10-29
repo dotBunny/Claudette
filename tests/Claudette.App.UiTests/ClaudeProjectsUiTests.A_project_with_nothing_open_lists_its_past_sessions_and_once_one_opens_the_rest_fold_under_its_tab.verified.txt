@@ -1,4 +1,5 @@
 ﻿[button] work
+[button] Pin to the top
 [button] Project files
 [button] New tab in this folder
 [button] Add the settings page, 1 h ago · 1 message

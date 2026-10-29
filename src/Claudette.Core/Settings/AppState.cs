@@ -60,6 +60,9 @@ public sealed class AppState
     /// <summary>Folder groups the user collapsed.</summary>
     public List<string> CollapsedGroups { get; set; } = [];
 
+    /// <summary>Folder groups the user pinned: they sit first in the sidebar (DESIGN.md §4, "Grouped by folder").</summary>
+    public List<string> PinnedGroups { get; set; } = [];
+
     /// <summary>Folder groups whose past sessions the user unfolded (DESIGN.md §4, "Claude Code's projects").</summary>
     public List<string> ExpandedPastSessions { get; set; } = [];
 

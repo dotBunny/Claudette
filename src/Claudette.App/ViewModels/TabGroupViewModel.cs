@@ -200,6 +200,17 @@ public sealed partial class TabGroupViewModel : ObservableObject
 
     public string CollapseMenuText => IsCollapsed ? "Expand group" : "Collapse group";
 
+    /// <summary>
+    /// The group is pinned: it sits first in the sidebar, among the other pinned groups, however recently it was used
+    /// (DESIGN.md §4, "Grouped by folder"). Remembered for its folder.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PinMenuText))]
+    public partial bool IsPinned { get; set; }
+
+    /// <summary>The pin button's tip and the menu's item: what a click does.</summary>
+    public string PinMenuText => IsPinned ? "Unpin from the top" : "Pin to the top";
+
     /// <summary>The most urgent status among the group's tabs, shown when it's collapsed.</summary>
     public string UrgentGlyph => RowUrgencies.Glyph(Tabs.Select(t => RowUrgencies.Of(t.Status)).DefaultIfEmpty().Max());
 

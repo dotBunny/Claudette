@@ -476,8 +476,11 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         {
             Name = GroupNames.Saved(state, folder),
         };
+        group.IsPinned = state.PinnedGroups.Any(p => FolderHistory.SamePath(p, folder));
         SetUpGroupAccount(group);
         Groups.Add(group);
+        // A pinned group goes up among the pinned ones, and the others keep their place.
+        OrderGroups();
         UpdateGroupLabels();
         OnPropertyChanged(nameof(HasTabs));
         return group;
@@ -762,6 +765,48 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         SelectedTab = tabs[(index + offset + tabs.Count) % tabs.Count];
     }
 
+    /// <summary>
+    /// The pin before a group's buttons, or <b>Pin to the top</b> in its menu (DESIGN.md §4, "Grouped by folder"): the
+    /// group moves up among the pinned ones, and <b>Unpin from the top</b> lets it go back down. Remembered for the folder.
+    /// </summary>
+    [RelayCommand]
+    private void TogglePinGroup(TabGroupViewModel? group)
+    {
+        if (group is null)
+        {
+            return;
+        }
+        group.IsPinned = !group.IsPinned;
+        var pinned = _services.State.PinnedGroups;
+        pinned.RemoveAll(p => FolderHistory.SamePath(p, group.Folder));
+        if (group.IsPinned)
+        {
+            pinned.Add(group.Folder);
+        }
+        OrderGroups();
+        SaveTabs();
+    }
+
+    /// <summary>
+    /// Pinned groups first, in the order they were in; then the groups with something open, as they were; then Claude
+    /// Code's projects with nothing open, the most recently used first (DESIGN.md §4).
+    /// </summary>
+    private void OrderGroups()
+    {
+        var ordered = Groups.Where(g => g.IsPinned)
+            .Concat(Groups.Where(g => !g.IsPinned && !g.IsProjectOnly))
+            .Concat(Groups.Where(g => !g.IsPinned && g.IsProjectOnly).OrderByDescending(g => g.LastSessionActivity))
+            .ToList();
+        for (var i = 0; i < ordered.Count; i++)
+        {
+            var from = Groups.IndexOf(ordered[i]);
+            if (from != i)
+            {
+                Groups.Move(from, i);
+            }
+        }
+    }
+
     [RelayCommand]
     private void ToggleGroupCollapsed(TabGroupViewModel? group)
     {
@@ -888,7 +933,10 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     public bool MoveGroupTo(TabGroupViewModel group, int index)
     {
         var from = Groups.IndexOf(group);
-        var to = Math.Clamp(index, 0, Groups.Count - 1);
+        // A pinned group stays among the pinned ones, and the others below them.
+        var pinned = Groups.Count(g => g.IsPinned);
+        var (first, last) = group.IsPinned ? (0, pinned - 1) : (pinned, Groups.Count - 1);
+        var to = Math.Clamp(index, first, Math.Max(first, last));
         if (from < 0 || to == from)
         {
             return false;
