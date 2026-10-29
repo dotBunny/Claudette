@@ -14,6 +14,15 @@ internal static unsafe partial class ObjC
     private const string LibObjC = "/usr/lib/libobjc.A.dylib";
 
     private static readonly nint MsgSendPointer = NativeLibrary.GetExport(NativeLibrary.Load(LibObjC), "objc_msgSend");
+
+    /// <summary>
+    /// For methods returning a struct too big for registers, such as an <c>NSRect</c>: <c>objc_msgSend_stret</c> on
+    /// x64; arm64 has no such entry point, and <c>objc_msgSend</c> returns any struct.
+    /// </summary>
+    private static readonly nint MsgSendStructPointer = RuntimeInformation.ProcessArchitecture == Architecture.X64
+        ? NativeLibrary.GetExport(NativeLibrary.Load(LibObjC), "objc_msgSend_stret")
+        : MsgSendPointer;
+
     private static readonly ConcurrentDictionary<string, nint> Selectors = new(StringComparer.Ordinal);
 
     [LibraryImport(LibObjC, EntryPoint = "objc_getClass", StringMarshalling = StringMarshalling.Utf8)]
@@ -63,6 +72,18 @@ internal static unsafe partial class ObjC
     public static nint Send(nint receiver, string selector, nuint a, nint b) =>
         ((delegate* unmanaged<nint, nint, nuint, nint, nint>)MsgSendPointer)(receiver, Sel(selector), a, b);
 
+    /// <summary>For selectors returning a <c>BOOL</c>, which is a byte (a <c>bool</c> on arm64).</summary>
+    public static bool SendBool(nint receiver, string selector) =>
+        ((delegate* unmanaged<nint, nint, byte>)MsgSendPointer)(receiver, Sel(selector)) != 0;
+
+    /// <summary>For selectors returning an <c>NSRect</c>, such as <c>bounds</c>.</summary>
+    public static CGRect SendRect(nint receiver, string selector) =>
+        ((delegate* unmanaged<nint, nint, CGRect>)MsgSendStructPointer)(receiver, Sel(selector));
+
+    /// <summary>For <c>convertRect:toView:</c> and the like: an <c>NSRect</c> and an object, returning an <c>NSRect</c>.</summary>
+    public static CGRect SendRect(nint receiver, string selector, CGRect a, nint b) =>
+        ((delegate* unmanaged<nint, nint, CGRect, nint, CGRect>)MsgSendStructPointer)(receiver, Sel(selector), a, b);
+
     /// <summary><c>[[cls alloc] init]</c>: an owned (+1) instance.</summary>
     public static nint New(string className) => Send(Send(GetClass(className), "alloc"), "init");
 
@@ -90,6 +111,16 @@ internal static unsafe partial class ObjC
 
     public static string? ToManagedString(nint nsString) =>
         nsString == 0 ? null : Marshal.PtrToStringUTF8(Send(nsString, "UTF8String"));
+
+    /// <summary>An <c>NSRect</c>: its origin and size, in points, four doubles as on 64-bit macOS.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CGRect
+    {
+        public double X;
+        public double Y;
+        public double Width;
+        public double Height;
+    }
 
     // ---- Blocks -----------------------------------------------------------------------------------------------
 

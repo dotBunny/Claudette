@@ -1,3 +1,4 @@
+using System.Runtime.Versioning;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
@@ -7,9 +8,12 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Claudette.App.Controls;
+using Claudette.Platform.Shell.Mac;
 
 namespace Claudette.App.Services.Automation;
 
@@ -28,25 +32,42 @@ public sealed class AutomationCommands
     private readonly Func<long, TopLevel?> _findWindow;
     private readonly Func<string?, TopLevel?> _findByTitle;
     private readonly Func<IEnumerable<TopLevel>> _popups;
+    private readonly Func<TopLevel, IReadOnlyList<MacWindowButton>> _windowButtons;
 
     /// <param name="findWindow">The window or popup with a native handle; tests give their own.</param>
     /// <param name="popups">The popups open now, which a control may be in whatever window is named.</param>
     /// <param name="findByTitle">The window with a title, or for none the main window, for a request without a handle.</param>
-    public AutomationCommands(Func<long, TopLevel?> findWindow, Func<IEnumerable<TopLevel>>? popups = null, Func<string?, TopLevel?>? findByTitle = null)
+    /// <param name="windowButtons">The OS's buttons over a window, which aren't in what it draws: macOS's traffic lights.</param>
+    public AutomationCommands(Func<long, TopLevel?> findWindow, Func<IEnumerable<TopLevel>>? popups = null, Func<string?, TopLevel?>? findByTitle = null,
+        Func<TopLevel, IReadOnlyList<MacWindowButton>>? windowButtons = null)
     {
         _findWindow = findWindow;
         _popups = popups ?? (() => []);
         _findByTitle = findByTitle ?? (_ => null);
+        _windowButtons = windowButtons ?? (_ => []);
     }
 
     /// <summary>Claudette's own windows and the popups open over them, found by native handle, or by title.</summary>
     public static AutomationCommands ForApp()
     {
         static IClassicDesktopStyleApplicationLifetime? Desktop() => Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+        Func<TopLevel, IReadOnlyList<MacWindowButton>>? windowButtons = null;
+        if (OperatingSystem.IsMacOS())
+        {
+            windowButtons = TrafficLights;
+        }
         return new(handle => (Desktop()?.Windows ?? []).Concat(OpenPopups.Roots).FirstOrDefault(t => t.TryGetPlatformHandle()?.Handle == handle),
             () => OpenPopups.Roots,
-            title => title is null ? Desktop()?.MainWindow : Desktop()?.Windows.FirstOrDefault(w => w.Title == title));
+            title => title is null ? Desktop()?.MainWindow : Desktop()?.Windows.FirstOrDefault(w => w.Title == title),
+            windowButtons);
     }
+
+    /// <summary>The traffic lights over a window drawing into its title bar; with the system's, they're in that instead.</summary>
+    [SupportedOSPlatform("macos")]
+    private static IReadOnlyList<MacWindowButton> TrafficLights(TopLevel window) =>
+        window is Window { IsExtendedIntoWindowDecorations: true } && window.TryGetPlatformHandle() is IMacOSTopLevelPlatformHandle mac
+            ? MacWindowButtons.Over(mac.NSView)
+            : [];
 
     public AutomationResponse Execute(AutomationRequest request)
     {
@@ -65,6 +86,7 @@ public sealed class AutomationCommands
                 "unhover" => Tip(Find(request), false),
                 "key" => Press(Window(request), request.Keys ?? throw new AutomationException("key needs keys, such as Ctrl+Shift+P.")),
                 "capture" => Capture(Window(request), request.Path ?? throw new AutomationException("capture needs a path to save the picture at.")),
+                "resize" => Resize(Window(request), request.Width ?? 0, request.Height ?? 0),
                 "close" => Close(Window(request)),
                 _ => AutomationResponse.Failed($"There's no command '{request.Verb}'."),
             };
@@ -131,18 +153,80 @@ public sealed class AutomationCommands
 
     /// <summary>
     /// The window as Claudette draws it, at its scale, saved as a PNG: for screenshots on any OS, where there's no
-    /// PrintWindow to capture with. The OS's own frame, where it draws one, isn't in it, nor are popups.
+    /// PrintWindow to capture with. The OS's own frame, where it draws one, isn't in it, nor are popups. The window's
+    /// buttons are: Avalonia's on Windows, which are beside the window in the visual Avalonia hosts it in, and macOS's
+    /// traffic lights, which AppKit draws over it (<see cref="DrawTrafficLights"/>).
     /// </summary>
-    private static AutomationResponse Capture(TopLevel window, string path)
+    private AutomationResponse Capture(TopLevel window, string path)
     {
         var scale = window.RenderScaling;
         var size = new PixelSize(Math.Max(1, (int)Math.Ceiling(window.ClientSize.Width * scale)), Math.Max(1, (int)Math.Ceiling(window.ClientSize.Height * scale)));
         using var bitmap = new RenderTargetBitmap(size, new Vector(96 * scale, 96 * scale));
-        bitmap.Render(window);
+        bitmap.Render(window.GetVisualParent() ?? window);
+        DrawTrafficLights(bitmap, _windowButtons(window));
         var full = System.IO.Path.GetFullPath(path);
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(full)!);
         bitmap.Save(full, PngBitmapEncoderOptions.Default);
         return AutomationResponse.Done(full);
+    }
+
+    /// <summary>
+    /// macOS's traffic lights where AppKit has them, which otherwise leave a gap at the title bar's left. In the colors of
+    /// a window in front, whatever this one's are, as the Windows scripts draw a window's frame as active: the scripts'
+    /// windows never take the focus, which would give them theirs.
+    /// </summary>
+    private static void DrawTrafficLights(RenderTargetBitmap bitmap, IReadOnlyList<MacWindowButton> buttons)
+    {
+        if (buttons.Count == 0)
+        {
+            return;
+        }
+        using var context = bitmap.CreateDrawingContext(clear: false);
+        foreach (var button in buttons)
+        {
+            var (fill, edge) = button switch
+            {
+                { IsEnabled: false } => (Color.FromArgb(0x55, 0x80, 0x80, 0x80), Colors.Transparent),
+                { Kind: MacWindowButtonKind.Close } => (Color.FromRgb(0xFF, 0x5F, 0x57), Color.FromRgb(0xE2, 0x46, 0x3F)),
+                { Kind: MacWindowButtonKind.Minimize } => (Color.FromRgb(0xFE, 0xBC, 0x2E), Color.FromRgb(0xE1, 0xA1, 0x16)),
+                _ => (Color.FromRgb(0x28, 0xC8, 0x40), Color.FromRgb(0x17, 0xA2, 0x34)),
+            };
+            // The circle fills the button's frame but for a point at each side, as AppKit draws it.
+            var radius = (Math.Min(button.Width, button.Height) - 2) / 2;
+            var middle = new Point(button.X + button.Width / 2, button.Y + button.Height / 2);
+            context.DrawEllipse(new SolidColorBrush(fill), new Pen(new SolidColorBrush(edge), 0.5), middle, radius - 0.25, radius - 0.25);
+        }
+    }
+
+    /// <summary>
+    /// The window at a size, in device-independent pixels, for the screenshot scripts' windows to be the same size on
+    /// every system, whatever its screen: macOS fits a window to its screen as it opens, and Windows keeps one within it
+    /// unless the window's largest size is bigger, which Avalonia tells it from <c>MaxWidth</c> and <c>MaxHeight</c>. The
+    /// window takes it in its next layout, after the answer.
+    /// </summary>
+    private static AutomationResponse Resize(TopLevel root, double width, double height)
+    {
+        if (root is not Window window)
+        {
+            throw new AutomationException("Only a window resizes.");
+        }
+        if (width <= 0 || height <= 0)
+        {
+            throw new AutomationException("resize needs a width and a height.");
+        }
+        window.WindowState = WindowState.Normal;
+        // Infinite, as it is unless a window sets it, tells Windows nothing.
+        if (double.IsInfinity(window.MaxWidth) || window.MaxWidth < width)
+        {
+            window.MaxWidth = width;
+        }
+        if (double.IsInfinity(window.MaxHeight) || window.MaxHeight < height)
+        {
+            window.MaxHeight = height;
+        }
+        window.Width = width;
+        window.Height = height;
+        return AutomationResponse.Done();
     }
 
     /// <summary>
