@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
 using System.Windows.Input;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Claudette.App.Controls;
 
@@ -151,6 +155,33 @@ public sealed class Card : ContentControl
     {
         get => GetValue(ToggleCommandProperty);
         set => SetValue(ToggleCommandProperty, value);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        // A click anywhere on the header line does what the chevron does, as the whole line of a folded chain is its button.
+        if (e.NameScope.Find<Control>("PART_Body") is { } body)
+        {
+            body.PointerPressed += OnHeaderPressed;
+        }
+    }
+
+    private void OnHeaderPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!IsCollapsible || ToggleCommand is not { } toggle || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || !toggle.CanExecute(null))
+        {
+            return;
+        }
+        // Not a click in the content under the header, nor on a button of the header's own.
+        if (e.Source is Visual source
+            && (source.FindAncestorOfType<ContentPresenter>(includeSelf: true) is { Name: "PART_ContentPresenter" }
+                || source.FindAncestorOfType<Button>(includeSelf: true) is not null))
+        {
+            return;
+        }
+        toggle.Execute(null);
+        e.Handled = true;
     }
 
     /// <summary>Nothing to put on a header line: the content starts at the top.</summary>

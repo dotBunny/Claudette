@@ -252,6 +252,15 @@
     <Setter Property="Grid.Row" Value="0" />
     <Setter Property="Margin" Value="0" />
   </Style>
+  <!-- A folded chain's line (DESIGN.md §18) is clickable along its whole header. -->
+  <Style Selector="controls|Card.steps">
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <!-- A step's line in the open list of a folded chain: quiet, with its time at the right. -->
+  <Style Selector="Button.steprow">
+    <Setter Property="Padding" Value="4,5" />
+    <Setter Property="MinHeight" Value="0" />
+  </Style>
   <!-- Folded away (a Tool calls card's tiles): the header line alone, with no gap under it. -->
   <Style Selector="controls|Card:collapsed /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Margin" Value="0" />
@@ -307,10 +316,10 @@
   <Style Selector=".indentyou.compact controls|Card.you">
     <Setter Property="Margin" Value="64,0,0,0" />
   </Style>
-  <Style Selector=".indentyou controls|Card.thinking, .indentyou controls|Card.tools, .indentyou controls|Card.agent">
+  <Style Selector=".indentyou controls|Card.thinking, .indentyou controls|Card.tools, .indentyou controls|Card.agent, .indentyou controls|Card.steps">
     <Setter Property="Margin" Value="24,0,0,0" />
   </Style>
-  <Style Selector=".indentyou.compact controls|Card.thinking, .indentyou.compact controls|Card.tools, .indentyou.compact controls|Card.agent">
+  <Style Selector=".indentyou.compact controls|Card.thinking, .indentyou.compact controls|Card.tools, .indentyou.compact controls|Card.agent, .indentyou.compact controls|Card.steps">
     <Setter Property="Margin" Value="16,0,0,0" />
   </Style>
 

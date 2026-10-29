@@ -30,6 +30,17 @@ A long run of calls takes a lot of room. The chevron before a Tool calls card's 
 
 It works as thinking does. Settings → Conversation → **Show tool calls collapsed** starts new cards folded. Right-click a Tool calls card for **Collapse all tool calls** and **Expand all tool calls**: they fold or open every card in the tab, and start the ones still to come the same way, without changing Settings. The tab remembers which you chose. Opening a call from elsewhere, as find does, opens its card.
 
+## Folding a chain of steps
+Claude's thinking and tool calls between two messages can still take a lot of room, even with each Tool calls card folded. Settings → Conversation → **Fold each chain of steps** (off by default) folds the whole run of steps, the thinking, Tool calls cards and subagents between two messages, into one line, such as *Worked for 18m*, with what the steps were beside it: *9 tool calls · 3 thinking*.
+
+- **Open the line** with a click anywhere on it, or its chevron. It opens a list of the steps, a line each: *Thought for 7s*, *Ran check for UE4SS.pdb*, *Created analyze_dump.py*, *Edited disasm.py*, with how long a call took at the right of its line. A long list scrolls, with a scroll bar of its own.
+- **Open a step** with its chevron. A thinking line opens to what Claude thought, and a call to its detail, as a tile of a Tool calls card opens: the input and the output, and **Open** for the file it worked on.
+- **Fold the line again** with another click, and the list is gone.
+- **While Claude is working**, the line says *Working · 6 earlier steps*, and the last step stays under it: the one Claude is on. Once Claude has moved on, the whole run is in the line.
+- A single step, such as a lone *Thinking* row before a reply, folds the same way once Claude has moved on from it. If a step's time isn't known, or the run took under a second, the line counts the steps instead of saying how long they took.
+
+Find and **Export conversation…** still reach a folded step, and going to one opens the list at its line. **Show every step** in the line's right-click menu turns the setting off.
+
 ## Opening a call
 
 Click a tile to open its detail under the tiles. One tile is open at a time, so opening another closes it, and the × at the detail's right closes it. The detail shows the call in full:
@@ -59,7 +70,7 @@ An output over 20,000 characters shows its start, with **Show all (n KB)** to sh
 
 ## Settings
 
-**Show tool calls collapsed** (Settings → Conversation, off by default) starts new Tool calls cards folded to their header line.
+**Show tool calls collapsed** (Settings → Conversation, off by default) starts new Tool calls cards folded to their header line. **Fold each chain of steps** (off by default) folds a run of steps between two messages into one line, as [Folding a chain of steps](#folding-a-chain-of-steps) says.
 
 Tool calls are one of the in-between steps that **Quieter in-between steps** (Settings → Conversation, on by default) draws without a tint and outline until you point at them. See [Reading the conversation](reading-the-conversation.md#quieter-in-between-steps).
 

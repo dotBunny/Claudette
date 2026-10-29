@@ -125,6 +125,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         {
             ExpandThinking = state.ExpandThinking ?? services.Settings.Appearance.ExpandThinking,
             CollapseToolCalls = state.CollapseToolCalls ?? services.Settings.Appearance.CollapseToolCalls,
+            FoldChains = services.Settings.Appearance.FoldChains,
             ShowUnsupportedMessages = services.Settings.Advanced.LogProtocol,
             ShowAllHookRuns = services.Settings.ClaudeCode.ShowAllHookRuns,
             OpenUrl = services.Platform.OpenUrlAsync,
@@ -187,6 +188,11 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
     /// </summary>
     public void ScrollTo(ConversationItem item)
     {
+        // A step folded into its chain's line opens the chain's list, and the line is where to go.
+        if (_conversation.Runs.Reveal(Items.TopLevelOf(item)) is { } line)
+        {
+            item = line;
+        }
         // A card in a subagent's work, with its work under the tab in the sidebar: that's where it shows.
         ShowListHolding(item);
         if (ScrollToRequested is { } scroll)
@@ -932,6 +938,11 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         OnPropertyChanged(nameof(SuffixMenu));
         _conversation.ExpandThinking = State.ExpandThinking ?? _services.Settings.Appearance.ExpandThinking;
         _conversation.CollapseToolCalls = State.CollapseToolCalls ?? _services.Settings.Appearance.CollapseToolCalls;
+        if (_conversation.FoldChains != _services.Settings.Appearance.FoldChains)
+        {
+            // Turned on or off in Settings, or from a chain's menu: every run follows.
+            _conversation.ApplyFoldChains(_services.Settings.Appearance.FoldChains);
+        }
         _conversation.ShowAllHookRuns = _services.Settings.ClaudeCode.ShowAllHookRuns;
         _conversation.ShowUnsupportedMessages = _services.Settings.Advanced.LogProtocol;
         Context.OnSettingsChanged();
@@ -984,6 +995,14 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         _conversation.CollapseAllToolCalls(collapsed);
         State.CollapseToolCalls = collapsed;
         _services.SaveState();
+    }
+
+    /// <summary>A chain's line menu: back to every step showing (Settings → Conversation → Fold each chain of steps off).</summary>
+    [RelayCommand]
+    private void ShowEveryStep()
+    {
+        _services.Settings.Appearance.FoldChains = false;
+        _services.SaveSettings();
     }
 
     private void SetAllThinking(bool expanded)
@@ -1915,6 +1934,8 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         finally
         {
             Agents.FinishReplay();
+            // The earlier conversation's chains of steps fold, if they're to.
+            _conversation.Runs.Refresh();
             // A call the transcript ends before the answer to won't be answered now.
             TodoList.CallsEnded();
             // Rows under the tab come back only for the last turn's subagents (DESIGN.md §5, "Subagents").

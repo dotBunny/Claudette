@@ -599,6 +599,12 @@ public sealed class AppearanceSettings
     public bool CollapseToolCalls { get; set; }
 
     /// <summary>
+    /// Each run of steps on the way (thinking, tool calls, subagents) between two messages folds into one line, with
+    /// the reply after it carrying a button that opens it (DESIGN.md §18, "Conversation cards"). Off by default.
+    /// </summary>
+    public bool FoldChains { get; set; }
+
+    /// <summary>
     /// Your messages' cards start further in from the left than Claude's, so whose turn each card is can be told by
     /// its place alone (DESIGN.md §18, "Conversation cards"). On by default.
     /// </summary>

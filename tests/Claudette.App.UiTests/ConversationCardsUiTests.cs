@@ -146,6 +146,99 @@ public sealed class ConversationCardsUiTests
     }
 
     [AvaloniaFact]
+    public async Task A_chain_of_steps_folds_into_one_line_that_opens_a_list_of_its_steps()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        h.Services.Settings.Appearance.FoldChains = true;
+        h.Services.SaveSettings();
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"One."},{"type":"tool_use","id":"r1","name":"Read","input":{"file_path":"a.cs"}}]}}""");
+        h.Transport.Emit("""{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"r1","content":"x"}]}}""");
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"Two."},{"type":"tool_use","id":"r2","name":"Bash","input":{"command":"ls","description":"list the files"}}]}}""");
+        h.Transport.Emit("""{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"r2","content":"y"}]}}""");
+        // The list builds only the steps it needs to, and a folded one has no height, so the model is what to wait for.
+        await UiText.SettleUntilAsync(window, () => Named(window, "steps").Count == 1 && Named(window, "tools").Count >= 1
+            && FoldedSteps(tab) == 3, "the chain's line");
+
+        // Four steps (two thinking, two calls), the last still what Claude is on: one line, and the last step under it.
+        var marker = tab.Items.OfType<StepsMarkerItem>().Single();
+        Assert.Equal("Working · 3 earlier steps", marker.Title);
+        Assert.Equal(1, Named(window, "tools").Count(c => c.IsEffectivelyVisible));
+        Assert.True(Named(window, "steps")[0].IsCollapsed);
+
+        // A reply follows: the run is done, and the whole of it is folded into the line, which stays to open it.
+        h.Transport.EmitTurn("Done.");
+        await UiText.SettleUntilAsync(window, () => Replies(window).Count == 1 && FoldedSteps(tab) == 4, "the whole run folded");
+        Assert.Equal("2 tool calls · 2 thinking", marker.Summary);
+        Assert.False(marker.IsFolded);
+        Assert.True(Named(window, "steps")[0].IsEffectivelyVisible);
+        Assert.Equal(0, Named(window, "tools").Count(c => c.IsEffectivelyVisible));
+        Assert.Equal(0, Named(window, "thinking").Count(c => c.IsEffectivelyVisible));
+        Assert.Empty(marker.Rows);
+
+        // The line opens a list of the steps, a line each: what Claude thought and what it did.
+        marker.ToggleCommand.Execute(null);
+        UiText.Settle(window);
+        Assert.True(marker.IsOpen);
+        Assert.Equal(["Thought", "Read a.cs", "Thought", "Ran list the files"], marker.Rows.Select(r => r.Title));
+        Assert.Equal(4, FoldedSteps(tab));
+
+        // A line opens further: the thinking's words, and the call's own detail.
+        var thought = marker.Rows[0];
+        Assert.False(thought.ShowsThought);
+        thought.ToggleCommand.Execute(null);
+        Assert.True(thought.ShowsThought);
+        Assert.Equal("One.", thought.ThoughtText);
+        var call = marker.Rows[1];
+        call.ToggleCommand.Execute(null);
+        Assert.True(call.ShowsTool);
+
+        // Folded again, the list goes and costs nothing.
+        marker.ToggleCommand.Execute(null);
+        UiText.Settle(window);
+        Assert.False(marker.IsOpen);
+        Assert.Empty(marker.Rows);
+
+        // Going to a step inside opens the list at its line, and opens its row.
+        var target = tab.Items.OfType<ThinkingItem>().Last();
+        tab.ScrollTo(target);
+        Assert.True(marker.IsOpen);
+        Assert.True(marker.Rows.Single(r => ReferenceEquals(r.Source, target)).IsExpanded);
+
+        // Back to showing every step: no line, nothing folded.
+        h.Services.Settings.Appearance.FoldChains = false;
+        h.Services.SaveSettings();
+        UiText.Settle(window);
+        Assert.Empty(Named(window, "steps"));
+        Assert.DoesNotContain(tab.Items, i => i is StepsMarkerItem);
+        Assert.Equal(0, FoldedSteps(tab));
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public async Task A_lone_thinking_row_before_a_reply_folds_into_a_line_of_its_own()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        h.Services.Settings.Appearance.FoldChains = true;
+        h.Services.SaveSettings();
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"Hm."}]}}""");
+        h.Transport.EmitTurn("Hi.");
+        await UiText.SettleUntilAsync(window, () => Replies(window).Count == 1 && tab.Items.OfType<StepsMarkerItem>().Count() == 1, "the folded thinking");
+
+        var marker = tab.Items.OfType<StepsMarkerItem>().Single();
+        Assert.True(tab.Items.OfType<ThinkingItem>().Single().IsFolded);
+        Assert.Equal("1 step", marker.Title);
+        Assert.Equal(0, Named(window, "thinking").Count(c => c.IsEffectivelyVisible));
+        marker.ToggleCommand.Execute(null);
+        UiText.Settle(window);
+        Assert.Equal("Thought", marker.Rows.Single().Title);
+        window.Close();
+    }
+
+    [AvaloniaFact]
     public async Task Your_message_starts_further_in_than_Claudes_reply_and_the_setting_turns_that_off()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
@@ -282,6 +375,10 @@ public sealed class ConversationCardsUiTests
 
     private static List<Card> YourCards(Window window) =>
         [.. window.GetVisualDescendants().OfType<Card>().Where(c => c.Classes.Contains("you"))];
+
+    /// <summary>The steps folded away, not counting the lines of the chains themselves.</summary>
+    private static int FoldedSteps(Claudette.App.ViewModels.TabViewModel tab) =>
+        tab.Items.Count(i => i is not StepsMarkerItem && i.IsFolded);
 
     private static Button Toggle(Card card) =>
         card.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "PART_Toggle");

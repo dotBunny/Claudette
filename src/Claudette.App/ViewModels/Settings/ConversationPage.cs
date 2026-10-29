@@ -29,6 +29,10 @@ public sealed class ConversationPage : SettingsPage
                 "Each Tool calls card starts as its header line, rather than with its tiles open.",
                 "The chevron before a card's icon opens it. Right-click a card for Collapse all tool calls or Expand all tool calls, which changes every card in that tab and the ones to come, as thinking's menu does.",
                 ["tools", "tiles", "fold", "expand", "collapse"]),
+            Setting("appearance.foldChains", "Fold each chain of steps", s => s.Appearance.FoldChains, (s, v) => s.Appearance.FoldChains = v,
+                "Claude's thinking and tool calls between two messages fold into one line, such as “Worked for 18m”.",
+                "A click on the line opens a list of the steps, a line each, which scrolls once it's long; each line opens to what Claude thought or what the call did. While Claude works, the last step stays under the line.",
+                ["chain", "steps", "thinking", "tools", "fold", "compact", "collapse"]),
             Setting("appearance.expandThinking", "Show thinking expanded", s => s.Appearance.ExpandThinking, (s, v) => s.Appearance.ExpandThinking = v,
                 "Claude's thinking opens by itself, rather than as a line to click.", keywords: ["reasoning"]),
             Setting("appearance.showSubagents", "Show subagents' work", s => s.Appearance.ShowSubagents, (s, v) => s.Appearance.ShowSubagents = v,
@@ -93,6 +97,13 @@ public sealed class ConversationPage : SettingsPage
     }
 
     /// <summary>Tool calls cards start folded to their header line (DESIGN.md §18, "Conversation cards").</summary>
+    /// <summary>Each run of steps between two messages folds into one line (DESIGN.md §18, "Conversation cards").</summary>
+    public bool FoldChains
+    {
+        get => Settings.Appearance.FoldChains;
+        set => Set(value, v => Settings.Appearance.FoldChains = v);
+    }
+
     public bool CollapseToolCalls
     {
         get => Settings.Appearance.CollapseToolCalls;
