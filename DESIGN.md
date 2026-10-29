@@ -311,7 +311,7 @@ In both styles, text in a different font or size beside other text sits on its b
   - **Usage limit**, while a usage limit has stopped the tab's task: when it resets, and whether the task continues then ([§6](#continuing-after-a-limit-resets)).
   - **Claude Code**, the version the tab's `claude` is running, and when a newer one is installed, that it is and that new tabs use it ([§12](#applying-it)).
   - **Status**, last: what the status icon's tip says.
-  - The same card opens from an **ⓘ** button in the composer bar, for the selected tab.
+  - The same card opens from the **ⓘ** button last on the status line under the composer, for the selected tab.
 - **Token stats per tab.** Each tab keeps a running count of the tokens it has used:
   - Input, output, cache write and cache read tokens, split by model when the session used more than one.
   - Two time spans: **this session window** (since the current 5-hour window started, which is the part that counts against the session limit) and **all time** for this tab's session.
@@ -676,7 +676,7 @@ A user message's **⋯** menu goes back to it. Claude Code does the work: a resu
   - The ⏎ is drawn from Inter, which Claudette ships (Avalonia's Inter font, Fluent's own) and which has it in every weight, so it reads the same on Windows, macOS and Linux; the rest of the chip is in the bar's font. Segoe UI hasn't got ⏎, and font fallback would draw it from whichever font has, such as a code font.
   - How it's built: `ShortcutTips` (`Services/Shortcuts.cs`) words the chip, its tooltip and **Send**'s, and `TabViewModel.SwitchSendKeyCommand` switches the setting. `KeyboardAndSettingsTests` (every tab and the open Settings window follow), `ComposerExtrasUiTests` (the chip in both modes, rendered) and `MainWindowTests` (the chip and **Send** in view in a narrow pane).
   - **Still to verify:** the chip beside the counts on real Windows, macOS and Linux desktops, in both styles and densities (so far rendered headlessly).
-- **The status line**, under the box: the working folder, the tab's status (and **Restart** when it has stopped), and at its right how Claude's plan and tasks are going, which opens the Tasks page ([Tasks](#tasks)).
+- **The status line**, under the box: the working folder, the tab's status (and **Restart** when it has stopped), and at its right how Claude's plan and tasks are going, which opens the Tasks page ([Tasks](#tasks)), then last **ⓘ**, the tab's info card ([Tab info card](#tab-info-card)).
 - **The bar keeps Send in view.** The choices (model, effort, permission mode) are at its left, and the counts (processes, Agents, running tasks, Files, context, tokens) with the send key chip and **Send** at its right. When they don't all fit on one line, as in a narrow window, the right-hand group moves to a second line under the choices, still at the right, rather than being pushed out of sight (`ControlBarPanel`). In a pane too narrow even for the group on a line of its own (tabs side by side, §18, or beside a docked tool window), the group wraps onto another line, with Send still last at the right, and the choices wrap the same way. Nothing in the composer runs past its edge: the status line under the box trims the folder first, then the status, with the whole status in its tooltip.
 
 ### Queued messages
@@ -2801,7 +2801,7 @@ When Claude is working in a specific Perforce changelist, Claudette shows its nu
 - **Showing it.**
   - A "Changelist" row in the tab info card: *"CL 12345"*, then *"earlier: CL 12001 · submitted, …"* when the session used several.
   - If **Show changelist on tabs** is on (Settings → Perforce, off by default), also a `CL 12345` badge at the right of the tab's second line in the sidebar ([§4](#sidebar)). The badge is separate from the name, so renaming the tab doesn't drop it.
-- **Actions.** Clicking the badge offers **Copy changelist number** and **Open in P4V**; the ⓘ info card in the composer bar lists every changelist with **Copy** and **Open in P4V**. P4V opens with `p4v -p <server> -u <user> -c <workspace> -cmd "open changelist 12345"`, found on the PATH or where its installers put it.
+- **Actions.** Clicking the badge offers **Copy changelist number** and **Open in P4V**; the ⓘ info card under the composer lists every changelist with **Copy** and **Open in P4V**. P4V opens with `p4v -p <server> -u <user> -c <workspace> -cmd "open changelist 12345"`, found on the PATH or where its installers put it.
 - **Saved with the tab** (its `changelists` in `state.json`, and in restart snapshots), so a restored tab shows it again.
 - **Resetting it.**
   - When the changelist is submitted (*"Change 12345 submitted."*), the badge says `CL 12345 · submitted`. A submit that renumbers it (*"Change 12345 renamed change 12350 and submitted."*) shows the new number.

@@ -14,7 +14,7 @@ The info card is where a tab's details live, so they don't crowd its name. It ha
 ## Opening it
 
 - **Hover** a tab's row in the sidebar, or its square on the rail, and rest the pointer there for a moment.
-- **Click ⓘ** in the composer bar, for the selected tab. This version stays open until you click away, and its **Session** and **Reached as** rows have a **Copy** button.
+- **Click ⓘ**, last on the line under the message box, for the selected tab. This version stays open until you click away, and its **Session** and **Reached as** rows have a **Copy** button.
 
 ## The rows
 
@@ -53,4 +53,4 @@ Once you've added an API-key account, the card has an **Account** row after the 
 ## See also
 
 - [The sidebar](the-sidebar.md), for the badges on the row itself.
-- [The composer bar](../composer/the-composer-bar.md), where the ⓘ button is.
+- [The composer bar](../composer/the-composer-bar.md), with the line under the message box where the ⓘ button is.

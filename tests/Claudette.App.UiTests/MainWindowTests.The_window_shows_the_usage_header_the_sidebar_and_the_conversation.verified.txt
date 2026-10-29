@@ -43,9 +43,9 @@
 [button] Context 1%
 "Cache 60m"
 [button] 120 tok
-[button] Tab info: ⓘ
 [button] Enter sends: ⏎ sends
 [button] Send
+[button] Tab info
 "{root}/work"
 "Idle"
 [button] Changed files

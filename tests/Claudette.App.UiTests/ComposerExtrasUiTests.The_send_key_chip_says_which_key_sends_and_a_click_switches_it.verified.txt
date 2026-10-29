@@ -2,7 +2,6 @@
 [button] Files (0)
 [button] Context 1%
 [button] 0 tok
-[button] Tab info: ⓘ
 [button] Enter sends: ⏎ sends
 [button] Send
 chip tip: Enter sends, Shift+Enter starts a new line. Click to send with Ctrl+Enter instead.
@@ -13,7 +12,6 @@ With Ctrl+Enter:
 [button] Files (0)
 [button] Context 1%
 [button] 0 tok
-[button] Tab info: ⓘ
 [button] Ctrl+Enter sends: Ctrl+⏎ sends
 [button] Send
 chip tip: Ctrl+Enter sends, Enter starts a new line. Click to send with Enter instead.

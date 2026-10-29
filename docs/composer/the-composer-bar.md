@@ -38,7 +38,6 @@ Most of these show only when they apply to the tab.
 | **Files (4)** | How many files Claude changed. It opens the Changed files page. | [Changed files](../changes/changed-files.md) |
 | *Context 42%* | How full the context window is. It turns the caution color when Claude Code is about to compact the conversation. Click it for what fills the window and **Compact now**. | [Context and compacting](../usage/context-and-compacting.md) |
 | The tab's tokens, such as *12.3k tok* | Click for a breakdown by model. | [A tab's tokens](../usage/a-tabs-tokens.md) |
-| **ⓘ** | The tab's info card: its folder, session, model and more. | [The tab info card](../tabs/the-tab-info-card.md) |
 | *⏎ sends* or *Ctrl+⏎ sends* | Which key sends the message. Click it to switch. | [The send key](#the-send-key), below |
 | **Send** | Sends the message. While Claude works it's **Stop**. | [Sending and stopping](sending-and-stopping.md) |
 
@@ -65,6 +64,7 @@ Under the box, left to right:
 - The folder the tab works in.
 - The tab's status, such as *Working* or *Needs your input*, and **Restart** when `claude` has stopped.
 - At the right, how Claude's plan and tasks are going, such as *3/7*. Click it to open the Tasks page ([The Tasks page](../plans/the-tasks-page.md)).
+- Last, **ⓘ**: the tab's info card, with its folder, session, model and more ([The tab info card](../tabs/the-tab-info-card.md)).
 
 ## Settings
 
