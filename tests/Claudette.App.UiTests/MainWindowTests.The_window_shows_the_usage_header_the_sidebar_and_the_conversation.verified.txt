@@ -1,4 +1,5 @@
-﻿[button] Usage details
+﻿[image] "Claudette"
+[button] Usage details
   "Session"
   [meter 62%]
   "62%"

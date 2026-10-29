@@ -13,15 +13,16 @@ The window has five parts: the usage header across the top, the sidebar on the l
 
 ## The header
 
-The header is always visible. From left to right it shows:
+The header is always visible, and it's the window's title bar: drag its gaps to move the window, and double-click them to maximize it. From left to right it shows:
 
+- **Claudette's logo**, which on Windows is the window's icon: click it for the window menu (Restore, Minimize, Maximize, Close and so on), or double-click it to close the window. Then **the menu**, three lines: **User Guide**, which opens this guide in your browser, then **Ask on Discord**, **Report an issue** ([Reporting an issue](../troubleshooting/reporting-an-issue.md)) and **About Claudette** ([About](../settings/about.md)).
 - **The usage meters.** Your session (5-hour) usage is the most prominent, with the weekly limit and each model's own limit beside it, their reset countdowns, and a short trend that says whether you'll reach the limit. The chevron at its right opens the header up into charts. See [The usage header](../usage/the-usage-header.md).
 - **The processes' total**, when the process monitor is on: the CPU and memory of every tab's processes. See [Processes](../tabs/processes.md).
 - **The cup**, which keeps the computer awake while it steams. See [Keeping the computer awake](../away/keeping-the-computer-awake.md).
 - **A colored dot**, which shows whether Claude itself is having trouble. See [Claude is having problems](../troubleshooting/claude-is-having-problems.md).
 - **Your account** and its plan. See [Your Claude sign-in](../accounts/your-claude-sign-in.md).
-- **Settings**, its icon: see [The Settings window](../settings/the-settings-window.md).
-- **The menu**, three lines, last: **User Guide**, which opens this guide in your browser, then **Ask on Discord**, **Report an issue** ([Reporting an issue](../troubleshooting/reporting-an-issue.md)) and **About Claudette** ([About](../settings/about.md)).
+- **Settings**, its icon, before the window's buttons: see [The Settings window](../settings/the-settings-window.md).
+- On a Mac the traffic lights are at the header's left, before the logo. To have your system's title bar over the header instead, turn on Settings → Appearance → **Use the system's title bar**; Linux always has it. See [Windows, macOS and Linux](../reference/windows-macos-and-linux.md).
 
 A banner can run across the top, under the header: Claude's service status when there's an incident, **Claude Code needs you to sign in.**, or a usage alert. Each has a button to deal with it or **Dismiss**.
 

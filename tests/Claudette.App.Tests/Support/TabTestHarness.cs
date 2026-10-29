@@ -449,6 +449,9 @@ internal sealed class InlineDispatcher : IUiDispatcher
 
 internal sealed class NoPlatform : IPlatformServices
 {
+    /// <summary>As on Windows and macOS, on every system, so the header looks the same in every test run.</summary>
+    public bool CanMergeTitleBar => true;
+
     // Work off the test's thread opens and shows things too: what's recorded is read as copies.
     private readonly List<string> _openedUrls = [];
     private readonly List<string> _revealedFolders = [];

@@ -13,8 +13,11 @@ public static class SyncedSettings
     /// </summary>
     public static IReadOnlyList<string> Sections { get; } = ["appearance", "newTabs", "usage", "checkIns", "quickSuffixes", "processes", "notifications", "keyboard"];
 
-    /// <summary>Within the synced sections, what stays per machine: the zoom suits this machine's screen.</summary>
-    public static IReadOnlyList<string> PerMachine { get; } = ["appearance.zoom"];
+    /// <summary>
+    /// Within the synced sections, what stays per machine: the zoom suits this machine's screen, and the title bar its
+    /// OS.
+    /// </summary>
+    public static IReadOnlyList<string> PerMachine { get; } = ["appearance.zoom", "appearance.systemTitleBar"];
 
     /// <summary>Synced as one value each: the shortcut overrides come and go by command id.</summary>
     public static IReadOnlyList<string> Leaves { get; } = ["keyboard.bindings"];

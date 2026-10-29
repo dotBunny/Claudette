@@ -93,9 +93,16 @@ public partial class ShellView
         SplitGrip.IsVisible = top && split;
     }
 
-    /// <summary>The dock asks for the keyboard in a window shown by a click on its icon.</summary>
+    /// <summary>
+    /// The dock asks for the keyboard in a window shown by a click on its icon; not while Claudette leaves the focus alone
+    /// (DESIGN.md §9, "Taking screenshots without the focus"), as a focused control would bring its window forward.
+    /// </summary>
     private void OnToolFocusRequested(ToolWindowViewModel window)
     {
+        if (Services.UnfocusedWindows.IsOn)
+        {
+            return;
+        }
         var panel = window.Group switch
         {
             ToolGroup.Top => TopPanel,

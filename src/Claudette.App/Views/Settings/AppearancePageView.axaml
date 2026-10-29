@@ -23,6 +23,10 @@
       <c:SettingRow Key="appearance.fullWidthConversation">
         <ToggleSwitch IsChecked="{Binding FullWidthConversation}" />
       </c:SettingRow>
+      <!-- The header as the window's title bar, as in Rider, or the system's over it (DESIGN.md §3, "Window frame") -->
+      <c:SettingRow Key="appearance.systemTitleBar" IsVisible="{Binding CanMergeTitleBar}">
+        <ToggleSwitch IsChecked="{Binding SystemTitleBar}" />
+      </c:SettingRow>
     </c:SettingsSection>
 
     <c:SettingsSection Key="text">

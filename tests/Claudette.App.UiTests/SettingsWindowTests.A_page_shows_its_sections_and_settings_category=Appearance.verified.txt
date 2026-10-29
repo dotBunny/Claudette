@@ -23,6 +23,10 @@
 "Full-width conversation"
 "Fill the tab's width, rather than stopping at a width that's easy to read."
 [toggle] Full-width conversation
+"Use the system's title bar"
+"This computer"
+"The window's own title bar over the header, rather than the header in its place.  "
+[toggle] Use the system's title bar
 "Text"
 [button] Reset to defaults
 "Conversation font"

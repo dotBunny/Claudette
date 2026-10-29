@@ -779,6 +779,11 @@
     <Setter Property="CornerRadius" Value="{DynamicResource IslandRadius}" />
     <Setter Property="ClipToBounds" Value="True" />
   </Style>
+  <!-- Under the header, a line across the panel, as under the sidebar's top row -->
+  <Style Selector="Border.toolheaderline">
+    <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
   <Style Selector="Grid.toolheader">
     <Setter Property="Height" Value="36" />
     <Setter Property="Margin" Value="4,0,6,0" />

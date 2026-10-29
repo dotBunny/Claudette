@@ -91,8 +91,9 @@ It shows, under a line, only while one of these does.
 | An amber dot | A service is degraded, or under maintenance | |
 | A red dot | A service is in an outage | |
 | A grey dot | The status is unknown, or hasn't been checked yet | |
-| Sliders | **Settings** | [The Settings window](../settings/the-settings-window.md) |
-| Three lines | The menu: **User Guide**, **Ask on Discord**, **Report an issue** and **About Claudette** | [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header) |
+| Claudette's logo, first | The window's icon: on Windows a click opens the window menu, and a double-click closes the window; on a Mac it drags the window | [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header) |
+| Three lines, after the logo | The menu: **User Guide**, **Ask on Discord**, **Report an issue** and **About Claudette** | [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header) |
+| Sliders, last | **Settings** | [The Settings window](../settings/the-settings-window.md) |
 
 A banner under the header says what's wrong while Claude has an incident. A line under the meters says so when usage is on pace to hit a limit.
 
