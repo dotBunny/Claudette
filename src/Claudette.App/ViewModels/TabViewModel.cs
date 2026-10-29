@@ -942,6 +942,8 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         {
             // Turned on or off in Settings, or from a chain's menu: every run follows.
             _conversation.ApplyFoldChains(_services.Settings.Appearance.FoldChains);
+            OnPropertyChanged(nameof(FoldsChains));
+            OnPropertyChanged(nameof(StepsButtonText));
         }
         _conversation.ShowAllHookRuns = _services.Settings.ClaudeCode.ShowAllHookRuns;
         _conversation.ShowUnsupportedMessages = _services.Settings.Advanced.LogProtocol;
@@ -995,6 +997,23 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         _conversation.CollapseAllToolCalls(collapsed);
         State.CollapseToolCalls = collapsed;
         _services.SaveState();
+    }
+
+    /// <summary>Settings → Conversation → Fold each chain of steps, which the message box's bar switches too.</summary>
+    public bool FoldsChains => _services.Settings.Appearance.FoldChains;
+
+    /// <summary>The message box's bar: "Steps: folded" or "Steps: all".</summary>
+    public string StepsButtonText => FoldsChains ? "Steps: folded" : "Steps: all";
+
+    /// <summary>
+    /// The message box's bar: folds each chain of steps, or shows every step, for every tab, as Settings → Conversation
+    /// → Fold each chain of steps does (DESIGN.md §18).
+    /// </summary>
+    [RelayCommand]
+    private void ToggleFoldChains()
+    {
+        _services.Settings.Appearance.FoldChains = !_services.Settings.Appearance.FoldChains;
+        _services.SaveSettings();
     }
 
     /// <summary>A chain's line menu: back to every step showing (Settings → Conversation → Fold each chain of steps off).</summary>

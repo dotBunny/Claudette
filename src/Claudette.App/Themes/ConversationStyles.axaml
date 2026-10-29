@@ -270,13 +270,13 @@
     <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     <Setter Property="Background" Value="Transparent" />
   </Style>
-  <!-- The open steps inside a reply's card: a box of their own over the reply, which scrolls once it's long. -->
+  <!-- The open steps inside a reply's card: a box of their own under the reply's text, which scrolls once it's long. -->
   <Style Selector="Border.stepsbox">
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Padding" Value="4" />
-    <Setter Property="Margin" Value="0,0,0,8" />
+    <Setter Property="Margin" Value="0,8,0,0" />
   </Style>
   <!-- A step's line in the open list of a folded chain: quiet, with its time at the right. -->
   <Style Selector="Button.steprow">

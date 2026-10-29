@@ -519,6 +519,16 @@
                         </Flyout>
                       </Button.Flyout>
                     </Button>
+                    <!-- With no tab open there are no project tools to show: the folder's icon in their place, which opens
+                         the folder in the file manager, so every group's buttons line up -->
+                    <Button x:Name="GroupFolderButton" Grid.Column="2" Classes="flat" Padding="5" VerticalAlignment="Center"
+                            IsVisible="{Binding ProjectTab, Converter={x:Static ObjectConverters.IsNull}}"
+                            Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).RevealGroupFolderCommand}" CommandParameter="{Binding}"
+                            ToolTip.Tip="Open the folder" AutomationProperties.Name="Open the folder">
+                      <Panel Width="14" Height="14">
+                        <Path Classes="projecticon" Data="{StaticResource IconToolFolder}" />
+                      </Panel>
+                    </Button>
                     <!-- The group's Project Files tab (DESIGN.md §18, "Project files"): opens it, or selects it -->
                     <Button x:Name="ProjectFilesButton" Grid.Column="3" Classes="flat" Padding="6" ToolTip.Tip="Project files" AutomationProperties.Name="Project files"
                             Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenProjectFilesCommand}" CommandParameter="{Binding}" VerticalAlignment="Center">

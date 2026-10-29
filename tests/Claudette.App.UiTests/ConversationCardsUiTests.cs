@@ -191,8 +191,8 @@ public sealed class ConversationCardsUiTests
         UiText.Settle(window);
         Assert.True(marker.IsOpen);
         Assert.True(box.IsEffectivelyVisible);
-        Assert.True(box.TranslatePoint(default, card)!.Value.Y < card.GetVisualDescendants().OfType<LiveMarkdown.Avalonia.MarkdownRenderer>().Single().TranslatePoint(default, card)!.Value.Y,
-            "The steps open over the reply's text.");
+        Assert.True(box.TranslatePoint(default, card)!.Value.Y > card.GetVisualDescendants().OfType<LiveMarkdown.Avalonia.MarkdownRenderer>().Single().TranslatePoint(default, card)!.Value.Y,
+            "The steps open under the reply's text.");
         Assert.Equal(["Thought", "Read a.cs", "Thought", "Ran list the files"], marker.Rows.Select(r => r.Title));
         Assert.Equal(4, FoldedSteps(tab));
 
@@ -218,10 +218,13 @@ public sealed class ConversationCardsUiTests
         Assert.True(marker.IsOpen);
         Assert.True(marker.Rows.Single(r => ReferenceEquals(r.Source, target)).IsExpanded);
 
-        // Back to showing every step: no line, nothing folded.
-        h.Services.Settings.Appearance.FoldChains = false;
-        h.Services.SaveSettings();
+        // Back to showing every step, from the message box's bar: no line, nothing folded.
+        var stepsButton = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "StepsButton" && b.IsEffectivelyVisible);
+        Assert.Equal("Steps: folded", tab.StepsButtonText);
+        stepsButton.Command!.Execute(null);
         UiText.Settle(window);
+        Assert.False(h.Services.Settings.Appearance.FoldChains);
+        Assert.Equal("Steps: all", tab.StepsButtonText);
         Assert.Empty(Named(window, "steps"));
         Assert.DoesNotContain(tab.Items, i => i is StepsMarkerItem);
         Assert.Null(reply.Steps);

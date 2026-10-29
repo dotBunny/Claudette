@@ -13,6 +13,14 @@ namespace Claudette.App.ViewModels;
 public sealed partial class ShellViewModel
 {
     /// <summary>
+    /// The folder button of a group with no tab open, where the project's tools button is for a group with one: opens the
+    /// folder in the file manager.
+    /// </summary>
+    [RelayCommand]
+    private Task RevealGroupFolder(TabGroupViewModel? group) =>
+        group is not null ? _services.Platform.RevealFolderAsync(group.Folder) : Task.CompletedTask;
+
+    /// <summary>
     /// The group's <b>Project files</b> button, and its menu's <b>Open project files</b>: opens its Project Files tab, or
     /// selects it when it's open, with its explorer showing.
     /// </summary>
