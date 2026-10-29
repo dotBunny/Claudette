@@ -169,6 +169,11 @@
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="MinHeight" Value="32" />
   </Style>
+  <!-- In the Claude style, the explorer's shade: in its dark theme, SubtleBrush is the window frame's color, so the row
+       would merge with the frame and hide the island's rounded top corner -->
+  <Style Selector=".claude Border.filetabs">
+    <Setter Property="Background" Value="{DynamicResource ExplorerBrush}" />
+  </Style>
   <Style Selector="Button.filetab">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0,0,1,0" />
