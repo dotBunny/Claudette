@@ -88,7 +88,9 @@ foreach ($style in 'standard', 'claude') {
         & $demo $Work --theme $theme --style $style --projects $Projects --still --quiet | Out-Null
         if ($LASTEXITCODE -ne 0) { throw 'claudette-demo failed.' }
 
-        $pipe = "claudette-ci-$([guid]::NewGuid().ToString('N'))"
+        # Short: on macOS and Linux the pipe is a socket at $TMPDIR/CoreFxPipe_<name>, and macOS allows 104 characters
+        # for its path, which the runner's long temporary folder and a whole GUID went past.
+        $pipe = "claudette-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
         $start = [System.Diagnostics.ProcessStartInfo]::new($app)
         $start.UseShellExecute = $false
         $environment = @{
