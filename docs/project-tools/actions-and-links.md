@@ -2,12 +2,12 @@
 title: Actions and links
 parent: Project tools
 nav_order: 6
-summary: "A folder's own commands and web links in the project row's menu: run the tests, start a server, open the issue board."
+summary: "A folder's own commands and web links in the project's menu: run the tests, start a server, open the issue board."
 ---
 
 # Actions and links
 
-Any folder can have commands and web links of its own in the [project row's menu](using-project-tools.md): run the tests, start a server, open the issue board, open a pull request for the current branch. They're kept in two files in the tab's folder:
+Any folder can have commands and web links of its own in the [project's menu](using-project-tools.md): run the tests, start a server, open the issue board, open a pull request for the current branch. They're kept in two files in the tab's folder:
 
 - `claudette.json` is shared. You commit it with the project, so everyone who works on it gets the same actions and links.
 - `claudette.local.json` is yours. Put it in `.gitignore`. Its entries come after the shared file's.
@@ -16,7 +16,7 @@ You can write the files by hand, which [Reference](../reference/claudette-json.m
 
 ## Add an action
 
-1. Open the project row's menu and choose **Add an action…**. Settings opens on the project's **Actions** page with a dialog.
+1. Open the project's menu and choose **Add an action…**. Settings opens on the project's **Actions** page with a dialog.
 2. Fill in **Name** and **Command**. The command runs through your shell: `cmd.exe` on Windows, and your `$SHELL` (or `/bin/sh`) on macOS and Linux.
 3. Set **Working folder** if the command shouldn't run in the tab's folder. It's relative to that folder.
 4. Optionally, set **Only show when this exists** to a file or folder, relative to the tab's folder, such as the build the action runs. The action shows only while it exists. **Browse…** picks one, and several are separated by semicolons.
@@ -31,7 +31,7 @@ Actions run when you click them, without asking, whichever file they're in. A pr
 
 ## Add a link
 
-1. Choose **Add a link…** in the project row's menu. Settings opens on the project's **Links** page with a dialog.
+1. Choose **Add a link…** in the project's menu. Settings opens on the project's **Links** page with a dialog.
 2. Type the **Name**, which can be empty (the menu then shows the address), and the **Address**.
 3. Choose which file it goes in, as for an action, and **Save**.
 
@@ -65,6 +65,6 @@ They stay in the project's menu, to run again by hand.
 
 ## See also
 
-- [Project tools](using-project-tools.md) for the project row, runs and the Project page.
+- [Project tools](using-project-tools.md) for the project's icon, runs and the Project page.
 - [`claudette.json`](../reference/claudette-json.md) for the files' format.
 - [Worktree tabs](../tabs/worktree-tabs.md).

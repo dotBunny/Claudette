@@ -11,13 +11,13 @@ A tab can do things for the project in its folder: launch the editor, generate p
 
 {% include shot.html name="guide/project-tools/project-page" alt="The Project tool window for the Unreal project, with the project's details." %}
 
-## The project row
+## The project's icon
 
-At the foot of the sidebar, above **History**, a row shows the selected tab's project: its kind's icon (Unreal Engine's logo, a cube for Unity, Godot's logo for Godot), its name and its version, such as `NightOwl · UE 5.4 ›`. It's there for every tab, whatever the folder holds, so you can add a first action or link from it. When no project is recognized, the row shows a folder icon and the folder's name, and its tooltip has the folder's path.
+Each folder's group in the sidebar has its project's icon on its row, before the **Project files** button: its kind's icon (Unreal Engine's logo, a cube for Unity, Godot's logo for Godot). Its tooltip has the project's name, version and kind, such as *NightOwl · UE 5.4 (Unreal Engine)*, and the main action's shortcut. It's there for every group, whatever the folder holds, so you can add a first action or link from it. When no project is recognized, it's a folder icon, and its tooltip has the folder's path.
 
-While a job runs, a busy dot replaces the icon and the job's name replaces the project's. When the sidebar is collapsed to its rail, the row is the icon alone.
+It's for the group's tab you used last: that tab runs its jobs, and while one runs a busy dot replaces the icon and the job's name leads its tooltip. When the sidebar is collapsed to its rail, the icon is under the group's color.
 
-Click the row to open its menu. From the top, it has:
+Click the icon to open its menu. From the top, it has:
 
 - A header with the project's name and kind, the engine's version and folder, or what's wrong ("The engine for EngineAssociation "5.9" wasn't found on this machine"). Without a project, it shows the folder's name and path.
 - Notes about entries in `claudette.json` that were skipped, and why.

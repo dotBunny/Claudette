@@ -12,8 +12,10 @@
 [button] Account: me@example.com
 [button] Plan usage: Max plan
 [button] New tab
+[button] History
 [button] Collapse the sidebar
 [button] work
+[button] Project tools
 [button] Project files
 [button] New tab in this folder
 [button] (parts below)
@@ -21,8 +23,6 @@
   "Opus · Default"
   [button] Close tab
   [button] Context 1%
-[button] Project tools: work
-[button] History
 "Claude"
 [button] Copy message
 [button] Add to scratch pad

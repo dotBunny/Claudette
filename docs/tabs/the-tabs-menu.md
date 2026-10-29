@@ -9,7 +9,7 @@ summary: "Right-click a tab's row in the sidebar for its menu."
 
 Right-click a tab's row in the sidebar for its menu. Some items show only when they apply to the tab, such as **Reset name** or **Sync now**. A tab's square on the rail has the same menu, without **Move up**, **Move down** and **Close other tabs**, and with **Collapse tab** only on a thread with sub-threads.
 
-The project's actions and links aren't in this menu. They're in the project row at the sidebar's foot, which is there for every tab. See [Project tools](../project-tools/using-project-tools.md).
+The project's actions and links aren't in this menu. They're in the menu of the project's icon on the tab's group's row, which is there for every group. See [Project tools](../project-tools/using-project-tools.md).
 
 ## The items
 

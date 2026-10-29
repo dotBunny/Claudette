@@ -19,7 +19,7 @@ public enum ProjectMenuKind
     Link,
 }
 
-/// <summary>One entry of the menu of the project's row at the sidebar's foot (DESIGN.md §18, "Project tools").</summary>
+/// <summary>One entry of the menu of the project's icon on its group's row (DESIGN.md §18, "Project tools").</summary>
 public sealed class ProjectMenuEntry
 {
     public required ProjectMenuKind Kind { get; init; }
@@ -76,7 +76,7 @@ internal sealed record ProjectMenuCommands(
     ICommand ShowOutput, ICommand AddAction, ICommand AddLink, ICommand Refresh, ICommand ShowFolder);
 
 /// <summary>
-/// Builds the menu of the project's row at the sidebar's foot (DESIGN.md §18, "Project tools"): the projects to choose
+/// Builds the menu of the project's icon on its group's row (DESIGN.md §18, "Project tools"): the projects to choose
 /// from when the folder has several, the project's actions, its choice and its fix, the folder's own actions, its
 /// links, then what the menu itself offers. Separators fall only between groups that are there.
 /// </summary>

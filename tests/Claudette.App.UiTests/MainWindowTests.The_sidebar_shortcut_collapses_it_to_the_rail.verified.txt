@@ -1,7 +1,7 @@
 ﻿[button] Expand the sidebar
 [button] New tab
+[button] History
 [button] work
+[button] Project tools
 [button] work
   "W"
-[button] Project tools
-[button] History

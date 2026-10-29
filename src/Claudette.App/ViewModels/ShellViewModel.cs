@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Avalonia.Media;
 using Claudette.App.Services;
 using Claudette.Core.Accessibility;
@@ -240,8 +241,8 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     public ProjectFilesViewModel? SelectedFiles => Selected as ProjectFilesViewModel;
 
     /// <summary>
-    /// The tab whose project the sidebar's foot and Settings' project pages show: the focused session's, with a run's or an
-    /// editor's log focused its tab's, or with a Project Files tab focused, its group's first session's.
+    /// The tab whose project Settings' project pages show: the focused session's, with a run's or an editor's log focused
+    /// its tab's, or with a Project Files tab focused, its group's first session's.
     /// </summary>
     public TabViewModel? ProjectTab => SelectedTab ?? (SelectedLog is { } log ? TabOf(log) : null) ?? SelectedFiles?.Group.Tabs.FirstOrDefault();
 
@@ -267,6 +268,11 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         _services.SaveState();
         UpdateGameCall();
         TellSettingsOfProjectTab();
+        // The project's icon on the group's row follows the tab worked in (DESIGN.md §18, "Project tools").
+        if ((SelectedTab ?? (SelectedLog is { } log ? TabOf(log) : null)) is { } used)
+        {
+            GroupOf(used)?.Used(used);
+        }
     }
 
     [ObservableProperty]
@@ -905,6 +911,40 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     /// <summary>The sidebar's entry for a new release of Claudette (DESIGN.md §2, "Updating Claudette").</summary>
     [ObservableProperty]
     public partial AppUpdateViewModel? AppUpdate { get; set; }
+
+    /// <summary>One of the badges shows, so the sidebar's foot does, under its line (DESIGN.md §4, "Sidebar").</summary>
+    public bool HasFootBadge =>
+        Updates?.HasBadge == true || NewBuild?.HasBadge == true || SourceUpdate?.HasBadge == true || AppUpdate?.HasBadge == true;
+
+    partial void OnUpdatesChanged(ClaudeUpdateViewModel? oldValue, ClaudeUpdateViewModel? newValue) => WatchBadge(oldValue, newValue);
+
+    partial void OnNewBuildChanged(NewBuildViewModel? oldValue, NewBuildViewModel? newValue) => WatchBadge(oldValue, newValue);
+
+    partial void OnSourceUpdateChanged(SourceUpdateViewModel? oldValue, SourceUpdateViewModel? newValue) => WatchBadge(oldValue, newValue);
+
+    partial void OnAppUpdateChanged(AppUpdateViewModel? oldValue, AppUpdateViewModel? newValue) => WatchBadge(oldValue, newValue);
+
+    private void WatchBadge(INotifyPropertyChanged? oldValue, INotifyPropertyChanged? newValue)
+    {
+        if (oldValue is not null)
+        {
+            oldValue.PropertyChanged -= OnBadgeChanged;
+        }
+        if (newValue is not null)
+        {
+            newValue.PropertyChanged += OnBadgeChanged;
+        }
+        OnPropertyChanged(nameof(HasFootBadge));
+    }
+
+    /// <summary>A badge's <c>HasBadge</c> changed, or everything about it did (an empty name).</summary>
+    private void OnBadgeChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(AppUpdateViewModel.HasBadge))
+        {
+            OnPropertyChanged(nameof(HasFootBadge));
+        }
+    }
 
     /// <summary>
     /// The latest announcement, in a live region screen readers read out (DESIGN.md §3, "Accessibility"): a prompt that

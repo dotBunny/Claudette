@@ -15,7 +15,7 @@ Everything you can change in Claudette is in the Settings window: its pages down
 
 Any of these opens Settings:
 
-- **Settings** in the menu at the header's right, the three lines after your plan.
+- **Settings** at the header's right, the icon before the menu.
 - `Ctrl/Cmd+,`.
 - **Settings** in the [command palette](../tabs/the-command-palette.md) (`Ctrl/Cmd+Shift+P`). The palette also lists each page by name, so typing "keyboard" there opens Settings on Keyboard.
 - On macOS, **Settings…** in the app menu.

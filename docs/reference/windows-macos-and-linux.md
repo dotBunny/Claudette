@@ -45,7 +45,7 @@ The command key is `Ctrl` on Windows and Linux and `Cmd` on macOS. A shortcut yo
 - **macOS**: **File → Open Recent** and the Dock icon's menu list them.
 - **Everywhere**: drag a folder onto the sidebar, or start Claudette with `--folder`. See [Opening tabs](../tabs/opening-tabs.md) and [Command line and environment](command-line-and-environment.md).
 
-The project row's **Show in Explorer** is **Show in Finder** on macOS and **Show in file manager** on Linux.
+The project menu's **Show in Explorer** is **Show in Finder** on macOS and **Show in file manager** on Linux.
 
 ## Notifications and the icon
 

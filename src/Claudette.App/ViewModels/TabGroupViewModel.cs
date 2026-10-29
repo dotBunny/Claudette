@@ -79,6 +79,27 @@ public sealed partial class TabGroupViewModel : ObservableObject
 
     public ObservableCollection<TabViewModel> Tabs { get; } = [];
 
+    /// <summary>The tab of the group used last, which the shell says as tabs are selected.</summary>
+    private TabViewModel? _usedTab;
+
+    /// <summary>
+    /// The tab whose project tools the project's icon on the group's row shows and runs (DESIGN.md §18, "Project tools"):
+    /// the one used last, so a job's busy dot and runs are the tab's that was being worked in; else the first. Null with
+    /// only the group's Project Files tab open.
+    /// </summary>
+    public TabViewModel? ProjectTab => _usedTab is { } used && Tabs.Contains(used) ? used : Tabs.FirstOrDefault();
+
+    /// <summary><paramref name="tab"/>, one of the group's, was selected: its project tools are the group's from now on.</summary>
+    internal void Used(TabViewModel tab)
+    {
+        if (ReferenceEquals(_usedTab, tab) || !Tabs.Contains(tab))
+        {
+            return;
+        }
+        _usedTab = tab;
+        OnPropertyChanged(nameof(ProjectTab));
+    }
+
     /// <summary>
     /// The group's Project Files tab (DESIGN.md §18, "Project files"), its first row; null while it isn't open. It keeps
     /// the group in the sidebar with no session tab left.
@@ -137,6 +158,7 @@ public sealed partial class TabGroupViewModel : ObservableObject
         }
         OnPropertyChanged(nameof(UrgentGlyph));
         OnPropertyChanged(nameof(Summary));
+        OnPropertyChanged(nameof(ProjectTab));
     }
 
     private void OnTabPropertyChanged(object? sender, PropertyChangedEventArgs e)

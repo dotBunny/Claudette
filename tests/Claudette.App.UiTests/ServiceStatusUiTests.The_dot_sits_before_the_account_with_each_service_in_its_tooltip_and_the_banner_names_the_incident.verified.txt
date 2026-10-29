@@ -7,8 +7,8 @@
 [button] Status page
 [button] Dismiss
 [button] New tab
-[button] Collapse the sidebar
 [button] History
+[button] Collapse the sidebar
 "Start a Claude Code session"
 "Pick the folder Claude should work in."
 [button] New tab

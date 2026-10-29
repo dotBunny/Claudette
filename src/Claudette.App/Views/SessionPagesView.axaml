@@ -104,8 +104,8 @@
         <views:AgentDetails Grid.Row="3" IsVisible="{Binding HasAgents}" />
       </Grid>
 
-      <!-- Project (DESIGN.md §18, "Project tools"): the project's details. The actions are in the project's menu at the
-           sidebar's foot, and each run's log shows in the main area. -->
+      <!-- Project (DESIGN.md §18, "Project tools"): the project's details. The actions are in the project's menu, from its icon on
+           its group's row in the sidebar, and each run's log shows in the main area. -->
       <ScrollViewer x:Name="ProjectPage" IsVisible="False" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="12,0,16,12" Spacing="8">
           <TextBlock Text="{Binding ProjectTools.HeaderTitle}" FontWeight="SemiBold" TextWrapping="Wrap" />

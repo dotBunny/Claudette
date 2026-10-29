@@ -109,12 +109,9 @@ function Show-Tabs {
     }
 }
 
-# Opens Settings, which is a window of its own, from the header's menu, and returns it.
+# Opens Settings, which is a window of its own, from its button in the header, and returns it.
 function Open-Settings {
-    Invoke-ByText $window 'Menu'
-    $menu = Get-OtherWindow $claudette $window 'the menu'
-    Start-Sleep -Seconds 1
-    Send-Click (Find-ByText $menu 'Settings')
+    Invoke-ByText $window 'Settings'
     $settings = Get-OtherWindow $claudette $window 'the Settings window'
     Start-Sleep -Seconds 2
     $settings
@@ -186,10 +183,10 @@ foreach ($theme in $Themes) {
                 Start-Sleep -Seconds 1
             }
 
-            # From the top of the first group to Settings under the last.
+            # The sidebar's head, with New tab and History, down to its last group; the foot shows only with a badge.
             Shot 'tabs/sidebar' {
                 param($path)
-                Save-Elements $window $path ((Find-ByText $window 'New tab'), (Find-ById $window 'GroupList'), (Find-ByText $window 'History')) 10
+                Save-Elements $window $path ((Find-ByText $window 'New tab'), (Find-ById $window 'GroupList')) 10
             }
 
             # The card has no control of its own: its tiles, with room around them for its header and edge.

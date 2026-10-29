@@ -142,7 +142,7 @@ public class MainWindowTests
     /// sidebar's foot no longer has them.
     /// </summary>
     [AvaloniaFact]
-    public async Task The_menu_after_the_plan_has_Settings_and_the_user_guide_first()
+    public async Task Settings_and_the_menu_follow_the_plan_with_the_user_guide_first_in_the_menu()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
         await h.OpenTabAsync();
@@ -156,7 +156,13 @@ public class MainWindowTests
         var menu = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "MainMenu");
         var plan = window.GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Plan usage");
 
-        Assert.True(menu.TranslatePoint(default, window)!.Value.X > plan.TranslatePoint(default, window)!.Value.X);
+        // Settings, then the menu, after the plan.
+        var settings = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "SettingsButton");
+        double Left(Control c) => c.TranslatePoint(default, window)!.Value.X;
+        Assert.True(Left(plan) < Left(settings) && Left(settings) < Left(menu));
+        Assert.Equal("Settings", AutomationProperties.GetName(settings));
+        Assert.Same(h.Shell.OpenSettingsCommand, settings.Command);
+        Assert.Equal(menu.Bounds.Size, settings.Bounds.Size);
         Assert.Equal("Menu", AutomationProperties.GetName(menu));
         // Over the strip's icons below it: as wide as one, its middle on theirs.
         var icon = window.GetVisualDescendants().OfType<Button>().First(b => b.Classes.Contains("stripicon") && b.IsEffectivelyVisible);
@@ -169,12 +175,12 @@ public class MainWindowTests
         Assert.Equal(menu.Bounds.Width / 2, drawn.X, 0.5);
         Assert.Equal(menu.Bounds.Height / 2, drawn.Y, 0.5);
         var items = Assert.IsType<MenuFlyout>(menu.Flyout).Items.OfType<MenuItem>().ToList();
-        Assert.Equal(["Settings", "User Guide", "Ask on Discord", "Report an issue", "About Claudette"], items.Select(i => i.Header as string));
+        Assert.Equal(["User Guide", "Ask on Discord", "Report an issue", "About Claudette"], items.Select(i => i.Header as string));
         // Opened, its entries take their commands.
         menu.Flyout!.ShowAt(menu);
         await UiText.SettleUntilAsync(window, () => items[0].Command is not null, "the open menu");
-        Assert.Same(h.Shell.OpenSettingsCommand, items[0].Command);
-        Assert.Same(h.Shell.OpenGuideCommand, items[1].Command);
+        Assert.Same(h.Shell.OpenGuideCommand, items[0].Command);
+        Assert.Same(h.Shell.OpenAboutCommand, items[3].Command);
         var sidebar = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "Sidebar");
         Assert.DoesNotContain(sidebar.GetVisualDescendants().OfType<Button>(), b => AutomationProperties.GetName(b) is "Settings" or "User Guide");
         window.Close();

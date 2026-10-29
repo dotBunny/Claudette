@@ -20,7 +20,8 @@ The header is always visible. From left to right it shows:
 - **The cup**, which keeps the computer awake while it steams. See [Keeping the computer awake](../away/keeping-the-computer-awake.md).
 - **A colored dot**, which shows whether Claude itself is having trouble. See [Claude is having problems](../troubleshooting/claude-is-having-problems.md).
 - **Your account** and its plan. See [Your Claude sign-in](../accounts/your-claude-sign-in.md).
-- **The menu**, three lines, last: **Settings** ([The Settings window](../settings/the-settings-window.md)) and **User Guide**, which opens this guide in your browser, then **Ask on Discord**, **Report an issue** ([Reporting an issue](../troubleshooting/reporting-an-issue.md)) and **About Claudette** ([About](../settings/about.md)).
+- **Settings**, its icon: see [The Settings window](../settings/the-settings-window.md).
+- **The menu**, three lines, last: **User Guide**, which opens this guide in your browser, then **Ask on Discord**, **Report an issue** ([Reporting an issue](../troubleshooting/reporting-an-issue.md)) and **About Claudette** ([About](../settings/about.md)).
 
 A banner can run across the top, under the header: Claude's service status when there's an incident, **Claude Code needs you to sign in.**, or a usage alert. Each has a button to deal with it or **Dismiss**.
 
@@ -28,8 +29,9 @@ A banner can run across the top, under the header: Claude's service status when 
 
 The sidebar lists your tabs, one row each, grouped by working folder. A row shows a status icon (idle, working, needs your input, finished while you were away, or an error), the tab's name, its model and effort, and its git branch, mark and context ring. See [The sidebar](../tabs/the-sidebar.md), [Folder groups](../tabs/folder-groups.md) and [Icons and badges](../reference/icons-and-badges.md).
 
-- **New tab** is at the top: see [Your first tab](your-first-tab.md).
-- At the foot are the selected tab's project, with its actions and links ([Project tools](../project-tools/using-project-tools.md)), **History** ([History](../history/history.md)) and the update badges ([Updates](../updates/index.md)).
+- **New tab** and **History** are at the top: see [Your first tab](your-first-tab.md) and [History](../history/history.md).
+- Each folder's group has its project's icon on its row, with its actions and links ([Project tools](../project-tools/using-project-tools.md)).
+- The foot shows only when there's an update: its badges ([Updates](../updates/index.md)).
 - `Ctrl/Cmd+B` collapses the sidebar to a rail of status icons.
 - `Ctrl/Cmd+J` jumps to the next tab waiting for you, and `Ctrl/Cmd+Shift+P` opens the [command palette](../tabs/the-command-palette.md), which reaches everything else.
 

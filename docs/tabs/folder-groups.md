@@ -16,7 +16,7 @@ Tabs that share a working folder sit together in a group in the sidebar, like br
 - A **label** with the folder's name and a color. A line in that color runs down beside the group's tabs.
 - If two folders have the same name, the label adds the parent folder (`work/api`, `personal/api`).
 - Hover the label to see the folder's path and how many tabs the group has.
-- A **+** at the label's right opens a new tab in the same folder, without the picker.
+- At the label's right, the project's icon opens its menu of actions and links ([Project tools](../project-tools/using-project-tools.md)), the **Project files** button its Files tab, and **+** a new tab in the same folder, without the picker.
 
 ## Collapsing a group
 
@@ -71,7 +71,7 @@ Right-click a group's label, in the full sidebar or the rail:
 
 ## The Project files button
 
-A button beside a group's **+** (tip: **Project files**) opens that folder's Files tab, an explorer and an editor for the project. It's the same as **Open project files** in the group's menu. See [Opening project files](../project-files/opening-project-files.md).
+A button before a group's **+** (tip: **Project files**) opens that folder's Files tab, an explorer and an editor for the project. It's the same as **Open project files** in the group's menu. See [Opening project files](../project-files/opening-project-files.md).
 
 ## The account new tabs use
 

@@ -62,11 +62,19 @@ Each project job, such as a build, is a run under its tab's row. See [Project to
 
 The rail shows each group's color, then a square per tab with the first letter of its name, a small status icon at its top right, and the mark or the reviewed icon at its bottom left. Hovering a square shows the tab's info card. See [The sidebar](../tabs/the-sidebar.md).
 
-## The foot of the sidebar
+## A group's row
 
 | Icon | What it means | More |
 |---|---|---|
-| Unreal Engine's logo, a cube or Godot's logo, with the project's name | The selected tab's project row: an Unreal Engine, Unity or Godot project. A folder when the tab's folder has no project Claudette knows. A busy dot replaces the icon while a job runs | [Project tools](../project-tools/using-project-tools.md) |
+| Unreal Engine's logo, a cube or Godot's logo | The group's project, an Unreal Engine, Unity or Godot project, whose menu has its actions and links. A folder when the folder has no project Claudette knows. A busy dot replaces it while a job runs | [Project tools](../project-tools/using-project-tools.md) |
+| A folder | **Project files**: the folder's Files tab | [Folder groups](../tabs/folder-groups.md#the-project-files-button) |
+
+## The foot of the sidebar
+
+It shows, under a line, only while one of these does.
+
+| Icon | What it means | More |
+|---|---|---|
 | A Claude Code update badge | A newer Claude Code is available | [Claude Code's updates](../updates/claude-codes-updates.md) |
 | A Claudette update badge | A new Claudette release is available | [Claudette's updates](../updates/claudettes-updates.md) |
 | **New build ready** | A source build of Claudette has a new build to restart into | [Running from source](../getting-started/running-from-source.md) |
@@ -83,7 +91,8 @@ The rail shows each group's color, then a square per tab with the first letter o
 | An amber dot | A service is degraded, or under maintenance | |
 | A red dot | A service is in an outage | |
 | A grey dot | The status is unknown, or hasn't been checked yet | |
-| Three lines | The menu: **Settings**, **User Guide**, **Ask on Discord**, **Report an issue** and **About Claudette** | [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header) |
+| Sliders | **Settings** | [The Settings window](../settings/the-settings-window.md) |
+| Three lines | The menu: **User Guide**, **Ask on Discord**, **Report an issue** and **About Claudette** | [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header) |
 
 A banner under the header says what's wrong while Claude has an incident. A line under the meters says so when usage is on pace to hit a limit.
 
