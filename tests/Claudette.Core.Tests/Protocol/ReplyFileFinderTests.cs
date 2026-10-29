@@ -79,6 +79,55 @@ public sealed class ReplyFileFinderTests : IDisposable
     }
 
     [Fact]
+    public async Task A_path_from_an_environment_variable_is_read_with_the_users()
+    {
+        var shot = _root.Write("home/temp/shot.png", "");
+        var temp = _root.Combine("home", "temp");
+        var finder = new ReplyFileFinder(() => Folder, () => _extraFolders, Home, () => null, name => name == "SHOTS" ? temp : null);
+
+        Assert.Equal([shot], await FindAsync(finder, @"%SHOTS%\shot.png"));
+        Assert.Equal([shot], await FindAsync(finder, @"$env:SHOTS\shot.png"));
+        Assert.Equal([shot], await FindAsync(finder, "${SHOTS}/shot.png"));
+        Assert.Equal([shot], await FindAsync(finder, "$SHOTS/shot.png"));
+        // $HOME is the user's home, where it isn't set, as on Windows.
+        Assert.Equal([shot], await FindAsync(finder, "$HOME/temp/shot.png"));
+        // One that isn't set stays as it's written, which no file here is.
+        Assert.Empty(await FindAsync(finder, "%NOT_SET%/shot.png"));
+    }
+
+    [Fact]
+    public void Variables_are_filled_in_in_each_shells_way_and_one_that_isnt_set_stays()
+    {
+        static string? Variable(string name) => name switch
+        {
+            "TEMP" => @"C:\Temp",
+            "ProgramFiles(x86)" => @"C:\Program Files (x86)",
+            _ => null,
+        };
+
+        Assert.Equal(@"C:\Temp\shot.png", ReplyFileFinder.ExpandVariables(@"%TEMP%\shot.png", Variable));
+        Assert.Equal(@"C:\Temp\shot.png", ReplyFileFinder.ExpandVariables(@"$env:TEMP\shot.png", Variable));
+        Assert.Equal(@"C:\Temp\shot.png", ReplyFileFinder.ExpandVariables(@"$Env:TEMP\shot.png", Variable));
+        Assert.Equal(@"C:\Temp/shot.png", ReplyFileFinder.ExpandVariables("${TEMP}/shot.png", Variable));
+        Assert.Equal(@"C:\Temp/shot.png", ReplyFileFinder.ExpandVariables("$TEMP/shot.png", Variable));
+        Assert.Equal(@"C:\Program Files (x86)\Epic Games", ReplyFileFinder.ExpandVariables(@"%ProgramFiles(x86)%\Epic Games", Variable));
+        Assert.Equal(@"%NOT_SET%\a.txt", ReplyFileFinder.ExpandVariables(@"%NOT_SET%\a.txt", Variable));
+        Assert.Equal("100% off/$5 deal.txt", ReplyFileFinder.ExpandVariables("100% off/$5 deal.txt", Variable));
+    }
+
+    [Fact]
+    public void Git_Bashs_paths_are_Windows_ones()
+    {
+        Assert.Equal(@"C:\Work/Game/shot.png", ReplyFileFinder.FromGitBash("/c/Work/Game/shot.png", @"C:\Temp"));
+        Assert.Equal(@"D:\", ReplyFileFinder.FromGitBash("/d", @"C:\Temp"));
+        Assert.Equal(@"C:\Temp/shot.png", ReplyFileFinder.FromGitBash("/tmp/shot.png", @"C:\Temp"));
+        // Anything else is as it was.
+        Assert.Equal("/usr/share/doc", ReplyFileFinder.FromGitBash("/usr/share/doc", @"C:\Temp"));
+        Assert.Equal("/tmpfiles/a.txt", ReplyFileFinder.FromGitBash("/tmpfiles/a.txt", @"C:\Temp"));
+        Assert.Equal("src/a.cs", ReplyFileFinder.FromGitBash("src/a.cs", @"C:\Temp"));
+    }
+
+    [Fact]
     public async Task Before_a_click_a_path_elsewhere_is_looked_at_only_if_the_session_named_it()
     {
         Assert.SkipWhen(OperatingSystem.IsWindows(), "On Windows a path on the computer's own drives may be looked at.");
