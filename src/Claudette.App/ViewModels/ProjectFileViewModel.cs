@@ -967,8 +967,20 @@ public sealed partial class ProjectFileViewModel : ViewModelBase, IMarkdownHost,
     /// <summary>The line the view's peek is under now, which moves with the text; null without a view.</summary>
     internal Func<int?>? PeekLine { get; set; }
 
-    /// <summary>The text selected in the view's editor, for Find in files to start with; null without a view.</summary>
-    internal Func<string?>? SelectionText { get; set; }
+    /// <summary>
+    /// What Find in files starts with from the view's editor: what its find box has while the keyboard's in it, or else
+    /// the text selected; null without a view, or with neither.
+    /// </summary>
+    internal Func<FindStart?>? FindInFilesStart { get; set; }
+
+    /// <summary>
+    /// The editor's find box's <b>Find in files</b> (DESIGN.md §18, "Finding in files"): what it has, looked for in the
+    /// whole project, replacing as it is.
+    /// </summary>
+    internal void FindInFiles(FindStart start, bool replace) => _owner.FindInFiles(start, replace);
+
+    /// <summary>The find box's <b>Find in files</b>' tip, with its shortcut.</summary>
+    internal string FindInFilesTip => _services.Tips.FindInFiles;
 
     /// <summary>The peek's header: who changed the file, and when.</summary>
     public string PeekHeader => Change is { } change

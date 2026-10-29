@@ -110,11 +110,17 @@ public abstract partial class GameViewModel : ObservableObject, IDisposable
             {
                 Host.SetLevel(Kind, value.Level);
                 OnPropertyChanged();
+                OnLevelChanged();
             }
         }
     }
 
     protected GameLevel CurrentLevel => Host.Level(Kind);
+
+    /// <summary>The user chose another level. Claudette plays it from her next move; a game that sets up by it starts again.</summary>
+    protected virtual void OnLevelChanged()
+    {
+    }
 
     /// <summary>"You 3 · Claudette 2 · Draws 1"; null before the first round is over.</summary>
     public string? ScoreText

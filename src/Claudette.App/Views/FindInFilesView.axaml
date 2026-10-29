@@ -14,21 +14,28 @@
         <TextBlock Classes="muted small" Text="{Binding ProjectName}" VerticalAlignment="Center" />
       </StackPanel>
 
-      <!-- What to look for, with its options -->
-      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" ColumnSpacing="6">
-        <TextBox x:Name="QueryBox" Text="{Binding Query}" PlaceholderText="Text to find" AutomationProperties.Name="Text to find" />
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
-          <ToggleButton Classes="findoption" IsChecked="{Binding MatchCase}" Content="Aa" ToolTip.Tip="Match case" AutomationProperties.Name="Match case" />
-          <ToggleButton Classes="findoption" IsChecked="{Binding WholeWords}" Content="W" ToolTip.Tip="Words" AutomationProperties.Name="Words" />
-          <ToggleButton Classes="findoption" IsChecked="{Binding IsRegex}" Content=".*" ToolTip.Tip="Regex" AutomationProperties.Name="Regex" />
-        </StackPanel>
-      </Grid>
-
-      <!-- What to put in its place, in Replace in files -->
-      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6" Margin="0,6,0,0" IsVisible="{Binding IsReplaceMode}">
-        <TextBox x:Name="ReplaceBox" Text="{Binding Replacement}" PlaceholderText="Replace with" AutomationProperties.Name="Replace with" />
-        <Button Grid.Column="1" Content="Replace" Command="{Binding ReplaceCommand}" ToolTip.Tip="Replace the selected match" />
-        <Button Grid.Column="2" Content="Replace all" Command="{Binding AskReplaceAllCommand}" />
+      <!-- What to look for, with its options; and in Replace in files, what to put in its place. The chevron at the left
+           shows and hides the replacement, as the editor's find box's does. -->
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="4">
+        <ToggleButton x:Name="ModeToggle" Classes="findmode" IsChecked="{Binding IsReplaceMode}" ToolTip.Tip="{Binding ModeTip}" AutomationProperties.Name="Replace">
+          <Panel>
+            <Path Data="{StaticResource IconChevronRight}" IsVisible="{Binding !IsReplaceMode}" />
+            <Path Data="{StaticResource IconChevronDown}" IsVisible="{Binding IsReplaceMode}" />
+          </Panel>
+        </ToggleButton>
+        <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="6">
+          <TextBox x:Name="QueryBox" Text="{Binding Query}" PlaceholderText="Text to find" AutomationProperties.Name="Text to find" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2">
+            <ToggleButton Classes="findoption" IsChecked="{Binding MatchCase}" Content="Aa" ToolTip.Tip="Match case" AutomationProperties.Name="Match case" />
+            <ToggleButton Classes="findoption" IsChecked="{Binding WholeWords}" Content="W" ToolTip.Tip="Words" AutomationProperties.Name="Words" />
+            <ToggleButton Classes="findoption" IsChecked="{Binding IsRegex}" Content=".*" ToolTip.Tip="Regex" AutomationProperties.Name="Regex" />
+          </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6" Margin="0,6,0,0" IsVisible="{Binding IsReplaceMode}">
+          <TextBox x:Name="ReplaceBox" Text="{Binding Replacement}" PlaceholderText="Replace with" AutomationProperties.Name="Replace with" />
+          <Button Grid.Column="1" Content="Replace" Command="{Binding ReplaceCommand}" ToolTip.Tip="Replace the selected match" />
+          <Button Grid.Column="2" Content="Replace all" Command="{Binding AskReplaceAllCommand}" />
+        </Grid>
       </Grid>
       <!-- Replace all asks first, in place -->
       <Border DockPanel.Dock="Top" Classes="findquestion" IsVisible="{Binding IsAskingToReplaceAll}">
@@ -69,7 +76,7 @@
         <StackPanel VerticalAlignment="Center">
           <TextBlock x:Name="SummaryText" Classes="muted small" Text="{Binding Summary}" TextWrapping="Wrap" />
           <TextBlock Classes="muted small" Text="{Binding Notes}" TextWrapping="Wrap" IsVisible="{Binding HasNotes}" />
-          <TextBlock Classes="muted small" x:Name="KeysText" Text="Enter opens · ↑↓ choose · Esc closes" />
+          <TextBlock Classes="muted small" x:Name="KeysText" Text="{Binding KeysText}" />
         </StackPanel>
         <Button Grid.Column="1" Content="Open in Find window" Command="{Binding KeepCommand}" IsVisible="{Binding CanKeep}" VerticalAlignment="Center" />
       </Grid>

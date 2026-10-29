@@ -120,6 +120,27 @@ public sealed class ShortcutTips(AppSettings settings) : ObservableObject
     /// <summary>The Project Files tab's <b>Find file</b> (DESIGN.md §18, "Project files").</summary>
     public string GoToFile => Tip("Find a file by name", KeyboardShortcuts.GoToFile);
 
+    /// <summary>The editor's find box's <b>Find in files</b> (DESIGN.md §18, "Finding in files").</summary>
+    public string FindInFiles => Tip("Find in files", KeyboardShortcuts.FindInFiles);
+
+    /// <summary>Find in files' chevron, which shows the replacement, or hides it.</summary>
+    public string ShowReplace => Tip("Show Replace", KeyboardShortcuts.ReplaceInFiles);
+
+    public string HideReplace => Tip("Hide Replace", KeyboardShortcuts.FindInFiles);
+
+    // ---- The keys alone, for a list of commands beside them: a Files tab with nothing open ---------------------------
+
+    public string GoToFileKeys => Text(KeyboardShortcuts.GoToFile) ?? "";
+
+    public string FindInFilesKeys => Text(KeyboardShortcuts.FindInFiles) ?? "";
+
+    public string ReplaceInFilesKeys => Text(KeyboardShortcuts.ReplaceInFiles) ?? "";
+
+    public string CommandPaletteKeys => Text(KeyboardShortcuts.CommandPalette) ?? "";
+
+    /// <summary>A key with no command of its own, as this OS writes it: Esc is ⎋ on macOS, Enter ↩.</summary>
+    public static string Key(string key) => new KeyChord(ChordModifiers.None, key).Display(Shortcuts.IsMac);
+
     /// <summary>The peek's arrows: in a Files tab, the previous and next message keys go from change to change.</summary>
     public string PreviousChange => Tip("Previous change", KeyboardShortcuts.PreviousMessage);
 

@@ -10,6 +10,7 @@ using Avalonia.VisualTree;
 using AvaloniaEdit;
 using AvaloniaEdit.Folding;
 using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Search;
 using Claudette.App.Editor;
 using Claudette.App.ViewModels;
 
@@ -36,7 +37,7 @@ public partial class CodeEditor : UserControl
     public CodeEditor()
     {
         InitializeComponent();
-        SearchPanelButtons.Install(Editor);
+        SearchPanelButtons.Install(Editor, new FindInFilesButton(search => _file?.FindInFiles(FromFindBox(search), search.IsReplaceMode), () => _file?.FindInFilesTip ?? "Find in files"));
         ActualThemeVariantChanged += (_, _) =>
         {
             _coloring?.UseDark(ActualThemeVariant == ThemeVariant.Dark);
@@ -107,7 +108,7 @@ public partial class CodeEditor : UserControl
         file.FocusRequested += FocusEditor;
         file.TextSettled += UpdateFoldings;
         file.PeekLine = () => _peek.Line;
-        file.SelectionText = () => Editor.SelectedText;
+        file.FindInFilesStart = FindInFilesStart;
         ShowDocument();
     }
 
@@ -124,7 +125,7 @@ public partial class CodeEditor : UserControl
         file.FocusRequested -= FocusEditor;
         file.TextSettled -= UpdateFoldings;
         file.PeekLine = null;
-        file.SelectionText = null;
+        file.FindInFilesStart = null;
         _peek.Remove();
         _coloring?.Dispose();
         _coloring = null;
@@ -309,6 +310,19 @@ public partial class CodeEditor : UserControl
         // The first time, its box is only there once the panel has laid out; until then Reactivate does nothing.
         Later(search.Reactivate);
     }
+
+    /// <summary>
+    /// What Find in files starts with from here (DESIGN.md §18, "Finding in files"): what the find box has while the
+    /// keyboard's in it, so its shortcut takes the search to the whole project; or else the text selected.
+    /// </summary>
+    private FindStart? FindInFilesStart() =>
+        Editor.SearchPanel is { IsClosed: false, IsKeyboardFocusWithin: true } search ? FromFindBox(search)
+        : Editor.SelectedText is { Length: > 0 } selected ? new FindStart(selected)
+        : null;
+
+    /// <summary>What the find box has: its text and options, and while it's replacing, its replacement.</summary>
+    private static FindStart FromFindBox(SearchPanel search) =>
+        new(search.SearchPattern ?? "", search.MatchCase, search.WholeWords, search.UseRegex, search.IsReplaceMode ? search.ReplacePattern ?? "" : null);
 
     private void OpenGoToLine()
     {

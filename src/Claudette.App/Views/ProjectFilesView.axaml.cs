@@ -51,6 +51,7 @@ public partial class ProjectFilesView : UserControl
             _files.DeleteAsked -= FocusDeleteQuestion;
             _files.PerforceAsked -= FocusPerforceQuestion;
             _files.DiffRequested -= OnDiffRequested;
+            _files.FindBoxHasKeyboard = null;
         }
         _files = DataContext as ProjectFilesViewModel;
         if (_files is not null)
@@ -62,6 +63,8 @@ public partial class ProjectFilesView : UserControl
             _files.DeleteAsked += FocusDeleteQuestion;
             _files.PerforceAsked += FocusPerforceQuestion;
             _files.DiffRequested += OnDiffRequested;
+            // Find in files' shortcut, pressed in Go to file's box, looks for what's typed there.
+            _files.FindBoxHasKeyboard = () => FindBox.IsKeyboardFocusWithin;
             PlaceExplorer();
             TellTheme();
             if (_files.IsFinding)

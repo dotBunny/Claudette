@@ -1,6 +1,7 @@
 using Claudette.App.Tests.Support;
 using Claudette.App.ViewModels;
 using Claudette.App.ViewModels.ToolWindows;
+using Claudette.Core.Settings;
 
 namespace Claudette.App.Tests;
 
@@ -198,5 +199,145 @@ public class FindInFilesTests
         // Closing the last, the Find window leaves the strip.
         InlineDispatcher.Run(() => searches.CloseCommand.Execute(results));
         Assert.Equal((false, false), (window.IsAvailable, window.IsShowing));
+    }
+
+    [Fact]
+    public async Task The_chevron_and_the_shortcuts_switch_between_finding_and_replacing_and_say_so()
+    {
+        await using var h = new TabTestHarness();
+        Write(Path.Combine(h.WorkFolder, "a.txt"), "old\n");
+        await h.OpenTabAsync();
+        var find = await OpenAsync(h, "old");
+        var tips = h.Services.Tips;
+        var findKeys = tips.Text(KeyboardShortcuts.FindInFiles)!;
+        var replaceKeys = tips.Text(KeyboardShortcuts.ReplaceInFiles)!;
+
+        // Finding: the chevron's tip and the keys at the foot say how to show the replacement.
+        Assert.Equal(("Find in files", tips.ShowReplace), (find.Title, find.ModeTip));
+        Assert.Contains($"{replaceKeys} shows Replace", find.KeysText, StringComparison.Ordinal);
+
+        // The chevron (its toggle sets this) shows it, keeping what was looked for and what was found.
+        InlineDispatcher.Run(() => find.IsReplaceMode = true);
+        Assert.Equal(("Replace in files", tips.HideReplace, "old", 1), (find.Title, find.ModeTip, find.Query, find.Hits.Count));
+        Assert.Contains($"{findKeys} hides Replace", find.KeysText, StringComparison.Ordinal);
+
+        // Hiding it again drops Replace all's question.
+        InlineDispatcher.Run(() => find.AskReplaceAllCommand.Execute(null));
+        Assert.True(find.IsAskingToReplaceAll);
+        InlineDispatcher.Run(() => find.IsReplaceMode = false);
+        Assert.False(find.IsAskingToReplaceAll);
+
+        // A shortcut that's been removed isn't offered.
+        h.Services.Settings.Keyboard.Bindings[KeyboardShortcuts.ReplaceInFiles] = "";
+        InlineDispatcher.Run(h.Shell.CloseFindInFiles);
+        InlineDispatcher.Run(() => h.Shell.OpenFindInFilesCommand.Execute(null));
+        Assert.DoesNotContain("shows Replace", h.Shell.FindInFiles!.KeysText, StringComparison.Ordinal);
+        Assert.Equal("Show Replace", h.Shell.FindInFiles.ModeTip);
+    }
+
+    [Fact]
+    public async Task Go_to_files_link_looks_for_what_is_typed_in_the_files_text_instead()
+    {
+        await using var h = new TabTestHarness();
+        Write(Path.Combine(h.WorkFolder, "Source", "Player.cpp"), "float Health = 100.f;\n");
+        await h.OpenTabAsync();
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single()));
+        var files = h.Shell.Groups.Single().Files!;
+        InlineDispatcher.Run(() =>
+        {
+            files.StartFindCommand.Execute(null);
+            files.FindText = "health:12";
+        });
+
+        // The line typed after the name isn't part of it.
+        Assert.Equal("Find “health” in files", files.FindTypedInFilesText);
+        Assert.Equal(h.Services.Tips.FindInFiles, files.FindTypedInFilesTip);
+
+        InlineDispatcher.Run(() => files.FindTypedInFilesCommand.Execute(null));
+        var find = h.Shell.FindInFiles!;
+        await SearchedAsync(h, find);
+
+        // Find in files has it, in this project, and the explorer has its tree back.
+        Assert.Equal("health", find.Query);
+        Assert.Equal(h.WorkFolder, find.Project);
+        Assert.Equal("Player.cpp", Assert.Single(find.Hits).FileName);
+        Assert.False(files.IsFinding);
+    }
+
+    [Fact]
+    public async Task Its_shortcut_in_Go_to_files_box_takes_what_is_typed_there_and_elsewhere_the_selection()
+    {
+        await using var h = new TabTestHarness();
+        Write(Path.Combine(h.WorkFolder, "a.txt"), "x\n");
+        await h.OpenTabAsync();
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single()));
+        var files = h.Shell.Groups.Single().Files!;
+        var keyboardInBox = true;
+        files.FindBoxHasKeyboard = () => keyboardInBox;
+        InlineDispatcher.Run(() =>
+        {
+            files.StartFindCommand.Execute(null);
+            files.FindText = "speed";
+        });
+
+        InlineDispatcher.Run(() => h.Shell.OpenFindInFilesCommand.Execute(null));
+        Assert.Equal("speed", h.Shell.FindInFiles!.Query);
+        InlineDispatcher.Run(h.Shell.CloseFindInFiles);
+
+        // With the keyboard elsewhere, the box's text is left alone: what it had last.
+        keyboardInBox = false;
+        InlineDispatcher.Run(() => h.Services.State.FindInFiles.Query = "before");
+        InlineDispatcher.Run(() => h.Shell.OpenFindInFilesCommand.Execute(null));
+        Assert.Equal("before", h.Shell.FindInFiles!.Query);
+    }
+
+    [Fact]
+    public async Task The_editors_find_box_starts_Find_in_files_with_its_text_options_and_replacement()
+    {
+        await using var h = new TabTestHarness();
+        var path = Write(Path.Combine(h.WorkFolder, "a.txt"), "Speed\nspeed\n");
+        await h.OpenTabAsync();
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single()));
+        var files = h.Shell.Groups.Single().Files!;
+        var file = await InlineDispatcher.RunAsync(() => files.OpenFileAsync(path, preview: false));
+        InlineDispatcher.Run(() => h.Services.State.FindInFiles.Replacement = "before");
+
+        // Its Find in files, replacing: the popup replaces too, with what the box had.
+        InlineDispatcher.Run(() => file.FindInFiles(new FindStart("Speed", MatchCase: true, WholeWords: false, Regex: false, Replacement: "Pace"), replace: true));
+        var find = h.Shell.FindInFiles!;
+        await SearchedAsync(h, find);
+        Assert.Equal(("Speed", true, true, "Pace"), (find.Query, find.MatchCase, find.IsReplaceMode, find.Replacement));
+        Assert.Single(find.Hits);
+        InlineDispatcher.Run(h.Shell.CloseFindInFiles);
+
+        // Finding: the replacement it had last stays. An empty box, or text over lines, starts with what it had last.
+        InlineDispatcher.Run(() => file.FindInFiles(new FindStart("speed", MatchCase: false), replace: false));
+        Assert.Equal(("speed", false, false), (h.Shell.FindInFiles!.Query, h.Shell.FindInFiles.MatchCase, h.Shell.FindInFiles.IsReplaceMode));
+        Assert.Equal("Pace", h.Shell.FindInFiles.Replacement);
+        InlineDispatcher.Run(h.Shell.CloseFindInFiles);
+        InlineDispatcher.Run(() => file.FindInFiles(new FindStart("one\ntwo"), replace: false));
+        Assert.Equal("speed", h.Shell.FindInFiles!.Query);
+    }
+
+    [Fact]
+    public async Task The_explorers_menus_and_the_tab_with_nothing_open_find_and_replace_in_the_project()
+    {
+        await using var h = new TabTestHarness();
+        Write(Path.Combine(h.WorkFolder, "a.txt"), "x\n");
+        await h.OpenTabAsync();
+        InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single()));
+        var files = h.Shell.Groups.Single().Files!;
+
+        InlineDispatcher.Run(() => files.FindInProjectCommand.Execute(null));
+        Assert.Equal((h.WorkFolder, false), (h.Shell.FindInFiles!.Project, h.Shell.FindInFiles.IsReplaceMode));
+        InlineDispatcher.Run(h.Shell.CloseFindInFiles);
+
+        InlineDispatcher.Run(() => files.ReplaceInProjectCommand.Execute(null));
+        Assert.True(h.Shell.FindInFiles!.IsReplaceMode);
+        InlineDispatcher.Run(h.Shell.CloseFindInFiles);
+
+        // And the command palette, from the tab with nothing open.
+        InlineDispatcher.Run(() => files.OpenPaletteCommand.Execute(null));
+        Assert.True(h.Shell.IsPaletteOpen);
     }
 }

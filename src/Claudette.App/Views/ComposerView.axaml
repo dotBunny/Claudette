@@ -56,31 +56,33 @@
     <!-- A usage limit stopped the task: it continues when the limit resets (DESIGN.md §6, "Continuing after a limit resets").
          A tab that doesn't use usage credits waits the same way, and can start using them ("Tabs that don't use usage credits"). -->
     <Border Classes="codeblock" IsVisible="{Binding HasLimitWait}">
-      <StackPanel Spacing="4">
-        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
-          <TextBlock TextWrapping="Wrap" VerticalAlignment="Center" Text="{Binding LimitWaitText}" />
-          <Button Grid.Column="1" Content="Use usage credits" Command="{Binding UseUsageCreditsNowCommand}" IsVisible="{Binding CanUseCreditsNow}"
-                  ToolTip.Tip="Let this tab use usage credits from now on, and carry on now. Its menu turns them off again." />
-          <Button Grid.Column="2" Content="Don't continue" Command="{Binding DontContinueCommand}" IsVisible="{Binding CanStopContinuing}"
-                  ToolTip.Tip="Leave the task stopped. Send a message to go on yourself." />
-          <Button Grid.Column="2" Content="{Binding ContinueAfterLimitText}" Command="{Binding ContinueAfterLimitCommand}" IsVisible="{Binding CanContinueAfterLimit}" />
-          <Button Grid.Column="3" Classes="flat" Padding="4" ToolTip.Tip="Close" AutomationProperties.Name="Close" VerticalAlignment="Center"
-                  Command="{Binding DismissLimitWaitCommand}" IsVisible="{Binding CanDismissLimitWait}">
-            <Path Data="{StaticResource IconClose}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="7" Height="7" Stretch="Uniform" />
+      <!-- The text with the game's link under it, and the buttons in the middle of the bar's height -->
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+        <StackPanel Spacing="4" VerticalAlignment="Center">
+          <TextBlock TextWrapping="Wrap" Text="{Binding LimitWaitText}" />
+          <!-- Something to do until it resets (DESIGN.md §18, "Games with Claudette") -->
+          <Button Classes="flat" Padding="0" HorizontalAlignment="Left" IsVisible="{Binding CanPlayWhileWaiting}" ToolTip.Tip="A game against Claudette, in the Games tool window">
+            <TextBlock Classes="small" Foreground="{DynamicResource AccentStatusBrush}" Text="Play a game while you wait" />
+            <Button.Flyout>
+              <MenuFlyout Placement="TopEdgeAlignedLeft">
+                <MenuItem Header="Tic-tac-toe" Command="{Binding PlayGameCommand}" CommandParameter="{x:Static games:GameKind.TicTacToe}" />
+                <MenuItem Header="Connect Four" Command="{Binding PlayGameCommand}" CommandParameter="{x:Static games:GameKind.ConnectFour}" />
+                <MenuItem Header="Hangman" Command="{Binding PlayGameCommand}" CommandParameter="{x:Static games:GameKind.Hangman}" />
+                <MenuItem Header="Minesweeper" Command="{Binding PlayGameCommand}" CommandParameter="{x:Static games:GameKind.Minesweeper}" />
+              </MenuFlyout>
+            </Button.Flyout>
           </Button>
-        </Grid>
-        <!-- Something to do until it resets (DESIGN.md §18, "Games with Claudette") -->
-        <Button Classes="flat" Padding="0" HorizontalAlignment="Left" IsVisible="{Binding CanPlayWhileWaiting}" ToolTip.Tip="A game against Claudette, on the side panel">
-          <TextBlock Classes="small" Foreground="{DynamicResource AccentStatusBrush}" Text="Play a game while you wait" />
-          <Button.Flyout>
-            <MenuFlyout Placement="TopEdgeAlignedLeft">
-              <MenuItem Header="Tic-tac-toe" Command="{Binding PlayGameCommand}" CommandParameter="{x:Static games:GameKind.TicTacToe}" />
-              <MenuItem Header="Connect Four" Command="{Binding PlayGameCommand}" CommandParameter="{x:Static games:GameKind.ConnectFour}" />
-              <MenuItem Header="Hangman" Command="{Binding PlayGameCommand}" CommandParameter="{x:Static games:GameKind.Hangman}" />
-            </MenuFlyout>
-          </Button.Flyout>
+        </StackPanel>
+        <Button Grid.Column="1" Content="Use usage credits" Command="{Binding UseUsageCreditsNowCommand}" IsVisible="{Binding CanUseCreditsNow}" VerticalAlignment="Center"
+                ToolTip.Tip="Let this tab use usage credits from now on, and carry on now. Its menu turns them off again." />
+        <Button Grid.Column="2" Content="Don't continue" Command="{Binding DontContinueCommand}" IsVisible="{Binding CanStopContinuing}" VerticalAlignment="Center"
+                ToolTip.Tip="Leave the task stopped. Send a message to go on yourself." />
+        <Button Grid.Column="2" Content="{Binding ContinueAfterLimitText}" Command="{Binding ContinueAfterLimitCommand}" IsVisible="{Binding CanContinueAfterLimit}" VerticalAlignment="Center" />
+        <Button Grid.Column="3" Classes="flat" Padding="4" ToolTip.Tip="Close" AutomationProperties.Name="Close" VerticalAlignment="Center"
+                Command="{Binding DismissLimitWaitCommand}" IsVisible="{Binding CanDismissLimitWait}">
+          <Path Data="{StaticResource IconClose}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="7" Height="7" Stretch="Uniform" />
         </Button>
-      </StackPanel>
+      </Grid>
     </Border>
 
     <!-- Quick suffix chips -->

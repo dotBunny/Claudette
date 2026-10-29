@@ -1,7 +1,4 @@
-﻿[button] Tic-tac-toe
-[button] Connect Four
-[button] Hangman
-"No D. 5 misses left."
+﻿"No D. 5 misses left."
 "A programming word, 9 letters"
 "B _ _ _ _ _ _ _ _"
 [button] Letter A: A

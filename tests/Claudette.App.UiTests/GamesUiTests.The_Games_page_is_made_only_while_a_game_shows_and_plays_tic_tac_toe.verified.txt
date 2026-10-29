@@ -1,7 +1,4 @@
-﻿[button] Tic-tac-toe
-[button] Connect Four
-[button] Hangman
-"Your move."
+﻿"Your move."
 [choice] "Normal"
 [button] Top left, empty
 [button] Top middle, empty

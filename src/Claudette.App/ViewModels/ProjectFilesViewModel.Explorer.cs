@@ -367,6 +367,24 @@ public sealed partial class ProjectFilesViewModel
         }
     }
 
+    /// <summary>
+    /// <b>Find in files…</b> in the explorer's ⋯ and the menu of the space under its tree, and in the tab with nothing open:
+    /// as its shortcut opens it, for this project.
+    /// </summary>
+    [RelayCommand]
+    private void FindInProject() => _shell.ShowFindInFiles(replace: false, group: Group);
+
+    /// <summary><b>Replace in files…</b>, in the same places.</summary>
+    [RelayCommand]
+    private void ReplaceInProject() => _shell.ShowFindInFiles(replace: true, group: Group);
+
+    /// <summary>The tab with nothing open: its <b>Command palette</b>.</summary>
+    [RelayCommand]
+    private void OpenPalette() => _shell.OpenPaletteCommand.Execute(null);
+
+    /// <summary>The editor's find box's <b>Find in files</b>: what it has, for this project.</summary>
+    internal void FindInFiles(FindStart start, bool replace) => _shell.ShowFindInFiles(replace, group: Group, start: start);
+
     /// <summary>The explorer's <b>Refresh</b>: every folder shown is read again.</summary>
     [RelayCommand]
     private void RefreshExplorer()
