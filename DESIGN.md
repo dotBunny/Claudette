@@ -1047,7 +1047,7 @@ The meters are one compact **usage chip** at the right of the header, before the
 
 ### Sidebar meters
 
-Settings → Usage → **Show usage in the sidebar** (on by default) puts the meters in a card at the top of the sidebar, over the groups, as the remote web page shows them, and the header leaves out its chip.
+Settings → Usage → **Show usage in the sidebar** (on by default) puts the meters in a card at the top of the sidebar, over the groups, and the header leaves out its chip.
 
 - Each meter on a row of its own: its full name at the left, the percent and its reset at the right ("9% · resets in 3h 18m", "47% · resets Tue 23:00"), and a full-width bar under them, coloured as the chip's are. Under the meters, the line that says where the session is heading, or "Not enough data yet.".
 - A click on the card opens the Usage panel. Its accessible name is the chip's.
