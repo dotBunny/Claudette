@@ -124,6 +124,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         _conversation = new ConversationBuilder(Items, TodoList, ModelDisplayName)
         {
             ExpandThinking = state.ExpandThinking ?? services.Settings.Appearance.ExpandThinking,
+            CollapseToolCalls = services.Settings.Appearance.CollapseToolCalls,
             ShowUnsupportedMessages = services.Settings.Advanced.LogProtocol,
             ShowAllHookRuns = services.Settings.ClaudeCode.ShowAllHookRuns,
             OpenUrl = services.Platform.OpenUrlAsync,
@@ -930,6 +931,12 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         OnPropertyChanged(nameof(AvailableSuffixes));
         OnPropertyChanged(nameof(SuffixMenu));
         _conversation.ExpandThinking = State.ExpandThinking ?? _services.Settings.Appearance.ExpandThinking;
+        if (_conversation.CollapseToolCalls != _services.Settings.Appearance.CollapseToolCalls)
+        {
+            // The choice changed (Settings, or a Tool calls card's menu): every card follows, the open ones too.
+            _conversation.CollapseAllToolCalls(_services.Settings.Appearance.CollapseToolCalls);
+        }
+        OnPropertyChanged(nameof(CollapseToolCalls));
         _conversation.ShowAllHookRuns = _services.Settings.ClaudeCode.ShowAllHookRuns;
         _conversation.ShowUnsupportedMessages = _services.Settings.Advanced.LogProtocol;
         Context.OnSettingsChanged();
@@ -965,6 +972,29 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
     /// <summary>The thinking row's menu: expands every thinking row in the tab, and new ones start expanded.</summary>
     [RelayCommand]
     private void ExpandAllThinking() => SetAllThinking(true);
+
+    /// <summary>
+    /// A Tool calls card's menu (DESIGN.md §18): folds every Tool calls card to its header line in every tab, and new
+    /// ones start folded, as Settings → Conversation → Collapse tool calls does.
+    /// </summary>
+    [RelayCommand]
+    private void CollapseAllToolCalls() => SetAllToolCalls(true);
+
+    /// <summary>A Tool calls card's menu: unfolds every Tool calls card, and new ones start unfolded.</summary>
+    [RelayCommand]
+    private void ExpandAllToolCalls() => SetAllToolCalls(false);
+
+    /// <summary>The composer bar's small checkbox: Settings → Conversation → Collapse tool calls (DESIGN.md §18).</summary>
+    public bool CollapseToolCalls => _services.Settings.Appearance.CollapseToolCalls;
+
+    [RelayCommand]
+    private void ToggleCollapseToolCalls() => SetAllToolCalls(!CollapseToolCalls);
+
+    private void SetAllToolCalls(bool collapsed)
+    {
+        _services.Settings.Appearance.CollapseToolCalls = collapsed;
+        _services.SaveSettings();
+    }
 
     private void SetAllThinking(bool expanded)
     {

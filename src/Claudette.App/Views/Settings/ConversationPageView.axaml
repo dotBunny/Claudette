@@ -10,6 +10,12 @@
       <c:SettingRow Key="appearance.quietSteps">
         <ToggleSwitch IsChecked="{Binding QuietSteps}" />
       </c:SettingRow>
+      <c:SettingRow Key="appearance.indentYourMessages">
+        <ToggleSwitch IsChecked="{Binding IndentYourMessages}" />
+      </c:SettingRow>
+      <c:SettingRow Key="appearance.collapseToolCalls">
+        <ToggleSwitch IsChecked="{Binding CollapseToolCalls}" />
+      </c:SettingRow>
       <c:SettingRow Key="appearance.expandThinking">
         <ToggleSwitch IsChecked="{Binding ExpandThinking}" />
       </c:SettingRow>

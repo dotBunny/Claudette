@@ -53,6 +53,7 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         IsClaudeStyle = services.Settings.Appearance.Style == AppStyle.Claude;
         IsFullWidth = services.Settings.Appearance.FullWidthConversation;
         IsQuietSteps = services.Settings.Appearance.QuietSteps;
+        IsIndentYou = services.Settings.Appearance.IndentYourMessages;
         _services.SettingsChanged += (_, _) =>
         {
             OnClaudeProjectsSettingChanged();
@@ -60,6 +61,7 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
             IsClaudeStyle = _services.Settings.Appearance.Style == AppStyle.Claude;
             IsFullWidth = _services.Settings.Appearance.FullWidthConversation;
             IsQuietSteps = _services.Settings.Appearance.QuietSteps;
+            IsIndentYou = _services.Settings.Appearance.IndentYourMessages;
             foreach (var tab in AllTabs)
             {
                 tab.OnSettingsChanged();
@@ -1019,6 +1021,13 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     /// </summary>
     [ObservableProperty]
     public partial bool IsQuietSteps { get; private set; }
+
+    /// <summary>
+    /// Settings → Conversation → Indent your messages (DESIGN.md §18, "Conversation cards"): the view takes the
+    /// <c>indentyou</c> class, whose style starts your messages' cards further in from the left than the others.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsIndentYou { get; private set; }
 
     // ---- Sidebar (DESIGN.md §3, §4, "Sidebar") ----------------------------------------------------------------
 

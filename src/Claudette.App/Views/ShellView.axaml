@@ -9,12 +9,14 @@
              Classes.compact="{Binding IsCompact}"
              Classes.claude="{Binding IsClaudeStyle}"
              Classes.fullwidth="{Binding IsFullWidth}"
-             Classes.quietsteps="{Binding IsQuietSteps}">
+             Classes.quietsteps="{Binding IsQuietSteps}"
+             Classes.indentyou="{Binding IsIndentYou}">
   <!-- Settings → Appearance → Density (DESIGN.md §14): "compact" tightens the rows, the conversation and the composer,
        through the styles in App.axaml and TabView. Settings → Appearance → Style (DESIGN.md §3): "claude" gives them
        the Claude apps' shapes. Settings → Appearance → Full-width conversation (DESIGN.md §14): "fullwidth" lets the
        conversation and the composer fill the tab. Settings → Conversation → Quieter in-between steps (DESIGN.md §18,
-       "Conversation cards"): "quietsteps" draws the steps on the way without their cards' tint and outline. -->
+       "Conversation cards"): "quietsteps" draws the steps on the way without their cards' tint and outline, and
+       Settings → Conversation → Indent your messages: "indentyou" starts your messages' cards further in. -->
 
   <UserControl.Resources>
     <!-- The tab info card (DESIGN.md §4), used as the tab tooltip. -->

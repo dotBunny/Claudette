@@ -494,6 +494,25 @@
                 </Button.Flyout>
               </Button>
   
+              <!-- Collapse tool calls (DESIGN.md §18, "Conversation cards"): the same choice as Settings → Conversation -->
+              <Button x:Name="FoldToolsToggle" Classes="flat" Command="{Binding ToggleCollapseToolCallsCommand}" AutomationProperties.Name="Collapse tool calls"
+                      ToolTip.Tip="Fold every Tool calls card to its header line, in every tab. Click again to open them.">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                  <Border Width="12" Height="12" CornerRadius="3" BorderThickness="1" VerticalAlignment="Center"
+                          BorderBrush="{DynamicResource MutedTextBrush}" Classes.checked="{Binding CollapseToolCalls}">
+                    <Border.Styles>
+                      <Style Selector="Border.checked">
+                        <Setter Property="Background" Value="{DynamicResource AccentStatusBrush}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentStatusBrush}" />
+                      </Style>
+                    </Border.Styles>
+                    <Path Data="M2,5.5 L4.5,8 L9,3" Stroke="White" StrokeThickness="1.5" StrokeLineCap="Round" StrokeJoin="Round"
+                          IsVisible="{Binding CollapseToolCalls}" />
+                  </Border>
+                  <TextBlock Classes="muted small" Text="Fold tools" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+
               <!-- Changed files (DESIGN.md §8) -->
               <Button Classes="flat" ToolTip.Tip="Changed files" Command="{Binding OpenFilesPageCommand}">
                 <TextBlock Classes="muted small" Text="{Binding ChangedFiles.Count, StringFormat='Files ({0})'}" />

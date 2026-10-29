@@ -35,7 +35,7 @@
       <LayoutTransformControl.LayoutTransform>
         <ScaleTransform ScaleX="{Binding ZoomScale}" ScaleY="{Binding ZoomScale}" />
       </LayoutTransformControl.LayoutTransform>
-      <StackPanel Margin="16,14" Spacing="8" Classes.compact="{Binding IsCompact}" Classes.quietsteps="{Binding QuietSteps}"
+      <StackPanel Margin="16,14" Spacing="8" Classes.compact="{Binding IsCompact}" Classes.quietsteps="{Binding QuietSteps}" Classes.indentyou="{Binding IndentYou}"
                   TextElement.FontSize="{DynamicResource ConversationFontSize}" TextElement.FontFamily="{DynamicResource ConversationFont}">
         <controls:Card Classes="you" Label="You" Icon="{StaticResource IconCardYou}" TimeText="9:41">
           <TextBlock TextWrapping="Wrap" Text="Make the grapple let go more gently, so I keep my swing." />

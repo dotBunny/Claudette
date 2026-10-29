@@ -89,6 +89,31 @@ public sealed class ConversationBuilder
     private bool _expandThinking;
 
     /// <summary>
+    /// Start new Tool calls cards folded to their header line (Settings → Conversation). A subagent's builder asks the
+    /// builder that made it, so a group already running follows a change.
+    /// </summary>
+    public bool CollapseToolCalls
+    {
+        get => _parent?.CollapseToolCalls ?? _collapseToolCalls;
+        set => _collapseToolCalls = value;
+    }
+
+    private bool _collapseToolCalls;
+
+    /// <summary>
+    /// <b>Collapse all tool calls</b> or <b>Expand all tool calls</b> (DESIGN.md §18): every Tool calls card, subagents'
+    /// too, and the ones still to come.
+    /// </summary>
+    public void CollapseAllToolCalls(bool collapsed)
+    {
+        CollapseToolCalls = collapsed;
+        foreach (var group in Items.Descendants().OfType<ToolGroupItem>())
+        {
+            group.IsCollapsed = collapsed;
+        }
+    }
+
+    /// <summary>
     /// <b>Collapse all thinking</b> or <b>Expand all thinking</b> (DESIGN.md §5): every thinking row, subagents' groups'
     /// too, and the ones still to come.
     /// </summary>
@@ -272,7 +297,7 @@ public sealed class ConversationBuilder
             open.Add(tool);
             return;
         }
-        var group = new ToolGroupItem();
+        var group = new ToolGroupItem { IsCollapsed = CollapseToolCalls };
         if (Clock is { } clock)
         {
             group.UseClock(clock);

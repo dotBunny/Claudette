@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using System.Windows.Input;
 using Avalonia.Media;
 
 namespace Claudette.App.Controls;
@@ -36,8 +37,15 @@ public sealed class Card : ContentControl
 
     public static readonly StyledProperty<IBrush?> LabelBrushProperty = AvaloniaProperty.Register<Card, IBrush?>(nameof(LabelBrush));
 
+    public static readonly StyledProperty<bool> IsCollapsibleProperty = AvaloniaProperty.Register<Card, bool>(nameof(IsCollapsible));
+
+    public static readonly StyledProperty<bool> IsCollapsedProperty = AvaloniaProperty.Register<Card, bool>(nameof(IsCollapsed));
+
+    public static readonly StyledProperty<ICommand?> ToggleCommandProperty = AvaloniaProperty.Register<Card, ICommand?>(nameof(ToggleCommand));
+
     static Card()
     {
+        IsCollapsedProperty.Changed.AddClassHandler<Card>((card, e) => card.PseudoClasses.Set(":collapsed", e.GetNewValue<bool>()));
         LabelProperty.Changed.AddClassHandler<Card>((card, _) => card.UpdateHeaderless());
         IconProperty.Changed.AddClassHandler<Card>((card, _) => card.UpdateHeaderless());
         TimeTextProperty.Changed.AddClassHandler<Card>((card, _) => card.UpdateHeaderless());
@@ -122,6 +130,27 @@ public sealed class Card : ContentControl
     {
         get => GetValue(LabelBrushProperty);
         set => SetValue(LabelBrushProperty, value);
+    }
+
+    /// <summary>A chevron before the header's icon opens and closes the card's content (a Tool calls card's tiles).</summary>
+    public bool IsCollapsible
+    {
+        get => GetValue(IsCollapsibleProperty);
+        set => SetValue(IsCollapsibleProperty, value);
+    }
+
+    /// <summary>The content is folded away, leaving the header line; the chevron points right instead of down.</summary>
+    public bool IsCollapsed
+    {
+        get => GetValue(IsCollapsedProperty);
+        set => SetValue(IsCollapsedProperty, value);
+    }
+
+    /// <summary>What the chevron does.</summary>
+    public ICommand? ToggleCommand
+    {
+        get => GetValue(ToggleCommandProperty);
+        set => SetValue(ToggleCommandProperty, value);
     }
 
     /// <summary>Nothing to put on a header line: the content starts at the top.</summary>

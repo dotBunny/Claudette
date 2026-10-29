@@ -116,6 +116,9 @@ public sealed class AppearancePage : SettingsPage
     /// <summary>The preview's in-between steps are quieter, as Settings → Conversation says.</summary>
     public bool QuietSteps => Settings.Appearance.QuietSteps;
 
+    /// <summary>The preview's message starts further in, as Settings → Conversation says.</summary>
+    public bool IndentYou => Settings.Appearance.IndentYourMessages;
+
     /// <summary>The preview drawn at the main window's zoom.</summary>
     public double ZoomScale => Settings.Appearance.Zoom / 100.0;
 
@@ -132,6 +135,7 @@ public sealed class AppearancePage : SettingsPage
     {
         OnPropertyChanged(nameof(IsCompact));
         OnPropertyChanged(nameof(QuietSteps));
+        OnPropertyChanged(nameof(IndentYou));
         OnPropertyChanged(nameof(ZoomScale));
         OnPropertyChanged(nameof(ClaudetteCell));
     }

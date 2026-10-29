@@ -586,6 +586,18 @@ public sealed class AppearanceSettings
     /// </summary>
     public bool QuietSteps { get; set; } = true;
 
+    /// <summary>
+    /// Tool calls cards show only their header line, with a chevron to open them (DESIGN.md §18, "Conversation
+    /// cards"). Off by default.
+    /// </summary>
+    public bool CollapseToolCalls { get; set; }
+
+    /// <summary>
+    /// Your messages' cards start further in from the left than Claude's, so whose turn each card is can be told by
+    /// its place alone (DESIGN.md §18, "Conversation cards"). On by default.
+    /// </summary>
+    public bool IndentYourMessages { get; set; } = true;
+
     /// <summary>Settings → Appearance → Motion (DESIGN.md §3, "Accessibility").</summary>
     public MotionSetting Motion { get; set; } = MotionSetting.System;
 
