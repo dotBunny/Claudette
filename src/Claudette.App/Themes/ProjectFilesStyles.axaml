@@ -7,9 +7,10 @@
   <!-- The Project Files tab's look (DESIGN.md §18, "Project files"): the explorer, the file tabs, the editor, the chip,
        the banners and the peek. Under the "claude" class, the Claude style's rounder shapes. -->
 
-  <!-- The explorer: its own surface, as the sidebar has, with a divider on the side the editor is. -->
+  <!-- The explorer: its own surface, the sidebar's but in Claude Dark (ExplorerBrush), with a divider on the side the
+       editor is. -->
   <Style Selector="Border.explorer">
-    <Setter Property="Background" Value="{DynamicResource SidebarBrush}" />
+    <Setter Property="Background" Value="{DynamicResource ExplorerBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     <Setter Property="BorderThickness" Value="0,0,1,0" />
   </Style>
@@ -167,6 +168,11 @@
     <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="MinHeight" Value="32" />
+  </Style>
+  <!-- In the Claude style, the explorer's shade: in its dark theme, SubtleBrush is the window frame's color, so the row
+       would merge with the frame and hide the island's rounded top corner -->
+  <Style Selector=".claude Border.filetabs">
+    <Setter Property="Background" Value="{DynamicResource ExplorerBrush}" />
   </Style>
   <Style Selector="Button.filetab">
     <Setter Property="Background" Value="Transparent" />

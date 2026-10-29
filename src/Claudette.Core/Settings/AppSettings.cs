@@ -599,16 +599,22 @@ public sealed class AppearanceSettings
     public bool CollapseToolCalls { get; set; }
 
     /// <summary>
-    /// Each run of steps on the way (thinking, tool calls, subagents) between two messages folds into one line, with
-    /// the reply after it carrying a button that opens it (DESIGN.md §18, "Conversation cards"). Off by default.
+    /// Each run of steps on the way (thinking, tool calls, subagents) between two messages folds into one, which the
+    /// reply after it carries in its header and opens inside its card (DESIGN.md §18, "Conversation cards"). Off by default.
     /// </summary>
     public bool FoldChains { get; set; }
 
     /// <summary>
-    /// Your messages' cards start further in from the left than Claude's, so whose turn each card is can be told by
-    /// its place alone (DESIGN.md §18, "Conversation cards"). On by default.
+    /// Your messages' cards start far in from the left, so whose turn each card is can be told by its place alone
+    /// (DESIGN.md §18, "Conversation cards"). Off by default.
     /// </summary>
-    public bool IndentYourMessages { get; set; } = true;
+    public bool IndentYourMessages { get; set; }
+
+    /// <summary>
+    /// Claude's steps between its replies, its thinking, tool calls and subagents, start a little in from its replies
+    /// (DESIGN.md §18, "Conversation cards"). Off by default.
+    /// </summary>
+    public bool IndentClaudesSteps { get; set; }
 
     /// <summary>Settings → Appearance → Motion (DESIGN.md §3, "Accessibility").</summary>
     public MotionSetting Motion { get; set; } = MotionSetting.System;

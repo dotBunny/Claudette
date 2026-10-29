@@ -13,6 +13,9 @@
       <c:SettingRow Key="appearance.indentYourMessages">
         <ToggleSwitch IsChecked="{Binding IndentYourMessages}" />
       </c:SettingRow>
+      <c:SettingRow Key="appearance.indentClaudesSteps">
+        <ToggleSwitch IsChecked="{Binding IndentClaudesSteps}" />
+      </c:SettingRow>
       <c:SettingRow Key="appearance.collapseToolCalls">
         <ToggleSwitch IsChecked="{Binding CollapseToolCalls}" />
       </c:SettingRow>

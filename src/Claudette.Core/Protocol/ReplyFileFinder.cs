@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Claudette.Core.Composer;
 
 namespace Claudette.Core.Protocol;
@@ -6,6 +7,8 @@ namespace Claudette.Core.Protocol;
 /// Where the file a reply names is (DESIGN.md §18, "Files named in Claude's replies"). A path is read against the tab's
 /// folder, then its extra folders. A name, or a path that isn't there, is looked for among the files the session's
 /// tools worked on, newest first, then among the project's (<see cref="ProjectFileIndex"/>); a name can match several.
+/// A path that starts from an environment variable (<c>%TEMP%</c>, <c>$TMPDIR</c>, <c>$env:TEMP</c>) is read with the
+/// user's, and on Windows a path as Git Bash writes it (<c>/c/Work/…</c>, <c>/tmp/…</c>) as Windows has it.
 /// <para>
 /// Inline code becomes a link only once its file is found, which happens as the reply is shown, without a click. A
 /// reply can be prompt-injected, and some paths reach the network just by being looked up (<c>/net/&lt;host&gt;</c> on
@@ -18,7 +21,9 @@ namespace Claudette.Core.Protocol;
 /// <param name="extraFolders">The folders the tab added beside it.</param>
 /// <param name="home">The user's home, for <c>~/</c>.</param>
 /// <param name="index">The project's files, or null when there's no listing to look in.</param>
-public sealed class ReplyFileFinder(Func<string> folder, Func<IReadOnlyList<string>> extraFolders, string home, Func<ProjectFileIndex?> index)
+/// <param name="variable">The user's environment, which <c>claude</c> has too, for a path with its variables in it; none when null.</param>
+public sealed partial class ReplyFileFinder(Func<string> folder, Func<IReadOnlyList<string>> extraFolders, string home, Func<ProjectFileIndex?> index,
+    Func<string, string?>? variable = null)
 {
     /// <summary>At most this many files match a name; the rest aren't offered.</summary>
     public const int MaxMatches = 12;
@@ -42,7 +47,12 @@ public sealed class ReplyFileFinder(Func<string> folder, Func<IReadOnlyList<stri
     private async Task<IReadOnlyList<string>> FindCoreAsync(ReplyFileReference reference, List<string> roots, ProjectFileIndex? files,
         IReadOnlyList<string> sessionFiles, bool clicked, CancellationToken cancellationToken)
     {
-        var path = reference.Path.Replace('\\', System.IO.Path.DirectorySeparatorChar).Replace('/', System.IO.Path.DirectorySeparatorChar);
+        var path = ExpandVariables(reference.Path, Variable);
+        if (OperatingSystem.IsWindows())
+        {
+            path = FromGitBash(path, Variable("TEMP") ?? System.IO.Path.GetTempPath());
+        }
+        path = path.Replace('\\', System.IO.Path.DirectorySeparatorChar).Replace('/', System.IO.Path.DirectorySeparatorChar);
         if (path.StartsWith('~') && (path.Length == 1 || path[1] == System.IO.Path.DirectorySeparatorChar))
         {
             path = home + path[1..];
@@ -89,6 +99,41 @@ public sealed class ReplyFileFinder(Func<string> folder, Func<IReadOnlyList<stri
             .Take(MaxMatches)
             .Select(p => Full(System.IO.Path.Combine(files.Folder, p.Path.TrimEnd('/'))))
             .OfType<string>()];
+    }
+
+    /// <summary>One of the user's environment variables; <c>HOME</c> is the user's home where it isn't set, as on Windows.</summary>
+    private string? Variable(string name) =>
+        variable?.Invoke(name) is { Length: > 0 } value ? value : name == "HOME" ? System.IO.Path.TrimEndingDirectorySeparator(home) : null;
+
+    /// <summary>
+    /// <paramref name="path"/> with its environment variables filled in from <paramref name="variable"/>: Windows'
+    /// <c>%NAME%</c>, PowerShell's <c>$env:NAME</c>, and the shells' <c>${NAME}</c> and <c>$NAME</c>. One that isn't set
+    /// stays as it's written, so a file with a <c>%</c> or <c>$</c> in its name is still found.
+    /// </summary>
+    public static string ExpandVariables(string path, Func<string, string?> variable) =>
+        !path.Contains('%', StringComparison.Ordinal) && !path.Contains('$', StringComparison.Ordinal)
+            ? path
+            : VariablePattern().Replace(path, match => variable(match.Groups["name"].Value) is { Length: > 0 } value ? value : match.Value);
+
+    [GeneratedRegex(@"%(?<name>[A-Za-z_][A-Za-z0-9_()]*)%|\$[Ee][Nn][Vv]:(?<name>[A-Za-z_][A-Za-z0-9_]*)|\$\{(?<name>[A-Za-z_][A-Za-z0-9_]*)\}|\$(?<name>[A-Za-z_][A-Za-z0-9_]*)")]
+    private static partial Regex VariablePattern();
+
+    /// <summary>
+    /// A path as Git Bash writes it, as Windows has it: Claude Code runs its commands in Git Bash on Windows, so names
+    /// files the way it does. <c>/c/Work/…</c> is <c>C:\Work\…</c>, and <c>/tmp/…</c> is in <paramref name="temp"/>, the
+    /// user's temporary folder, as Git for Windows has it. Any other path is as it was.
+    /// </summary>
+    public static string FromGitBash(string path, string temp)
+    {
+        if (path.Length >= 2 && path[0] == '/' && char.IsAsciiLetter(path[1]) && (path.Length == 2 || path[2] == '/'))
+        {
+            return $"{char.ToUpperInvariant(path[1])}:\\{(path.Length > 3 ? path[3..] : "")}";
+        }
+        if (path == "/tmp" || path.StartsWith("/tmp/", StringComparison.Ordinal))
+        {
+            return System.IO.Path.TrimEndingDirectorySeparator(temp) + path[4..];
+        }
+        return path;
     }
 
     private static readonly StringComparer PathComparer =

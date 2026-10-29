@@ -34,6 +34,15 @@
     </ControlTheme>
   </Styles.Resources>
 
+  <!-- The toolbar under a window's title bar, as the diff view's and the image viewer's: a line about what the window
+       shows, and what to do with it, over a line. The title bar stays one row, so the window's buttons are as tall as the
+       main window's. -->
+  <Style Selector="Border.windowbar">
+    <Setter Property="Padding" Value="14,8" />
+    <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+
   <!-- Its gaps drag the window; each control in it takes its own clicks -->
   <Style Selector="controls|TitleBar :is(Button), controls|TitleBar ComboBox, controls|TitleBar TextBox, controls|TitleBar Slider">
     <Setter Property="(chrome:WindowDecorationProperties.ElementRole)" Value="User" />

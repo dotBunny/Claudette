@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Claudette.App.Services.Automation;
+using Claudette.Platform.Shell.Mac;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Claudette.App.UiTests;
@@ -243,5 +244,66 @@ public class AutomationCommandsUiTests
             other.Close();
             main.Close();
         }
+    }
+
+    /// <summary>
+    /// macOS's traffic lights, which AppKit draws over the window rather than Claudette, are drawn into its picture where
+    /// AppKit has them, so the title bar's left isn't a gap: asked for of the window captured, and only that one.
+    /// </summary>
+    [AvaloniaFact]
+    public void Capture_draws_in_the_OSs_buttons_over_the_window()
+    {
+        var main = new Window { Width = 300, Height = 200, Title = "Main" };
+        var asked = new List<TopLevel>();
+        var commands = new AutomationCommands(_ => null, findByTitle: _ => main, windowButtons: window =>
+        {
+            asked.Add(window);
+            return
+            [
+                new MacWindowButton(MacWindowButtonKind.Close, 13, 13, 14, 16, IsEnabled: true),
+                new MacWindowButton(MacWindowButtonKind.Minimize, 33, 13, 14, 16, IsEnabled: true),
+                new MacWindowButton(MacWindowButtonKind.Zoom, 53, 13, 14, 16, IsEnabled: false),
+            ];
+        });
+        main.Show();
+        UiText.Settle(main);
+        var folder = Directory.CreateTempSubdirectory("claudette-capture").FullName;
+        try
+        {
+            var path = Path.Combine(folder, "main.png");
+            var saved = commands.Execute(new() { Verb = "capture", Path = path });
+
+            Assert.True(saved.Ok, saved.Error);
+            Assert.True(File.Exists(path));
+            Assert.Equal([main], asked);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+            main.Close();
+        }
+    }
+
+    /// <summary>
+    /// A window resized to the size asked, in device-independent pixels, as the scripts make each system's the same size
+    /// (macOS fits a window to its screen as it opens), taking it in its next layout; its largest size, which Windows
+    /// keeps it within, is at least that.
+    /// </summary>
+    [AvaloniaFact]
+    public void Resize_gives_a_window_the_size_asked()
+    {
+        var main = new Window { Width = 300, Height = 200, Title = "Main" };
+        var commands = new AutomationCommands(_ => null, findByTitle: title => title is null ? main : null);
+        main.Show();
+        UiText.Settle(main);
+
+        var resized = commands.Execute(new() { Verb = "resize", Width = 640, Height = 480 });
+        UiText.Settle(main);
+
+        Assert.True(resized.Ok, resized.Error);
+        Assert.Equal(new Size(640, 480), main.ClientSize);
+        Assert.Equal((640.0, 480.0), (main.MaxWidth, main.MaxHeight));
+        Assert.Contains("needs a width and a height", commands.Execute(new() { Verb = "resize", Width = 640 }).Error, StringComparison.Ordinal);
+        main.Close();
     }
 }

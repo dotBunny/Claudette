@@ -23,7 +23,7 @@ Inline code becomes a link only once its file is found, so code that only looks 
 
 ### Where the file is
 
-A path is read from the tab's folder (the worktree, for a tab in one), then its extra folders. A name, or a path that isn't there from the folder (`specs/weapons.md`), is the file with that name that Claude's tools last read or changed, a subagent's too. Failing that, it is a file in the project with that name, the shallowest first.
+A path is read from the tab's folder (the worktree, for a tab in one), then its extra folders. A path that starts from an environment variable is read with yours, written the way any shell writes it: `%TEMP%\shot.png`, `$env:TEMP\shot.png`, `$TMPDIR/shot.png` or `${TMPDIR}/shot.png`. On Windows, Claude runs its commands in Git Bash, so it can name files the way Git Bash does: `/c/Work/Game/Config.ini` is `C:\Work\Game\Config.ini`, and `/tmp/shot.png` is in your temporary folder. A name, or a path that isn't there from the folder (`specs/weapons.md`), is the file with that name that Claude's tools last read or changed, a subagent's too. Failing that, it is a file in the project with that name, the shallowest first.
 
 ### What a click does
 

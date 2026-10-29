@@ -329,19 +329,20 @@
     <Setter Property="Opacity" Value="0.88" />
   </Style>
 
-  <!-- Settings → Conversation → Indent your messages (DESIGN.md §18, "Conversation cards"): your messages' cards start
-       far in from the left, Claude's replies at the left edge, and its thinking, tool calls and subagents a little in,
-       all ending at the column's right edge, so whose turn a card is can be told by its place alone. -->
+  <!-- Settings → Conversation → Indent your messages and Indent Claude's steps (DESIGN.md §18, "Conversation cards"):
+       your messages' cards start far in from the left, and Claude's thinking, tool calls and subagents a little in, while
+       its replies stay at the left edge, all ending at the column's right edge, so whose turn a card is can be told by
+       its place alone. Each is a setting of its own. -->
   <Style Selector=".indentyou controls|Card.you">
     <Setter Property="Margin" Value="96,0,0,0" />
   </Style>
   <Style Selector=".indentyou.compact controls|Card.you">
     <Setter Property="Margin" Value="64,0,0,0" />
   </Style>
-  <Style Selector=".indentyou controls|Card.thinking, .indentyou controls|Card.tools, .indentyou controls|Card.agent, .indentyou controls|Card.steps">
+  <Style Selector=".indentsteps controls|Card.thinking, .indentsteps controls|Card.tools, .indentsteps controls|Card.agent, .indentsteps controls|Card.steps">
     <Setter Property="Margin" Value="24,0,0,0" />
   </Style>
-  <Style Selector=".indentyou.compact controls|Card.thinking, .indentyou.compact controls|Card.tools, .indentyou.compact controls|Card.agent, .indentyou.compact controls|Card.steps">
+  <Style Selector=".indentsteps.compact controls|Card.thinking, .indentsteps.compact controls|Card.tools, .indentsteps.compact controls|Card.agent, .indentsteps.compact controls|Card.steps">
     <Setter Property="Margin" Value="16,0,0,0" />
   </Style>
 

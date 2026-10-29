@@ -434,6 +434,17 @@ function Get-OtherWindow($claudette, [IntPtr] $main, [string] $what, [int] $seco
     $other
 }
 
+# Hides the tool windows showing in the main window, by the Hide button in each one's header, so a picture has the
+# window's whole width, as the Files tab's does.
+function Hide-ToolWindows([IntPtr] $window) {
+    foreach ($title in 'Changed files', 'Agents', 'Project', 'Tasks', 'MCP', 'Scratch pad', 'Processes', 'Games', 'Find') {
+        if ($hide = Find-ByText $window "Hide $title" -Optional) {
+            Send-Click $hide
+            Wait-Until { -not (Find-ByText $window "Hide $title" -Optional) } "$title to hide" 20
+        }
+    }
+}
+
 # Clicks $element to open its menu and returns where to find the menu's entries, once $entry is there: a window of its
 # own, as a context menu has, or the window it was opened from, whose automation tree has the header's menu's entries
 # (its button is in the title bar), which a click reaches as it does the others.
@@ -587,5 +598,5 @@ function Stop-Claudette($claudette) {
 
 Export-ModuleMember -Function Get-Root, Get-Parent, Find-ByText, Find-ByPrefix, Find-ByType, Find-ById, Find-Lowest, Find-LowestByText, Show-Tree, Invoke-ByText, Invoke-Element,
     Select-TreeItem, Select-ListItem, Show-Element, Set-ElementText, Set-Toggle, Send-Click, Send-RightClick, Send-Message, Show-Tip, Hide-Tip, Send-Keys,
-    Send-WindowKey, Send-Command, Send-ElementCommand, Set-Step, Get-OtherWindow, Open-Menu, Wait-PointerAway, Save-Window, Get-Bounds, Save-Rect, Save-Elements, Save-Element, Close-Window,
+    Send-WindowKey, Send-Command, Send-ElementCommand, Set-Step, Get-OtherWindow, Open-Menu, Hide-ToolWindows, Wait-PointerAway, Save-Window, Get-Bounds, Save-Rect, Save-Elements, Save-Element, Close-Window,
     Wait-Until, Build-Claudette, New-DemoContent, Start-Claudette, Stop-Claudette
