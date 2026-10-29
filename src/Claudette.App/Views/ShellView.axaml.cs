@@ -410,6 +410,9 @@ public partial class ShellView : UserControl
         if (_shell is not null)
         {
             _shell.ShowSettingsWindow = ShowSettingsAsync;
+            _shell.ShowAboutWindow = () => this.FindAncestorOfType<Window>() is { DataContext: MainWindowViewModel main } owner
+                ? AboutWindow.ShowAsync(main.Services, owner)
+                : Task.CompletedTask;
             _shell.ShowImageWindow = viewer => ImageWindow.Open(viewer, TopLevel.GetTopLevel(this) as Window);
             _shell.PropertyChanged += OnShellChanged;
             _shell.ToolWindows.FocusRequested += OnToolFocusRequested;

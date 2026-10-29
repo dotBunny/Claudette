@@ -249,6 +249,7 @@ public sealed partial class ShellViewModel
         entries.Add(new PaletteEntry("User Guide", "Help", () => HelpLinks.OpenGuideAsync(_services)));
         entries.Add(new PaletteEntry("Ask on Discord", "Help", () => HelpLinks.OpenDiscordAsync(_services)));
         entries.Add(new PaletteEntry("Report an issue", "Help", () => HelpLinks.ReportIssueAsync(_services)));
+        entries.Add(new PaletteEntry("About Claudette", "Help", OpenAboutAsync));
         return entries;
     }
 }

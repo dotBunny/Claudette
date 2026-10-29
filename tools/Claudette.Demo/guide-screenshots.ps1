@@ -288,13 +288,17 @@ foreach ($theme in $Themes) {
             }
 
             # About: the version, its links and license, and the trademarks.
+            # About Claudette, a window of its own, from the header's menu.
             Shot 'settings/about' {
                 param($path)
-                $settings = Open-Settings
-                Select-ListItem $settings 'About'
+                Invoke-ByText $window 'Menu'
+                $menu = Get-OtherWindow $claudette $window 'the menu'
                 Start-Sleep -Seconds 1
-                Save-Window $settings $path
-                Close-Window $settings
+                Send-Click (Find-ByText $menu 'About Claudette')
+                $about = Get-OtherWindow $claudette $window 'the About window'
+                Start-Sleep -Seconds 2
+                Save-Window $about $path
+                Close-Window $about
                 Start-Sleep -Seconds 1
             }
 

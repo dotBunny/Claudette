@@ -1,29 +1,28 @@
 ---
-title: About
+title: About Claudette
 parent: Settings
 nav_order: 8
-summary: "Settings → About says which Claudette you have, where it is on the web, the trademarks it names, and the licenses of what it's built with."
+summary: "About Claudette says which Claudette you have, where it is on the web, the trademarks it names, and the licenses of what it's built with."
 ---
 
-# About
+# About Claudette
 
 {% include unreleased.html %}
 
-Settings → About says which Claudette you have and where to find it on the web, whose names and logos it uses, and the open-source libraries, font and artwork it's built with, each with its license. It has no settings.
+About Claudette is a window of its own. It says which Claudette you have and where to find it on the web, whose names and logos it uses, and the open-source libraries, font and artwork it's built with, each with its license. It opens over the window you opened it from, and `Esc` closes it.
 
-{% include shot.html name="guide/settings/about" alt="Settings on About: the version, On the web with Website, Source code, Changelog and Privacy policy, Claudette's MIT License, and the Trademarks section with a row for each name and its owner's notice" %}
+{% include shot.html name="guide/settings/about" alt="About Claudette, its own window: Claudette's logo and name, the version, On the web with Website, Source code, Changelog and Privacy policy, Claudette's MIT License, and the Trademarks section with a row for each name and its owner's notice" %}
 
 ## Opening it
 
-- **About**, the last page of the Claudette group in Settings' sidebar.
-- **About Claudette** in the menu at the header's right.
+- **About Claudette** in the menu after the logo at the header's left.
 - **About Claudette** in **Help**, the question mark at the foot of Settings' sidebar.
 - On macOS, **About Claudette** in the app menu.
-- **About** in the [command palette](../tabs/the-command-palette.md) (`Ctrl/Cmd+Shift+P`).
+- **About Claudette** in the [command palette](../tabs/the-command-palette.md) (`Ctrl/Cmd+Shift+P`).
 
 ## Claudette
 
-- **The version**, the same as at the foot of Settings' sidebar, where a click copies the versions for a bug report ([The version and Help](the-settings-window.md#the-version-and-help)).
+- **The version**, the same as at the foot of the Settings window's sidebar, where a click copies the versions for a bug report ([The version and Help](the-settings-window.md#the-version-and-help)).
 - **On the web**: **Website**, **Source code**, **Changelog** and **Privacy policy** open in your browser.
 - **MIT License**: Claudette is free and open source, made by dotBunny. **License** shows the license's text under it.
 

@@ -350,9 +350,6 @@
             <DataTemplate DataType="settings:KeyboardPage">
               <pages:KeyboardPageView />
             </DataTemplate>
-            <DataTemplate DataType="settings:AboutPage">
-              <pages:AboutPageView />
-            </DataTemplate>
             <DataTemplate DataType="settings:ClaudeCodePage">
               <pages:ClaudeCodePageView />
             </DataTemplate>

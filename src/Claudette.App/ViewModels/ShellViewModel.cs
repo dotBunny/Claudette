@@ -296,6 +296,9 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     /// <summary>Set by the view: opens the Settings window where <see cref="SettingsOpening"/> says, and returns when it closes.</summary>
     public Func<SettingsOpening, Task>? ShowSettingsWindow { get; set; }
 
+    /// <summary>Set by the view: opens About Claudette over the main window, and returns when it closes.</summary>
+    public Func<Task>? ShowAboutWindow { get; set; }
+
     /// <summary>
     /// Brings back saved tabs (DESIGN.md §9, "Restore on launch"): pinned tabs always, the others only when
     /// <see cref="SessionSettings.RestoreUnpinnedTabs"/> is on. Restored tabs start their process when selected.
@@ -1073,9 +1076,9 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     [RelayCommand]
     private Task ReportIssueAsync() => HelpLinks.ReportIssueAsync(_services);
 
-    /// <summary>Settings → About (DESIGN.md §14, "About").</summary>
+    /// <summary>About Claudette, a window of its own (DESIGN.md §14, "About").</summary>
     [RelayCommand]
-    private Task OpenAboutAsync() => OpenSettingsAtAsync(SettingsCategory.About);
+    private Task OpenAboutAsync() => ShowAboutWindow?.Invoke() ?? Task.CompletedTask;
 
     /// <summary>
     /// Opens Settings at a category, and brings the setting or section with <paramref name="key"/> into view: the quick

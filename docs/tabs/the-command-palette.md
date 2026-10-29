@@ -28,7 +28,7 @@ Before you type, the list has five kinds of entry, in this order. The kind shows
 - **Tabs**, by name with their folder. Picking one selects it.
 - **Folders**: your favorites, then recent folders. Picking one opens a new tab there.
 - **Settings** pages. Picking one opens Settings there.
-- **Help**: **User Guide** opens this guide, **Ask on Discord** opens dotBunny's Discord, where you can ask questions, and **Report an issue** opens a new issue on GitHub with the versions filled in. They open in your browser. See [Reporting an issue](../troubleshooting/reporting-an-issue.md).
+- **Help**: **User Guide** opens this guide, **Ask on Discord** opens dotBunny's Discord, where you can ask questions, and **Report an issue** opens a new issue on GitHub with the versions filled in, all in your browser. **About Claudette** opens [its window](../settings/about.md). See [Reporting an issue](../troubleshooting/reporting-an-issue.md).
 
 ### The commands
 

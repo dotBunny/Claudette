@@ -33,15 +33,26 @@ public partial class SettingsWindow : Window
         if (_settings is not null)
         {
             _settings.PropertyChanged -= OnSettingsPropertyChanged;
+            _settings.AboutRequested -= OnAboutRequested;
         }
         _settings = DataContext as SettingsViewModel;
         if (_settings is not null)
         {
             _settings.PropertyChanged += OnSettingsPropertyChanged;
+            _settings.AboutRequested += OnAboutRequested;
             if (_settings.ScrollToKey is not null)
             {
                 ScrollToSoon();
             }
+        }
+    }
+
+    /// <summary>Help's <b>About Claudette</b>: its window, over Settings (DESIGN.md §14, "About").</summary>
+    private void OnAboutRequested()
+    {
+        if (_settings is { } settings)
+        {
+            _ = AboutWindow.ShowAsync(settings.Services, this);
         }
     }
 

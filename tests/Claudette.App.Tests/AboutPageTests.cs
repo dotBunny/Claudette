@@ -64,12 +64,9 @@ public class AboutPageTests
     public async Task About_says_which_Claudette_this_is_its_license_and_the_trademarks_it_names()
     {
         await using var h = new TabTestHarness();
-        using var settings = new SettingsViewModel(h.Services, null);
-        var about = settings.About;
+        var about = new AboutPage(new SettingsContext(h.Services));
 
-        // The last of Claudette's pages in the sidebar.
-        var categories = settings.Categories.ToList();
-        Assert.Equal(SettingsCategory.About, categories[categories.IndexOf(SettingsCategory.Keyboard) + 1]);
+        Assert.Equal("About Claudette", about.Title);
         Assert.Equal(h.Services.Build.Label, about.FindSetting("about.version")!.Title);
         Assert.Equal("Copyright (c) 2026 dotBunny Inc. Claudette is free and open source.", about.FindSetting("about.license")!.Description);
         Assert.StartsWith("MIT License", about.LicenseText, StringComparison.Ordinal);
@@ -82,34 +79,30 @@ public class AboutPageTests
         Assert.Contains("isn't sponsored by, affiliated with or endorsed by", about.FindGroup("trademarks")!.Description, StringComparison.Ordinal);
         // Nothing on it to change, so nothing to reset.
         Assert.All(about.Groups, g => Assert.False(g.CanReset));
-
-        // Search finds it by what's on it.
-        settings.SearchText = "trademark";
-        Assert.All(settings.SearchResults, r => Assert.Equal(SettingsCategory.About, r.Category));
-        Assert.Contains(settings.SearchResults, r => r.Key == "about.trademark.unity");
-        settings.SearchText = "third-party notices";
-        Assert.Equal("licenses", Assert.Single(settings.SearchResults).Key);
-        settings.SearchText = "version";
-        Assert.Contains(settings.SearchResults, r => r.Key == "about.version");
     }
 
+    /// <summary>About is a window of its own (DESIGN.md §14, "About"): not a page of Settings, whose Help asks for the window.</summary>
     [Fact]
-    public async Task Help_menus_About_Claudette_shows_the_page()
+    public async Task About_isnt_a_page_of_Settings_and_Helps_About_Claudette_asks_for_its_window()
     {
         await using var h = new TabTestHarness();
         using var settings = new SettingsViewModel(h.Services, null);
+        var asked = 0;
+        settings.AboutRequested += () => asked++;
 
+        Assert.DoesNotContain("About", settings.Categories);
+        settings.SearchText = "trademark";
+        Assert.Empty(settings.SearchResults);
         settings.ShowAboutCommand.Execute(null);
 
-        Assert.Same(settings.About, settings.CurrentPage);
+        Assert.Equal(1, asked);
     }
 
     [Fact]
     public async Task Its_links_open_in_the_browser()
     {
         await using var h = new TabTestHarness();
-        using var settings = new SettingsViewModel(h.Services, null);
-        var about = settings.About;
+        var about = new AboutPage(new SettingsContext(h.Services));
         var avalonia = about.Libraries.Single(r => r.Library.Name == "Avalonia");
         var logo = about.Libraries.Single(r => r.Library.Name == "Godot Engine logo");
 
