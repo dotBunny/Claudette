@@ -104,32 +104,55 @@ public sealed class AutomationChannel : IDisposable
 
     private async Task ListenAsync(CancellationToken token)
     {
-        while (!token.IsCancellationRequested)
+        NamedPipeServerStream? next = null;
+        try
         {
-            try
+            while (!token.IsCancellationRequested)
             {
-                await using var pipe = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte,
-                    PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-                await pipe.WaitForConnectionAsync(token).ConfigureAwait(false);
-                using var reader = new StreamReader(pipe, new UTF8Encoding(false), leaveOpen: true);
-                await using var writer = new StreamWriter(pipe, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true };
-                while (await reader.ReadLineAsync(token).ConfigureAwait(false) is { } line)
+                var pipe = next ?? NewInstance();
+                next = null;
+                try
                 {
-                    var response = await AnswerAsync(line).ConfigureAwait(false);
-                    await writer.WriteLineAsync(JsonSerializer.Serialize(response, Json).AsMemory(), token).ConfigureAwait(false);
+                    await using (pipe.ConfigureAwait(false))
+                    {
+                        await pipe.WaitForConnectionAsync(token).ConfigureAwait(false);
+                        // The next script's instance before this one closes: on macOS and Linux a pipe's instances share
+                        // one listening socket, which closes with the last of them, resetting a script already waiting on it.
+                        next = NewInstance();
+                        using var reader = new StreamReader(pipe, new UTF8Encoding(false), leaveOpen: true);
+                        await using var writer = new StreamWriter(pipe, new UTF8Encoding(false), leaveOpen: true) { AutoFlush = true };
+                        while (await reader.ReadLineAsync(token).ConfigureAwait(false) is { } line)
+                        {
+                            var response = await AnswerAsync(line).ConfigureAwait(false);
+                            await writer.WriteLineAsync(JsonSerializer.Serialize(response, Json).AsMemory(), token).ConfigureAwait(false);
+                        }
+                    }
+                }
+                catch (OperationCanceledException) when (token.IsCancellationRequested)
+                {
+                    return;
+                }
+                catch (IOException ex)
+                {
+                    // The script went away mid-command; the next one connects afresh.
+                    _logger.LogDebug(ex, "The automation pipe's client went away.");
                 }
             }
-            catch (OperationCanceledException) when (token.IsCancellationRequested)
+        }
+        finally
+        {
+            if (next is not null)
             {
-                return;
-            }
-            catch (IOException ex)
-            {
-                // The script went away mid-command; the next one connects afresh.
-                _logger.LogDebug(ex, "The automation pipe's client went away.");
+                await next.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
+
+    /// <summary>
+    /// One of the pipe's instances: two at most, the one a script is on and the next script's, which waits its turn.
+    /// </summary>
+    private NamedPipeServerStream NewInstance() => new(_pipeName, PipeDirection.InOut, 2, PipeTransmissionMode.Byte,
+        PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
 
     private async Task<AutomationResponse> AnswerAsync(string line)
     {
