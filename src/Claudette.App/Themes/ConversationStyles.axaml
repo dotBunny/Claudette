@@ -533,25 +533,11 @@
   <Style Selector=".claude TextBox.scratchpad">
     <Setter Property="CornerRadius" Value="10" />
   </Style>
-  <!-- Games with Claudette (DESIGN.md §18): the row of games, the boards, the gallows and the letters. The user's marks
-       and pieces are blue, hers berry; the pieces that win are ringed in gold. -->
+  <!-- Games with Claudette (DESIGN.md §18): the boards, the gallows, the letters and the minefield. The user's marks,
+       pieces and flags are blue, hers berry, as her mines are; the pieces that win are ringed in gold. -->
   <Style Selector="StackPanel.gameheader">
-    <Setter Property="Margin" Value="12,0,12,8" />
+    <Setter Property="Margin" Value="12,10,12,8" />
     <Setter Property="Spacing" Value="8" />
-  </Style>
-  <Style Selector="Button.gamechoice">
-    <Setter Property="Padding" Value="9,4" />
-    <Setter Property="MinHeight" Value="0" />
-    <Setter Property="CornerRadius" Value="6" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="BorderBrush" Value="Transparent" />
-  </Style>
-  <Style Selector=".claude Button.gamechoice">
-    <Setter Property="CornerRadius" Value="12" />
-  </Style>
-  <Style Selector="Button.gamechoice.selected">
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentStatusBrush}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
   <Style Selector="StackPanel.gameboard">
     <Setter Property="Margin" Value="12,0,16,0" />
@@ -648,6 +634,69 @@
   <Style Selector="Button.gameletter.missed">
     <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
     <Setter Property="Opacity" Value="0.55" />
+  </Style>
+  <!-- Minesweeper: the squares shut are buttons, those open lie flat, their numbers in the classic colors -->
+  <!-- Nine of them fit the right side at its narrowest -->
+  <Style Selector="Button.minesquare">
+    <Setter Property="Width" Value="22" />
+    <Setter Property="Height" Value="22" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Margin" Value="1" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
+    <Setter Property="FontWeight" Value="Bold" />
+  </Style>
+  <Style Selector=".claude Button.minesquare">
+    <Setter Property="CornerRadius" Value="7" />
+  </Style>
+  <Style Selector="Button.minesquare.open /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SubtleBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Button.minesquare.exploded /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource DiffRemovedBrush}" />
+  </Style>
+  <Style Selector="Button.minesquare.n1 /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource GameYouBrush}" />
+  </Style>
+  <Style Selector="Button.minesquare.n2 /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource OkTextBrush}" />
+  </Style>
+  <Style Selector="Button.minesquare.n3 /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource ErrorTextBrush}" />
+  </Style>
+  <Style Selector="Button.minesquare.n4 /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource GameClaudetteBrush}" />
+  </Style>
+  <Style Selector="Button.minesquare.n5 /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}" />
+  </Style>
+  <Style Selector="Path.mineflag">
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+    <Setter Property="Stretch" Value="None" />
+    <Setter Property="StrokeThickness" Value="1.3" />
+    <Setter Property="StrokeJoin" Value="Round" />
+    <Setter Property="Stroke" Value="{DynamicResource GameYouBrush}" />
+    <Setter Property="Fill" Value="{DynamicResource GameYouBrush}" />
+  </Style>
+  <Style Selector="Path.minewrong">
+    <Setter Property="Width" Value="14" />
+    <Setter Property="Height" Value="14" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="StrokeThickness" Value="1.6" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="Stroke" Value="{DynamicResource ErrorTextBrush}" />
+  </Style>
+  <Style Selector="Ellipse.mine">
+    <Setter Property="Width" Value="11" />
+    <Setter Property="Height" Value="11" />
+    <Setter Property="Fill" Value="{DynamicResource GameClaudetteBrush}" />
   </Style>
   <!-- A code block's Add to scratch pad: in a tab, not in the agent map's own window, which has no pad -->
   <Style Selector="md|CodeBlock /template/ Button#AddToScratchPadButton">
@@ -912,6 +961,23 @@
     <Setter Property="Stretch" Value="Uniform" />
     <Setter Property="StrokeThickness" Value="1.3" />
     <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
+  </Style>
+  <!-- A choice beside a tool window's title, as the Games window's game: what's chosen, and a menu of the rest -->
+  <Style Selector="Button.toolchoice">
+    <Setter Property="Padding" Value="8,3,6,3" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="CornerRadius" Value="5" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+  </Style>
+  <Style Selector="Button.toolchoice Path">
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+    <Setter Property="Stretch" Value="None" />
+    <Setter Property="StrokeThickness" Value="1.4" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
   <!-- Changed files (DESIGN.md §8, "Reviewed"): a small box before each file, and a reviewed file drawn faintly -->
   <Style Selector="CheckBox.reviewed">

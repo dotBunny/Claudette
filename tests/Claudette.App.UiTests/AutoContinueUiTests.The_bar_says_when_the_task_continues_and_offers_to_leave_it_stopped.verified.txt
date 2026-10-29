@@ -1,11 +1,11 @@
 ﻿Continuing:
 "You've hit your session limit. The task continues by itself when it resets, at 14:00."
-[button] Don't continue
 [button] Play a game while you wait
+[button] Don't continue
 
 
 After Don't continue:
 "You've hit your session limit. It resets at 14:00."
+[button] Play a game while you wait
 [button] Continue when it resets
 [button] Close
-[button] Play a game while you wait

@@ -6,13 +6,15 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Claudette.App.Services;
+using Claudette.App.ViewModels;
 
 namespace Claudette.App.Views;
 
 /// <summary>
-/// The Games page (DESIGN.md §18, "Games with Claudette"): what it needs beyond bindings, which is the keyboard. While
-/// the page has focus, the number keys play tic-tac-toe's squares and Connect Four's columns and the letters guess in
-/// hangman. It takes focus when a game is started, so the keys reach it rather than the composer.
+/// The Games page (DESIGN.md §18, "Games with Claudette"): what it needs beyond bindings, which is the keyboard and
+/// Minesweeper's right-click. While the page has focus, the number keys play tic-tac-toe's squares and Connect Four's
+/// columns, the letters guess in hangman, and F flags the Minesweeper square with the focus. It takes focus when a game
+/// is started, so the keys reach it rather than the composer.
 /// </summary>
 public partial class GamesView : UserControl
 {
@@ -22,6 +24,7 @@ public partial class GamesView : UserControl
     {
         InitializeComponent();
         AddHandler(KeyDownEvent, OnKeyDown, RoutingStrategies.Bubble);
+        AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Bubble);
     }
 
     protected override void OnDataContextChanged(EventArgs e)
@@ -75,12 +78,32 @@ public partial class GamesView : UserControl
         }
     }
 
+    /// <summary>A right-click on one of Minesweeper's squares flags it.</summary>
+    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed && MinesweeperSquareAt(e.Source) is { } square)
+        {
+            square.FlagCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+
+    private static MinesweeperSquare? MinesweeperSquareAt(object? source) =>
+        (source as Visual)?.FindAncestorOfType<Button>(includeSelf: true)?.DataContext as MinesweeperSquare;
+
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (e.Handled || (e.KeyModifiers & ~KeyModifiers.Shift) != KeyModifiers.None || _games?.Game is not { } game
             // The level's list has its own keys.
             || (e.Source as Visual)?.FindAncestorOfType<ComboBox>(includeSelf: true) is not null)
         {
+            return;
+        }
+        // F flags the Minesweeper square with the focus.
+        if (e.Key == Key.F && MinesweeperSquareAt(e.Source) is { } square)
+        {
+            square.FlagCommand.Execute(null);
+            e.Handled = true;
             return;
         }
         var key = e.Key switch

@@ -147,6 +147,7 @@ public class MascotTabTests
         Assert.Equal($"3 tabs need you · {key}", lines.OthersWaiting(3));
         var tips = Enumerable.Range(0, 200).Select(i => lines.Tip(new Random(i))).Distinct().ToList();
         Assert.Contains($"{key} goes to the next tab waiting for you", tips);
+        Assert.Contains($"{h.Services.Tips.Text(KeyboardShortcuts.FindInFiles)} finds text in every file of the project", tips);
         Assert.All(tips, tip => Assert.DoesNotContain("{0}", tip!));
     }
 

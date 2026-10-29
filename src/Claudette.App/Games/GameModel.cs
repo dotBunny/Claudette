@@ -6,9 +6,13 @@ public enum GameKind
     TicTacToe,
     ConnectFour,
     Hangman,
+    Minesweeper,
 }
 
-/// <summary>How well Claudette plays. Tic-tac-toe calls the top level Unbeatable, Connect Four Hard.</summary>
+/// <summary>
+/// How well Claudette plays, or in Minesweeper, how many mines she hides. Tic-tac-toe calls the top level Unbeatable, the
+/// others Hard.
+/// </summary>
 public enum GameLevel
 {
     Easy,

@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -65,14 +66,19 @@ public class AutoContinueUiTests
         var offer = Bar(window, tab).GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "Play a game while you wait").FindAncestorOfType<Button>()!;
         Assert.True(offer.IsEffectivelyVisible);
         var flyout = Assert.IsType<MenuFlyout>(offer.Flyout);
-        Assert.Equal(["Tic-tac-toe", "Connect Four", "Hangman"], flyout.Items.OfType<MenuItem>().Select(i => i.Header as string));
+        Assert.Equal(["Tic-tac-toe", "Connect Four", "Hangman", "Minesweeper"], flyout.Items.OfType<MenuItem>().Select(i => i.Header as string));
+        // The bar's buttons sit in the middle of its height, beside the text and the game's link under it.
+        var bar = Bar(window, tab);
+        var dontContinue = bar.GetVisualDescendants().OfType<Button>().Single(b => b.Content as string == "Don't continue");
+        var middle = dontContinue.TranslatePoint(new Point(0, dontContinue.Bounds.Height / 2), bar)!.Value.Y;
+        Assert.Equal(bar.Bounds.Height / 2, middle, tolerance: 1);
 
         flyout.ShowAt(offer);
         UiText.Settle(window);
-        flyout.Items.OfType<MenuItem>().Last().Command!.Execute(GameKind.Hangman);
+        flyout.Items.OfType<MenuItem>().Last().Command!.Execute(GameKind.Minesweeper);
         flyout.Hide();
         UiText.Settle(window);
-        Assert.IsType<HangmanViewModel>(h.Services.Games.Game);
+        Assert.IsType<MinesweeperViewModel>(h.Services.Games.Game);
         Assert.True(h.IsShowing(ToolWindowKinds.Games));
 
         // Left stopped, the limit still holds.

@@ -177,7 +177,11 @@ public sealed class MascotLayer : Control
             figure.PointerCaptureLost += (_, _) => LetGo();
             var menu = new ContextMenu();
             // A game against her (DESIGN.md §18, "Games with Claudette"), while they're on.
-            foreach (var (header, kind) in new[] { ("Play tic-tac-toe", GameKind.TicTacToe), ("Play Connect Four", GameKind.ConnectFour), ("Play hangman", GameKind.Hangman) })
+            foreach (var (header, kind) in new[]
+            {
+                ("Play tic-tac-toe", GameKind.TicTacToe), ("Play Connect Four", GameKind.ConnectFour), ("Play hangman", GameKind.Hangman),
+                ("Play Minesweeper", GameKind.Minesweeper),
+            })
             {
                 var play = new MenuItem { Header = header, CommandParameter = kind };
                 play.Bind(MenuItem.CommandProperty, this.GetObservable(PlayCommandProperty));

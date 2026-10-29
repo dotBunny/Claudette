@@ -7,7 +7,7 @@ summary: "A row of tabs sits over the editor, one for each open file."
 
 # File tabs
 
-A row of tabs sits over the editor, one for each open file. With no file open, the space under it says *No files open* and offers a **Go to file…** button.
+A row of tabs sits over the editor, one for each open file. With no file open, the space under it says *No files open* and lists what to do next, each with its shortcut: **Go to file**, **Find in files**, **Replace in files** and **Command palette**.
 
 ## What a tab shows
 
@@ -26,6 +26,24 @@ A single click on a file in the [explorer](the-explorer.md) opens it in the prev
 - A click selects a tab, and a middle click closes it.
 - Drag a tab to move it along the row.
 - When the tabs don't fit, the row scrolls sideways (the mouse wheel works) and keeps the selected tab in view. The **⋯** at its end, **Every open file**, lists every open file.
+- Drag a tab out of Claudette's window to open its file in a window of its own ([below](#in-a-window-of-its-own)).
+
+## In a window of its own
+
+A file can leave the Files tab for a window of its own, so you can keep the code on another screen, or beside Claudette, while the conversation has all of Claudette's window. To open one:
+
+- right-click its tab and choose **Open in a window**;
+- click the window button at the right of the row, before **⋯**, for the file showing;
+- drag its tab out of Claudette's window and let go where you want it;
+- or, with the Files tab focused, choose **Open the file in a window** in the [command palette](../tabs/the-command-palette.md).
+
+The window has the file's name in its title bar, with a dot while it has unsaved edits, and its project's name. Under it, a toolbar has the file's path and **Put back**. The rest is the file as its tab shows it: the editor, Claude's changes, the chip and the Markdown preview, with your edits, the cursor and where you'd scrolled. It follows your zoom, and the Files tab's keys work in it: `Ctrl/Cmd+S` saves it, **Find in files** opens over Claudette's window, and `Ctrl/Cmd+W` puts it back.
+
+Meanwhile its tab stays in the row, with a small window after its name. Click it, or choose it in **⋯**, to bring the window forward. Opening the file again, from a reply, Changed files or **Go to file**, goes to its window too, at the line. `Ctrl+PageDown` and `Ctrl+PageUp` skip it. When every open file is in a window, the editor's place says so.
+
+To put it back, click **Put back** in the window's toolbar, choose **Put back** on its tab's menu, or close the window. The file shows in its tab again, unsaved edits and all. Closing the file from its tab closes its window, asking first about unsaved edits.
+
+Windows aren't kept: the next time Claudette starts, a file that was in one is back in its tab.
 
 ## Pinning
 
@@ -45,7 +63,7 @@ A file with unsaved edits asks first ([Saving](saving.md)).
 
 When the Files tab is beside another tab with its explorer hidden, as it is when a file you clicked in the conversation opened it ([Opening files from the conversation](opening-files-from-the-conversation.md)), closing its last file closes the Files tab too, and the conversation has its width back. With the explorer showing, or with the Files tab on its own, it stays open with no file.
 
-The rest of the menu is **Pin** or **Unpin**, **Reviewed** while Claude has changed the file, **Copy path**, **Copy relative path**, **Reveal in the explorer** (which selects it in the tree, and shows the explorer if it's hidden), **Reveal in file manager** and **Open in the OS's app**.
+The rest of the menu is **Pin** or **Unpin**, **Open in a window** or **Put back** ([In a window of its own](#in-a-window-of-its-own)), **Reviewed** while Claude has changed the file, **Copy path**, **Copy relative path**, **Reveal in the explorer** (which selects it in the tree, and shows the explorer if it's hidden), **Reveal in file manager** and **Open in the OS's app**.
 
 ## Moving between files
 
@@ -62,7 +80,7 @@ A Files tab comes back on launch with the files it had open. Unsaved edits come 
 | Key | Does |
 |---|---|
 | `Ctrl+PageDown`, `Ctrl+PageUp` | The next or previous file (macOS: `Cmd+Option+→`, `Cmd+Option+←`) |
-| `Ctrl/Cmd+W` | Close the file showing |
+| `Ctrl/Cmd+W` | Close the file showing; in a file's own window, put it back |
 
 ## See also
 

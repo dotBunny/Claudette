@@ -13,7 +13,7 @@ Type part of a file's name and the explorer swaps its tree for a list of the fil
 
 - Click **Find file** (the magnifier) in the explorer's header.
 - Or press `Ctrl/Cmd+P`, which works from anywhere, or choose **Go to file…** in the [command palette](../tabs/the-command-palette.md). From a conversation, it first opens the project's Files tab, beside the conversation or in its place, as **Show a file clicked in a conversation** says ([Opening files from the conversation](opening-files-from-the-conversation.md)).
-- With no file open, the empty Files tab has a **Go to file…** button.
+- With no file open, the empty Files tab lists **Go to file**, with its shortcut.
 
 A box, **Find a file by name**, appears at the top of the explorer with the keyboard in it.
 
@@ -21,7 +21,7 @@ A box, **Find a file by name**, appears at the top of the explorer with the keyb
 
 It searches the names of the files the composer's `@` lists ([Slash commands and mentions](../composer/slash-commands-and-mentions.md)): the files git tracks and the new ones it doesn't ignore. Outside a repository, it's a walk of the folder that skips `node_modules`, `bin`, `obj` and the like. Files git ignores are left to the tree.
 
-Only names are searched, not what's in the files.
+Only names are searched, not what's in the files. To look for text in them, click **Find "…" in files** under the list, which takes what you typed to [Find in files](finding-in-files.md), or press `Ctrl+Shift+F` (`Cmd+Shift+F` on macOS) in the box.
 
 ## Matching
 

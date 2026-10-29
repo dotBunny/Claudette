@@ -2,6 +2,7 @@ using Claudette.App.Conversation;
 using Claudette.App.Diffs;
 using Claudette.App.Editor;
 using Claudette.App.Services;
+using Claudette.Core.Development;
 using Claudette.Core.ProjectFiles;
 using Claudette.Core.ProjectTools;
 using Claudette.Core.Protocol;
@@ -214,6 +215,7 @@ public sealed partial class ProjectFileViewModel : ViewModelBase, IMarkdownHost,
 
     /// <summary>The file showing in its tab.</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsOnScreen))]
     public partial bool IsShowing { get; set; }
 
     partial void OnIsShowingChanged(bool value)
@@ -228,6 +230,54 @@ public sealed partial class ProjectFileViewModel : ViewModelBase, IMarkdownHost,
             UpdatePreview();
         }
     }
+
+    // ---- In a window of its own (DESIGN.md §18, "Project files", "A file in a window of its own") ------------------
+
+    /// <summary>It's in a window of its own; its tab stays in the row, marked, and brings the window forward.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(InTab), nameof(IsOnScreen), nameof(WindowMenuText))]
+    public partial bool IsInWindow { get; internal set; }
+
+    partial void OnIsInWindowChanged(bool value)
+    {
+        if (value)
+        {
+            UpdatePreview();
+        }
+    }
+
+    /// <summary>
+    /// The file, for the tab's own view of it, while it isn't in a window; nothing while it is. An editor takes its file's
+    /// requests (going to a line, find, the focus), so only one view of it is made at a time.
+    /// </summary>
+    public ProjectFileViewModel? InTab => IsInWindow ? null : this;
+
+    /// <summary>On screen, or it would be with its Files tab: showing in its tab, or in its window.</summary>
+    public bool IsOnScreen => IsShowing || IsInWindow;
+
+    /// <summary>Where the window it's popping out into opens, dragged there; null for where the view puts a new one.</summary>
+    internal WindowPlacement? WindowPlace { get; set; }
+
+    /// <summary>The Files tab it's open in.</summary>
+    internal ProjectFilesViewModel Files => _owner;
+
+    /// <summary>For its window: the settings it follows (the zoom, the shortcuts).</summary>
+    internal AppServices Services => _services;
+
+    /// <summary>The window's title, in the OS's taskbar and window lists: <i>Player.cpp — NightOwl</i>.</summary>
+    public string WindowTitle => $"{Name} — {ProjectName}";
+
+    /// <summary>Its project's name, as its group is labeled.</summary>
+    public string ProjectName => _owner.ExplorerTitle;
+
+    /// <summary>The tab's menu: <b>Open in a window</b>, or <b>Put back</b> while it's in one.</summary>
+    public string WindowMenuText => IsInWindow ? "Put back" : "Open in a window";
+
+    public string PutBackTip => $"Put it back in {ProjectName}'s Files tab";
+
+    /// <summary><b>Put back</b>, in its window's toolbar: the window closes, and the file shows in its tab again.</summary>
+    [RelayCommand]
+    private void PutBack() => _owner.PutBack(this);
 
     /// <summary>Edits not saved yet: the tab's dot.</summary>
     public bool IsModified => Document?.IsModified ?? false;
@@ -462,6 +512,7 @@ public sealed partial class ProjectFileViewModel : ViewModelBase, IMarkdownHost,
         }
         OnPropertyChanged(nameof(Path));
         OnPropertyChanged(nameof(Name));
+        OnPropertyChanged(nameof(WindowTitle));
         OnPropertyChanged(nameof(RelativePath));
         OnPropertyChanged(nameof(IsOutsideProject));
         OnPropertyChanged(nameof(Tip));
@@ -967,8 +1018,20 @@ public sealed partial class ProjectFileViewModel : ViewModelBase, IMarkdownHost,
     /// <summary>The line the view's peek is under now, which moves with the text; null without a view.</summary>
     internal Func<int?>? PeekLine { get; set; }
 
-    /// <summary>The text selected in the view's editor, for Find in files to start with; null without a view.</summary>
-    internal Func<string?>? SelectionText { get; set; }
+    /// <summary>
+    /// What Find in files starts with from the view's editor: what its find box has while the keyboard's in it, or else
+    /// the text selected; null without a view, or with neither.
+    /// </summary>
+    internal Func<FindStart?>? FindInFilesStart { get; set; }
+
+    /// <summary>
+    /// The editor's find box's <b>Find in files</b> (DESIGN.md §18, "Finding in files"): what it has, looked for in the
+    /// whole project, replacing as it is.
+    /// </summary>
+    internal void FindInFiles(FindStart start, bool replace) => _owner.FindInFiles(start, replace);
+
+    /// <summary>The find box's <b>Find in files</b>' tip, with its shortcut.</summary>
+    internal string FindInFilesTip => _services.Tips.FindInFiles;
 
     /// <summary>The peek's header: who changed the file, and when.</summary>
     public string PeekHeader => Change is { } change
@@ -1050,7 +1113,7 @@ public sealed partial class ProjectFileViewModel : ViewModelBase, IMarkdownHost,
     private void UpdatePreview()
     {
         _previewWait.Cancel();
-        if (ShowsPreview && IsShowing && Document is { } document)
+        if (ShowsPreview && IsOnScreen && Document is { } document)
         {
             _ = Markdown.ShowAsync(document.Text);
         }
@@ -1151,7 +1214,7 @@ public sealed partial class ProjectFileViewModel : ViewModelBase, IMarkdownHost,
     {
         CaretLine = Math.Max(1, line);
         CaretColumn = Math.Max(1, column);
-        if (RevealRequested is null || !IsShowing)
+        if (RevealRequested is null || !IsOnScreen)
         {
             _pendingReveal = (line, column, endLine, endColumn);
             return;
@@ -1185,8 +1248,13 @@ public sealed partial class ProjectFileViewModel : ViewModelBase, IMarkdownHost,
         Mode = Mode,
     };
 
+    /// <summary>It closed, or its Files tab did (Claudette quitting too): its window closes with it.</summary>
+    internal event Action? Closed;
+
     public void Dispose()
     {
+        Closed?.Invoke();
+        Closed = null;
         _markersWait.Dispose();
         _backupWait.Dispose();
         _diffWait.Dispose();

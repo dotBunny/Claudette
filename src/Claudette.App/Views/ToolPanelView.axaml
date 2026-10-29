@@ -1,10 +1,12 @@
 <!-- A group's tool window, beside the strip (DESIGN.md §3, "Tool windows"), as Rider's: a header with its title (and for
-     Find, a tab for each search), the session it shows when that isn't the tab in front, ⋮ for its options and − to hide
-     it; then the window. ShellView holds one for each group. Its look is in Themes/ConversationStyles.axaml. -->
+     Find, a tab for each search; for Games, the game), the session it shows when that isn't the tab in front, ⋮ for its
+     options and − to hide it; then the window. ShellView holds one for each group. Its look is in Themes/ConversationStyles.axaml. -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:tw="using:Claudette.App.ViewModels.ToolWindows"
              xmlns:vm="using:Claudette.App.ViewModels"
+             xmlns:services="using:Claudette.App.Services"
+             xmlns:games="using:Claudette.App.Games"
              xmlns:views="using:Claudette.App.Views"
              xmlns:sys="using:System"
              x:Class="Claudette.App.Views.ToolPanelView"
@@ -41,6 +43,27 @@
                     </DataTemplate>
                   </ListBox.ItemTemplate>
                 </ListBox>
+              </DataTemplate>
+              <!-- Games: the game open, its menu the games to switch to (DESIGN.md §18, "Games with Claudette") -->
+              <DataTemplate DataType="services:GameService">
+                <Button Classes="flat toolchoice" ToolTip.Tip="Play another game" AutomationProperties.Name="{Binding Game.Title, StringFormat='Game: {0}', FallbackValue='Game'}">
+                  <StackPanel Orientation="Horizontal" Spacing="5">
+                    <TextBlock Text="{Binding Game.Title, FallbackValue=''}" VerticalAlignment="Center" />
+                    <Path Data="{StaticResource IconChevronDown}" />
+                  </StackPanel>
+                  <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                      <MenuItem Header="Tic-tac-toe" ToggleType="Radio" IsChecked="{Binding IsTicTacToe, Mode=OneWay}"
+                                Command="{Binding SwitchCommand}" CommandParameter="{x:Static games:GameKind.TicTacToe}" />
+                      <MenuItem Header="Connect Four" ToggleType="Radio" IsChecked="{Binding IsConnectFour, Mode=OneWay}"
+                                Command="{Binding SwitchCommand}" CommandParameter="{x:Static games:GameKind.ConnectFour}" />
+                      <MenuItem Header="Hangman" ToggleType="Radio" IsChecked="{Binding IsHangman, Mode=OneWay}"
+                                Command="{Binding SwitchCommand}" CommandParameter="{x:Static games:GameKind.Hangman}" />
+                      <MenuItem Header="Minesweeper" ToggleType="Radio" IsChecked="{Binding IsMinesweeper, Mode=OneWay}"
+                                Command="{Binding SwitchCommand}" CommandParameter="{x:Static games:GameKind.Minesweeper}" />
+                    </MenuFlyout>
+                  </Button.Flyout>
+                </Button>
               </DataTemplate>
               <!-- The rest have only their title -->
               <DataTemplate DataType="sys:Object">

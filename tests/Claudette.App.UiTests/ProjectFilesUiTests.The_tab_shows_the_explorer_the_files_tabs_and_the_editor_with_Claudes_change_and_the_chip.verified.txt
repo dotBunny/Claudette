@@ -7,6 +7,7 @@
 "Starfall.uproject"
 [button] Hide the explorer
 [button] Every open file
+[button] Open in a window
 [button] Player.cpp
   "Player.cpp"
   [button] Close the file

@@ -115,6 +115,12 @@ public sealed partial class ShellViewModel
         _ = Task.Run(() => _services.EditorBackups.DeleteUnused(open));
     }
 
+    /// <summary>
+    /// Set by the view: opens a file's window of its own (DESIGN.md §18, "Project files", "A file in a window of its
+    /// own"), or brings the one it has to the front. The window puts the file back when it's closed.
+    /// </summary>
+    public Action<ProjectFileViewModel>? ShowFileWindow { get; set; }
+
     /// <summary>The groups in the order they were left in, which a group with only its Project Files tab needs.</summary>
     private void RestoreGroupOrder()
     {
@@ -225,6 +231,12 @@ public sealed partial class ShellViewModel
             return;
         }
         var files = ProjectFilesFor(group);
+        // One in a window of its own is gone to there, and the Files tab isn't shown for it.
+        if (files.IsOpenInWindow(path))
+        {
+            await files.OpenFileAsync(path, preview: false, line, column, endLine, focus: true, endColumn);
+            return;
+        }
         if (from is not null)
         {
             var first = files.OpenFiles.Count == 0;
