@@ -34,6 +34,10 @@ public partial class CodeEditor : UserControl
     private IBrush? _caretBrush;
     private bool _wordWrapOverridden;
 
+    /// <summary>What this editor gives its file, kept so it takes back only its own.</summary>
+    private readonly Func<int?> _peekLine;
+    private readonly Func<FindStart?> _findInFilesStart;
+
     public CodeEditor()
     {
         InitializeComponent();
@@ -57,6 +61,8 @@ public partial class CodeEditor : UserControl
         area.LeftMargins.Insert(Math.Min(1, area.LeftMargins.Count), _margin);
         _margin.Clicked += line => _file?.TogglePeekAt(line);
         _peek = new ChangePeekGenerator(view, _peekView);
+        _peekLine = () => _peek.Line;
+        _findInFilesStart = FindInFilesStart;
         _peekCaret = new PeekCaretLayer(area, () => _peek.Line);
         view.InsertLayer(_peekCaret, KnownLayer.Caret, LayerInsertionPosition.Above);
         area.Caret.PositionChanged += OnCaretMoved;
@@ -107,8 +113,8 @@ public partial class CodeEditor : UserControl
         file.GoToLineRequested += OpenGoToLine;
         file.FocusRequested += FocusEditor;
         file.TextSettled += UpdateFoldings;
-        file.PeekLine = () => _peek.Line;
-        file.FindInFilesStart = FindInFilesStart;
+        file.PeekLine = _peekLine;
+        file.FindInFilesStart = _findInFilesStart;
         ShowDocument();
     }
 
@@ -124,11 +130,23 @@ public partial class CodeEditor : UserControl
         file.GoToLineRequested -= OpenGoToLine;
         file.FocusRequested -= FocusEditor;
         file.TextSettled -= UpdateFoldings;
-        file.PeekLine = null;
-        file.FindInFilesStart = null;
+        // A file going to its window of its own is another editor's by now (DESIGN.md §18, "A file in a window of its own").
+        if (file.PeekLine == _peekLine)
+        {
+            file.PeekLine = null;
+        }
+        if (file.FindInFilesStart == _findInFilesStart)
+        {
+            file.FindInFilesStart = null;
+        }
         _peek.Remove();
         _coloring?.Dispose();
         _coloring = null;
+        // Its document goes too, so the next file's, or this one's again, is shown afresh, colored; with the file let go
+        // first, clearing it doesn't move the file's caret.
+        _file = null;
+        UninstallFolding();
+        Editor.Document = null;
     }
 
     /// <summary>The file's document, once it's read: shown, colored, and where it was left.</summary>

@@ -104,6 +104,8 @@ public sealed partial class ShellViewModel
             {
                 AsyncCommand("Close the file", () => files.CloseShowingOrTabAsync(), KeyboardShortcuts.CloseTab);
                 Command("Go to line…", showing.RequestGoToLine);
+                // DESIGN.md §18, "A file in a window of its own".
+                Command("Open the file in a window", () => files.PopOut(showing));
                 // DESIGN.md §18, "Markdown preview": the modes that aren't showing.
                 if (showing.IsMarkdown)
                 {

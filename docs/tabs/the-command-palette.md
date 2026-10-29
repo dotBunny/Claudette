@@ -43,7 +43,7 @@ For the whole window:
 While a project's Files tab has the focus:
 
 - **Save the file**, while it has unsaved edits, and **Save all files**, while any file does
-- **Close the file** and **Go to line…**, while a file is showing
+- **Close the file**, **Go to line…** and **Open the file in a window**, while a file is showing ([In a window of its own](../project-files/file-tabs.md#in-a-window-of-its-own))
 - **Preview the file**, **Edit and preview the file** and **Edit the file**, the ones not showing, while a Markdown file is. See [Markdown files](../project-files/markdown-files.md).
 - **Show only changed files** (or **Show every file in the explorer**) and **Hide the explorer** (or **Show the explorer**)
 - **Close this pane** and **Close the other panes**, with tabs [side by side](split-panes.md)

@@ -253,6 +253,40 @@
   <Style Selector=".claude Button.filetab">
     <Setter Property="CornerRadius" Value="8,8,0,0" />
   </Style>
+  <!-- A file in a window of its own: a small window after its name, on its own 12×12 grid -->
+  <Style Selector="Path.inwindow">
+    <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
+    <Setter Property="StrokeThickness" Value="1.2" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+    <Setter Property="Stretch" Value="None" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <!-- A tab dragged out of the window: letting go opens its file in a window there -->
+  <Style Selector="Button.filetab.dragout">
+    <Setter Property="Opacity" Value="0.45" />
+  </Style>
+  <!-- The row's buttons at its right: Open in a window and Every open file -->
+  <Style Selector="Button.rowaction">
+    <Setter Property="Padding" Value="9,0" />
+    <Setter Property="VerticalAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.rowaction Path">
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+    <Setter Property="Stretch" Value="None" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.rowaction Path.stroked">
+    <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
+    <Setter Property="StrokeThickness" Value="1.3" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+  </Style>
+  <Style Selector="Button.rowaction Path.filled">
+    <Setter Property="Fill" Value="{DynamicResource MutedTextBrush}" />
+  </Style>
 
   <!-- Over a file: its banner (changed or gone on disk), the question before files close, a save that failed. -->
   <Style Selector="Border.filebanner">
