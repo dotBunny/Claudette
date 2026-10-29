@@ -113,6 +113,16 @@
       <Setter Property="Background" Value="{DynamicResource SubtleBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     </Style>
+    <!-- The menu (DESIGN.md §3), over the strip of icons below it: as wide as one of them, and as far in from the window's
+         edge, 5 pixels, past the header's padding of 10. -->
+    <Style Selector="Button#MainMenu">
+      <Setter Property="Width" Value="30" />
+      <Setter Property="Height" Value="30" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0,0,-5,0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
   </Window.Styles>
 
   <!-- Settings → Appearance → Zoom and Ctrl/Cmd +, −, 0 scale everything inside (DESIGN.md §3, "Accessibility") -->
@@ -287,7 +297,7 @@
                 <TextBlock Classes="muted" Text="{Binding Account.HeaderPlan}" VerticalAlignment="Center" />
               </Button>
               <!-- The menu (DESIGN.md §3): Settings and the user guide first, then the rest of Help -->
-              <Button Name="MainMenu" Classes="flat" Padding="8" VerticalAlignment="Center" ToolTip.Tip="Menu" AutomationProperties.Name="Menu"
+              <Button Name="MainMenu" Classes="flat" VerticalAlignment="Center" ToolTip.Tip="Menu" AutomationProperties.Name="Menu"
                       IsVisible="{Binding Shell, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
                 <Path Data="{StaticResource IconMenu}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" StrokeLineCap="Round" Width="13" Height="13" Stretch="Uniform" />
                 <Button.Flyout>

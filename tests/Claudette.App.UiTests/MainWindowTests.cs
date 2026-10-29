@@ -158,6 +158,11 @@ public class MainWindowTests
 
         Assert.True(menu.TranslatePoint(default, window)!.Value.X > plan.TranslatePoint(default, window)!.Value.X);
         Assert.Equal("Menu", AutomationProperties.GetName(menu));
+        // Over the strip's icons below it: as wide as one, its middle on theirs.
+        var icon = window.GetVisualDescendants().OfType<Button>().First(b => b.Classes.Contains("stripicon") && b.IsEffectivelyVisible);
+        double Middle(Control c) => c.TranslatePoint(new Point(c.Bounds.Width / 2, 0), window)!.Value.X;
+        Assert.Equal(icon.Bounds.Width, menu.Bounds.Width);
+        Assert.Equal(Middle(icon), Middle(menu), 0.5);
         var items = Assert.IsType<MenuFlyout>(menu.Flyout).Items.OfType<MenuItem>().ToList();
         Assert.Equal(["Settings", "User Guide", "Ask on Discord", "Report an issue", "About Claudette"], items.Select(i => i.Header as string));
         // Opened, its entries take their commands.
