@@ -86,7 +86,7 @@ public class ToolWindowsUiTests
         // Half each at first.
         Assert.InRange(top.Bounds.Height - split.Bounds.Height, -2, 2);
 
-        InlineDispatcher.Run(() => h.Shell.ToolWindows.MoveTo(h.ToolWindow(ToolWindowKinds.Agents), ToolGroup.Bottom));
+        h.OnUiThread(() => h.Shell.ToolWindows.MoveTo(h.ToolWindow(ToolWindowKinds.Agents), ToolGroup.Bottom));
         h.ShowToolWindow(ToolWindowKinds.Agents);
         UiText.Settle(window);
 
@@ -162,7 +162,7 @@ public class ToolWindowsUiTests
         Assert.InRange(top.Bounds.Height - was, 78, 82);
 
         // The bottom's, by the gap above it.
-        InlineDispatcher.Run(() => h.Shell.ToolWindows.MoveTo(h.ToolWindow(ToolWindowKinds.Agents), ToolGroup.Bottom));
+        h.OnUiThread(() => h.Shell.ToolWindows.MoveTo(h.ToolWindow(ToolWindowKinds.Agents), ToolGroup.Bottom));
         h.ShowToolWindow(ToolWindowKinds.Agents);
         UiText.Settle(window);
         var bottom = Panel(window, "BottomPanel");
@@ -171,7 +171,7 @@ public class ToolWindowsUiTests
         Assert.Equal(ToolDockViewModel.DefaultBottomHeight + 60, bottom.Bounds.Height);
 
         // An unpinned window's edge sizes it too, rather than hiding it as a press elsewhere does.
-        InlineDispatcher.Run(() => h.Shell.ToolWindows.SetPinned(h.ToolWindow(ToolWindowKinds.Agents), pinned: false));
+        h.OnUiThread(() => h.Shell.ToolWindows.SetPinned(h.ToolWindow(ToolWindowKinds.Agents), pinned: false));
         Drag(window, Above(), new Vector(0, -40));
         Assert.True(bottom.IsEffectivelyVisible);
         Assert.Equal(ToolDockViewModel.DefaultBottomHeight + 100, bottom.Bounds.Height);
