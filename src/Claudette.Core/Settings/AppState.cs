@@ -60,6 +60,15 @@ public sealed class AppState
     /// <summary>Folder groups the user collapsed.</summary>
     public List<string> CollapsedGroups { get; set; } = [];
 
+    /// <summary>Folder groups whose past sessions the user unfolded (DESIGN.md §4, "Claude Code's projects").</summary>
+    public List<string> ExpandedPastSessions { get; set; } = [];
+
+    /// <summary>
+    /// The sidebar has offered to show Claude Code's projects, or the user chose in Settings (DESIGN.md §4, "Claude
+    /// Code's projects"): the offer isn't made again.
+    /// </summary>
+    public bool ClaudeProjectsOffered { get; set; }
+
     /// <summary>The user collapsed the sidebar to its rail of status icons (DESIGN.md §4, "Sidebar").</summary>
     public bool SidebarCollapsed { get; set; }
 
@@ -317,6 +326,13 @@ public sealed class TabState
     /// last left it (DESIGN.md §5), or null for Settings → Appearance. The tab's own state, not an override.
     /// </summary>
     public bool? ExpandThinking { get; set; }
+
+    /// <summary>
+    /// Whether new Tool calls cards in this tab start collapsed, as <b>Collapse all tool calls</b> or <b>Expand all tool
+    /// calls</b> last left it (DESIGN.md §18, "Conversation cards"), or null for Settings → Conversation. The tab's own
+    /// state, not an override.
+    /// </summary>
+    public bool? CollapseToolCalls { get; set; }
 
     public TokenTotals Tokens { get; set; } = new();
 

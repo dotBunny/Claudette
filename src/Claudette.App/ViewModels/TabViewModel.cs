@@ -124,6 +124,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         _conversation = new ConversationBuilder(Items, TodoList, ModelDisplayName)
         {
             ExpandThinking = state.ExpandThinking ?? services.Settings.Appearance.ExpandThinking,
+            CollapseToolCalls = state.CollapseToolCalls ?? services.Settings.Appearance.CollapseToolCalls,
             ShowUnsupportedMessages = services.Settings.Advanced.LogProtocol,
             ShowAllHookRuns = services.Settings.ClaudeCode.ShowAllHookRuns,
             OpenUrl = services.Platform.OpenUrlAsync,
@@ -930,6 +931,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         OnPropertyChanged(nameof(AvailableSuffixes));
         OnPropertyChanged(nameof(SuffixMenu));
         _conversation.ExpandThinking = State.ExpandThinking ?? _services.Settings.Appearance.ExpandThinking;
+        _conversation.CollapseToolCalls = State.CollapseToolCalls ?? _services.Settings.Appearance.CollapseToolCalls;
         _conversation.ShowAllHookRuns = _services.Settings.ClaudeCode.ShowAllHookRuns;
         _conversation.ShowUnsupportedMessages = _services.Settings.Advanced.LogProtocol;
         Context.OnSettingsChanged();
@@ -965,6 +967,24 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
     /// <summary>The thinking row's menu: expands every thinking row in the tab, and new ones start expanded.</summary>
     [RelayCommand]
     private void ExpandAllThinking() => SetAllThinking(true);
+
+    /// <summary>
+    /// A Tool calls card's menu (DESIGN.md §18, "Conversation cards"): collapses every Tool calls card in the tab to its
+    /// header line, and new ones start collapsed, whatever Settings → Conversation says.
+    /// </summary>
+    [RelayCommand]
+    private void CollapseAllToolCalls() => SetAllToolCalls(true);
+
+    /// <summary>A Tool calls card's menu: expands every Tool calls card in the tab, and new ones start expanded.</summary>
+    [RelayCommand]
+    private void ExpandAllToolCalls() => SetAllToolCalls(false);
+
+    private void SetAllToolCalls(bool collapsed)
+    {
+        _conversation.CollapseAllToolCalls(collapsed);
+        State.CollapseToolCalls = collapsed;
+        _services.SaveState();
+    }
 
     private void SetAllThinking(bool expanded)
     {

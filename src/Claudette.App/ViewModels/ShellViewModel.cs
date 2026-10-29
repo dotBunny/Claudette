@@ -54,12 +54,15 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         IsClaudeStyle = services.Settings.Appearance.Style == AppStyle.Claude;
         IsFullWidth = services.Settings.Appearance.FullWidthConversation;
         IsQuietSteps = services.Settings.Appearance.QuietSteps;
+        IsIndentYou = services.Settings.Appearance.IndentYourMessages;
         _services.SettingsChanged += (_, _) =>
         {
+            OnClaudeProjectsSettingChanged();
             IsCompact = _services.Settings.Appearance.Density == Density.Compact;
             IsClaudeStyle = _services.Settings.Appearance.Style == AppStyle.Claude;
             IsFullWidth = _services.Settings.Appearance.FullWidthConversation;
             IsQuietSteps = _services.Settings.Appearance.QuietSteps;
+            IsIndentYou = _services.Settings.Appearance.IndentYourMessages;
             foreach (var tab in AllTabs)
             {
                 tab.OnSettingsChanged();
@@ -116,7 +119,11 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     /// </summary>
     public ObservableCollection<IShellTab> OpenTabs { get; } = [];
 
-    public bool HasTabs => Groups.Count > 0;
+    /// <summary>
+    /// A session tab or a Project Files tab is open. One of Claude Code's projects with nothing open in it doesn't
+    /// count (DESIGN.md §4, "Claude Code's projects").
+    /// </summary>
+    public bool HasTabs => OpenTabs.Count > 0;
 
     /// <summary>Settings → Keyboard, for the window's shortcuts.</summary>
     public KeyboardSettings Keyboard => _services.Settings.Keyboard;
@@ -343,6 +350,8 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         // The Project Files tabs come back every time, as pinned tabs do (DESIGN.md §18, "Project files").
         RestoreProjectFiles();
         RestoreGroupOrder();
+        // Claude Code's projects, or the offer to show them (DESIGN.md §4, "Claude Code's projects").
+        StartClaudeProjects();
         RestorePanes(snapshot is null ? state.PaneTabIds : snapshot.PaneTabIds);
         var selectedId = snapshot?.SelectedTabId ?? state.SelectedTabId;
         Selected = OpenTabs.FirstOrDefault(t => t.Id == selectedId) ?? AllTabs.FirstOrDefault() ?? (IShellTab?)Groups.Select(g => g.Files).FirstOrDefault(f => f is not null);
@@ -449,6 +458,9 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         var index = tab.IsPinned ? group.Tabs.Count(t => t.IsPinned) : group.Tabs.Count;
         group.Tabs.Insert(index, tab);
         OpenTabs.Add(tab);
+        OnPropertyChanged(nameof(HasTabs));
+        // Its session leaves the group's past sessions (DESIGN.md §4, "Claude Code's projects").
+        ApplyClaudeProjects();
     }
 
     /// <summary>The group of <paramref name="folder"/>, made with its remembered color and name when it isn't open.</summary>
@@ -478,8 +490,10 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         {
             Groups.Remove(group);
             UpdateGroupLabels();
-            OnPropertyChanged(nameof(HasTabs));
         }
+        OnPropertyChanged(nameof(HasTabs));
+        // A closed tab's session is a past session again (DESIGN.md §4, "Claude Code's projects").
+        ApplyClaudeProjects();
     }
 
     // ---- History (DESIGN.md §9) -------------------------------------------------------------------------
@@ -1051,6 +1065,13 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     [ObservableProperty]
     public partial bool IsQuietSteps { get; private set; }
 
+    /// <summary>
+    /// Settings → Conversation → Indent your messages (DESIGN.md §18, "Conversation cards"): the view takes the
+    /// <c>indentyou</c> class, whose style starts your messages' cards further in from the left than the others.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsIndentYou { get; private set; }
+
     // ---- Sidebar (DESIGN.md §3, §4, "Sidebar") ----------------------------------------------------------------
 
     /// <summary>The sidebar's width, and whether it shows only its rail.</summary>
@@ -1183,7 +1204,8 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         var state = _services.State;
         state.Tabs = AllTabs.Select(t => t.State).ToList();
         // A group with only its Project Files tab has no tab above to place it by (DESIGN.md §18, "Project files").
-        state.GroupOrder = Groups.Select(g => g.Folder).ToList();
+        // One of Claude Code's projects with nothing open is placed by its sessions, not saved (DESIGN.md §4, "Claude Code's projects").
+        state.GroupOrder = Groups.Where(g => !g.IsProjectOnly).Select(g => g.Folder).ToList();
         state.ProjectFiles = Groups.Select(g => g.Files).OfType<ProjectFilesViewModel>().Select(f => f.CaptureState()).ToList();
         _services.SaveState();
     }

@@ -18,6 +18,9 @@ public sealed class AppSettings
 
     public NewTabSettings NewTabs { get; set; } = new();
 
+    /// <summary>Settings → Tabs → Claude Code's projects (DESIGN.md §4, "Claude Code's projects"). Per machine, as folders are.</summary>
+    public SidebarSettings Sidebar { get; set; } = new();
+
     public AppearanceSettings Appearance { get; set; } = new();
 
     public SessionSettings Sessions { get; set; } = new();
@@ -467,6 +470,19 @@ public sealed class NewTabSettings
     public int RecentFolderLimit { get; set; } = 20;
 }
 
+/// <summary>
+/// The sidebar's own settings (DESIGN.md §4, "Claude Code's projects"). Not synced: which folders Claude Code has
+/// sessions in differs from one machine to the next.
+/// </summary>
+public sealed class SidebarSettings
+{
+    /// <summary>
+    /// Every folder Claude Code has sessions in on this machine has a group in the sidebar, with its past sessions
+    /// under it, whether or not a tab is open there. Off until the user chooses it, from the offer or Settings → Tabs.
+    /// </summary>
+    public bool ShowClaudeProjects { get; set; }
+}
+
 public enum ThemeChoice
 {
     System,
@@ -575,6 +591,18 @@ public sealed class AppearanceSettings
     /// default.
     /// </summary>
     public bool QuietSteps { get; set; } = true;
+
+    /// <summary>
+    /// New Tool calls cards start collapsed to their header line, with a chevron to open them, as thinking rows start
+    /// collapsed (DESIGN.md §18, "Conversation cards"); a card's menu changes it for its tab. Off by default.
+    /// </summary>
+    public bool CollapseToolCalls { get; set; }
+
+    /// <summary>
+    /// Your messages' cards start further in from the left than Claude's, so whose turn each card is can be told by
+    /// its place alone (DESIGN.md §18, "Conversation cards"). On by default.
+    /// </summary>
+    public bool IndentYourMessages { get; set; } = true;
 
     /// <summary>Settings → Appearance → Motion (DESIGN.md §3, "Accessibility").</summary>
     public MotionSetting Motion { get; set; } = MotionSetting.System;

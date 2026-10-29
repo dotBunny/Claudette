@@ -1,0 +1,4 @@
+﻿"Claude Code has sessions in 1 folder on this machine."
+"Show them here as groups, with their past sessions, to work in them straight from the sidebar?"
+[button] Show them in the sidebar
+[button] Not now

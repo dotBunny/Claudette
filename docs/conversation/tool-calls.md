@@ -25,6 +25,11 @@ A call under ten seconds shows its duration with a decimal, such as *0.4s*. The 
 
 A question or a plan gives its tile up to its own card ([Questions](../permissions/questions.md), [Approving a plan](../permissions/approving-a-plan.md)). A subagent is a card of its own ([Subagents](subagents.md)).
 
+## Folding the calls
+A long run of calls takes a lot of room. The chevron before a Tool calls card's icon folds the card to its header line, such as *Tool calls · 4 calls · 1 failed*, and a second click brings the tiles back. A call that is running or has failed still shows in the header's words.
+
+It works as thinking does. Settings → Conversation → **Show tool calls collapsed** starts new cards folded. Right-click a Tool calls card for **Collapse all tool calls** and **Expand all tool calls**: they fold or open every card in the tab, and start the ones still to come the same way, without changing Settings. The tab remembers which you chose. Opening a call from elsewhere, as find does, opens its card.
+
 ## Opening a call
 
 Click a tile to open its detail under the tiles. One tile is open at a time, so opening another closes it, and the × at the detail's right closes it. The detail shows the call in full:
@@ -53,6 +58,8 @@ An output over 20,000 characters shows its start, with **Show all (n KB)** to sh
 **Details** has the arguments and the result as the tool got and gave them. There is one window per call: opening it again brings it to the front. `Esc` closes it.
 
 ## Settings
+
+**Show tool calls collapsed** (Settings → Conversation, off by default) starts new Tool calls cards folded to their header line.
 
 Tool calls are one of the in-between steps that **Quieter in-between steps** (Settings → Conversation, on by default) draws without a tint and outline until you point at them. See [Reading the conversation](reading-the-conversation.md#quieter-in-between-steps).
 

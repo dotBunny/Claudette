@@ -198,6 +198,38 @@ public class TabViewModelTests
     }
 
     [Fact]
+    public async Task Collapse_all_tool_calls_holds_for_the_tab_alone_and_leaves_Settings_as_they_are()
+    {
+        await using var h = new TabTestHarness();
+        var tab = await h.OpenTabAsync();
+        tab.ComposerText = "go";
+        await tab.SendCommand.ExecuteAsync(null);
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"tool_use","id":"r1","name":"Read","input":{"file_path":"a.cs"}}]}}""");
+        await TabTestHarness.Eventually(() => tab.Items.OfType<ToolGroupItem>().Any(), "the tool calls");
+        var first = tab.Items.OfType<ToolGroupItem>().Single();
+        Assert.False(first.IsCollapsed);
+
+        tab.CollapseAllToolCallsCommand.Execute(null);
+
+        Assert.True(first.IsCollapsed);
+        Assert.True(tab.State.CollapseToolCalls);
+        Assert.False(h.Services.Settings.Appearance.CollapseToolCalls);
+        // A change in Settings doesn't undo the tab's choice: new cards start collapsed.
+        tab.OnSettingsChanged();
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"text","text":"Then"}]}}""");
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"tool_use","id":"r2","name":"Read","input":{"file_path":"b.cs"}}]}}""");
+        await TabTestHarness.Eventually(() => tab.Items.OfType<ToolGroupItem>().Count() == 2, "more tool calls");
+        Assert.True(tab.Items.OfType<ToolGroupItem>().Last().IsCollapsed);
+        // A copy of the tab keeps it.
+        Assert.True(tab.CopyState(CopyPoint.Whole).CollapseToolCalls);
+
+        tab.ExpandAllToolCallsCommand.Execute(null);
+
+        Assert.All(tab.Items.OfType<ToolGroupItem>(), g => Assert.False(g.IsCollapsed));
+        Assert.False(tab.State.CollapseToolCalls);
+    }
+
+    [Fact]
     public async Task A_restored_tab_shows_its_thinking_as_it_was_left()
     {
         await using var h = new TabTestHarness(s => s.Appearance.ExpandThinking = true);

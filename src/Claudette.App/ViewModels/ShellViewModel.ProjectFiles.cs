@@ -387,5 +387,7 @@ public sealed partial class ShellViewModel
         {
             tab.ChangedFiles.CheckDisk();
         }
+        // And the sidebar at Claude Code's sessions, for ones a terminal started meanwhile (DESIGN.md §4, "Claude Code's projects").
+        RefreshClaudeProjects();
     }
 }

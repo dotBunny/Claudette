@@ -109,6 +109,78 @@ public sealed class ConversationCardsUiTests
     }
 
     [AvaloniaFact]
+    public async Task A_chevron_folds_a_Tool_calls_card_to_its_header_and_the_setting_starts_new_ones_folded()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"tool_use","id":"r1","name":"Read","input":{"file_path":"a.cs"}}]}}""");
+        h.Transport.Emit("""{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"r1","content":"x"}]}}""");
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"text","text":"Between."}]}}""");
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"tool_use","id":"r2","name":"Read","input":{"file_path":"b.cs"}}]}}""");
+        await UiText.SettleUntilAsync(window, () => Named(window, "tools").Count == 2 && VisibleTiles(window) == 2, "two Tool calls cards");
+
+        // Open by default; the chevron of the first folds it to its header line, and brings it back.
+        var first = Named(window, "tools")[0];
+        Assert.False(first.IsCollapsed);
+        Toggle(first).Command!.Execute(null);
+        UiText.Settle(window);
+        Assert.True(first.IsCollapsed);
+        Assert.Equal(1, VisibleTiles(window));
+        Assert.True(first.IsEffectivelyVisible);
+        Toggle(first).Command!.Execute(null);
+        UiText.Settle(window);
+        Assert.Equal(2, VisibleTiles(window));
+
+        // The setting starts the cards to come collapsed, and leaves the ones there as they are, as thinking's does.
+        h.Services.Settings.Appearance.CollapseToolCalls = true;
+        h.Services.SaveSettings();
+        UiText.Settle(window);
+        Assert.All(Named(window, "tools"), c => Assert.False(c.IsCollapsed));
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"text","text":"More."}]}}""");
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"tool_use","id":"r3","name":"Read","input":{"file_path":"c.cs"}}]}}""");
+        await UiText.SettleUntilAsync(window, () => Named(window, "tools").Count == 3, "a third card");
+        Assert.True(Named(window, "tools")[2].IsCollapsed);
+        Assert.Equal(2, VisibleTiles(window));
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public async Task Your_message_starts_further_in_than_Claudes_reply_and_the_setting_turns_that_off()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        tab.ComposerText = "Hello";
+        await tab.SendCommand.ExecuteAsync(null);
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"Hmm."},{"type":"tool_use","id":"r1","name":"Read","input":{"file_path":"a.cs"}}]}}""");
+        h.Transport.Emit("""{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"r1","content":"x"}]}}""");
+        h.Transport.EmitTurn("Hi.");
+        await UiText.SettleUntilAsync(window, () => YourCards(window).Count == 1 && Replies(window).Count == 1
+            && Named(window, "thinking").Count == 1 && Named(window, "tools").Count == 1, "the cards");
+        var (you, reply) = (YourCards(window)[0], Replies(window)[0]);
+        var (thinking, tools) = (Named(window, "thinking")[0], Named(window, "tools")[0]);
+
+        Assert.Equal(new Thickness(96, 0, 0, 0), you.Margin);
+        Assert.Equal(new Thickness(0), reply.Margin);
+        Assert.Equal(96, you.Bounds.Left - reply.Bounds.Left);
+        Assert.Equal(24, thinking.Bounds.Left - reply.Bounds.Left);
+        Assert.Equal(24, tools.Bounds.Left - reply.Bounds.Left);
+        Assert.Equal(you.Bounds.Right, reply.Bounds.Right);
+        Assert.Equal(thinking.Bounds.Right, reply.Bounds.Right);
+        Assert.Equal(tools.Bounds.Right, reply.Bounds.Right);
+
+        h.Services.Settings.Appearance.IndentYourMessages = false;
+        h.Services.SaveSettings();
+        UiText.Settle(window);
+        Assert.Equal(new Thickness(0), you.Margin);
+        Assert.Equal(reply.Bounds.Left, you.Bounds.Left);
+        Assert.Equal(reply.Bounds.Left, thinking.Bounds.Left);
+        Assert.Equal(reply.Bounds.Left, tools.Bounds.Left);
+        window.Close();
+    }
+
+    [AvaloniaFact]
     public async Task Marks_in_the_scroll_bar_go_to_your_messages_and_F3_and_F4_step_between_messages()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
@@ -207,6 +279,17 @@ public sealed class ConversationCardsUiTests
 
     private static List<Button> Tiles(Window window) =>
         [.. window.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("tile"))];
+
+    private static List<Card> YourCards(Window window) =>
+        [.. window.GetVisualDescendants().OfType<Card>().Where(c => c.Classes.Contains("you"))];
+
+    private static Button Toggle(Card card) =>
+        card.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "PART_Toggle");
+
+    private static int VisibleTiles(Window window) => Tiles(window).Count(t => t.IsEffectivelyVisible);
+
+    private static List<Card> Named(Window window, string kind) =>
+        [.. window.GetVisualDescendants().OfType<Card>().Where(c => c.Classes.Contains(kind))];
 
     private static List<Card> Replies(Window window) =>
         [.. window.GetVisualDescendants().OfType<Card>().Where(c => c.Classes.Contains("claude"))];

@@ -151,22 +151,31 @@
           <!-- The stripe covers the outline's left edge, curving with the corners. -->
           <Border Name="PART_Stripe" BorderBrush="{TemplateBinding StripeBrush}" BorderThickness="3,0,0,0" Margin="-1,-1,0,-1"
                   CornerRadius="{TemplateBinding CornerRadius}">
-            <Grid Name="PART_Body" Margin="{TemplateBinding Padding}" ColumnDefinitions="Auto,Auto,*,Auto,Auto" RowDefinitions="Auto,Auto">
-              <Path Name="PART_Icon" Classes="toolicon" Data="{TemplateBinding Icon}" Stroke="{TemplateBinding LabelBrush}" Margin="0,0,6,0"
+            <Grid Name="PART_Body" Margin="{TemplateBinding Padding}" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowDefinitions="Auto,Auto">
+              <!-- The chevron of a card whose content folds away (a Tool calls card's tiles). -->
+              <Button Name="PART_Toggle" Classes="flat" Padding="2" Margin="-4,-3,2,-3" VerticalAlignment="Center"
+                      Command="{TemplateBinding ToggleCommand}" IsVisible="{TemplateBinding IsCollapsible}"
+                      AutomationProperties.Name="Show or hide the calls" ToolTip.Tip="Show or hide the calls">
+                <Panel>
+                  <Path Classes="toolicon" Data="{DynamicResource IconChevronRight}" IsVisible="{TemplateBinding IsCollapsed}" />
+                  <Path Classes="toolicon" Data="{DynamicResource IconChevronDown}" IsVisible="{TemplateBinding IsCollapsed, Converter={x:Static BoolConverters.Not}}" />
+                </Panel>
+              </Button>
+              <Path Name="PART_Icon" Grid.Column="1" Classes="toolicon" Data="{TemplateBinding Icon}" Stroke="{TemplateBinding LabelBrush}" Margin="0,0,6,0"
                     IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-              <TextBlock Name="PART_Label" Grid.Column="1" Classes="small" FontWeight="SemiBold" Foreground="{TemplateBinding LabelBrush}"
+              <TextBlock Name="PART_Label" Grid.Column="2" Classes="small" FontWeight="SemiBold" Foreground="{TemplateBinding LabelBrush}"
                          Text="{TemplateBinding Label}" VerticalAlignment="Center"
                          IsVisible="{TemplateBinding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-              <TextBlock Name="PART_Detail" Grid.Column="2" Classes="muted small" Text="{TemplateBinding Detail}" TextTrimming="CharacterEllipsis"
+              <TextBlock Name="PART_Detail" Grid.Column="3" Classes="muted small" Text="{TemplateBinding Detail}" TextTrimming="CharacterEllipsis"
                          Margin="8,0,0,0" VerticalAlignment="Center" ToolTip.Tip="{TemplateBinding Detail}"
                          IsVisible="{TemplateBinding Detail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-              <ContentPresenter Name="PART_Actions" Grid.Column="3" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}"
+              <ContentPresenter Name="PART_Actions" Grid.Column="4" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}"
                                 Margin="8,-4,0,-4" VerticalAlignment="Center"
                                 IsVisible="{TemplateBinding Actions, Converter={x:Static ObjectConverters.IsNotNull}}" />
-              <TextBlock Name="PART_Time" Grid.Column="4" Classes="muted small" Text="{TemplateBinding TimeText}" ToolTip.Tip="{TemplateBinding TimeTip}"
+              <TextBlock Name="PART_Time" Grid.Column="5" Classes="muted small" Text="{TemplateBinding TimeText}" ToolTip.Tip="{TemplateBinding TimeTip}"
                          Background="Transparent" Margin="8,0,0,0" VerticalAlignment="Center"
                          IsVisible="{TemplateBinding TimeText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-              <ContentPresenter Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="5" Margin="0,6,0,0"
+              <ContentPresenter Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="6" Margin="0,6,0,0"
                                 Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
             </Grid>
           </Border>
@@ -220,7 +229,7 @@
   <!-- A one-line card: the step on the header line, after the label. -->
   <Style Selector="controls|Card.inline /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Grid.Row" Value="0" />
-    <Setter Property="Grid.Column" Value="2" />
+    <Setter Property="Grid.Column" Value="3" />
     <Setter Property="Grid.ColumnSpan" Value="1" />
     <Setter Property="Margin" Value="8,0,0,0" />
     <Setter Property="VerticalAlignment" Value="Top" />
@@ -241,6 +250,10 @@
   </Style>
   <Style Selector="controls|Card:headerless /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Grid.Row" Value="0" />
+    <Setter Property="Margin" Value="0" />
+  </Style>
+  <!-- Folded away (a Tool calls card's tiles): the header line alone, with no gap under it. -->
+  <Style Selector="controls|Card:collapsed /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Margin" Value="0" />
   </Style>
   <!-- The card's buttons (Copy and so on) show while it's pointed at or has the focus, so the header stays quiet. -->
@@ -283,6 +296,22 @@
   </Style>
   <Style Selector=":not(.claude).quietsteps controls|Card.quiet:not(:pointerover):not(:focus-within) /template/ Grid#PART_Body">
     <Setter Property="Opacity" Value="0.88" />
+  </Style>
+
+  <!-- Settings → Conversation → Indent your messages (DESIGN.md §18, "Conversation cards"): your messages' cards start
+       far in from the left, Claude's replies at the left edge, and its thinking, tool calls and subagents a little in,
+       all ending at the column's right edge, so whose turn a card is can be told by its place alone. -->
+  <Style Selector=".indentyou controls|Card.you">
+    <Setter Property="Margin" Value="96,0,0,0" />
+  </Style>
+  <Style Selector=".indentyou.compact controls|Card.you">
+    <Setter Property="Margin" Value="64,0,0,0" />
+  </Style>
+  <Style Selector=".indentyou controls|Card.thinking, .indentyou controls|Card.tools, .indentyou controls|Card.agent">
+    <Setter Property="Margin" Value="24,0,0,0" />
+  </Style>
+  <Style Selector=".indentyou.compact controls|Card.thinking, .indentyou.compact controls|Card.tools, .indentyou.compact controls|Card.agent">
+    <Setter Property="Margin" Value="16,0,0,0" />
   </Style>
 
   <!-- A tool call's tile in its card, or a changed file's in a Modified files card: raised a little off it, with the open

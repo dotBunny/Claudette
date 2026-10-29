@@ -22,6 +22,13 @@ public sealed class ConversationPage : SettingsPage
                 "So your prompts, Claude's answers and the files it changed stand out.",
                 "Tool calls, thinking, hooks, notes and the replies Claude carried on after are drawn without their card's tint and outline. Pointing at one brings it back.",
                 ["cards", "tint", "outline", "quiet"]),
+            Setting("appearance.indentYourMessages", "Indent your messages", s => s.Appearance.IndentYourMessages, (s, v) => s.Appearance.IndentYourMessages = v,
+                "Your messages stand far in from the left, Claude's replies at the left, and its thinking and tool calls a little in, so you can tell whose turn it is at a glance.",
+                keywords: ["cards", "you", "margin", "offset", "indent"]),
+            Setting("appearance.collapseToolCalls", "Show tool calls collapsed", s => s.Appearance.CollapseToolCalls, (s, v) => s.Appearance.CollapseToolCalls = v,
+                "Each Tool calls card starts as its header line, rather than with its tiles open.",
+                "The chevron before a card's icon opens it. Right-click a card for Collapse all tool calls or Expand all tool calls, which changes every card in that tab and the ones to come, as thinking's menu does.",
+                ["tools", "tiles", "fold", "expand", "collapse"]),
             Setting("appearance.expandThinking", "Show thinking expanded", s => s.Appearance.ExpandThinking, (s, v) => s.Appearance.ExpandThinking = v,
                 "Claude's thinking opens by itself, rather than as a line to click.", keywords: ["reasoning"]),
             Setting("appearance.showSubagents", "Show subagents' work", s => s.Appearance.ShowSubagents, (s, v) => s.Appearance.ShowSubagents = v,
@@ -76,6 +83,20 @@ public sealed class ConversationPage : SettingsPage
     {
         get => Settings.Appearance.QuietSteps;
         set => Set(value, v => Settings.Appearance.QuietSteps = v);
+    }
+
+    /// <summary>Your messages' cards start further in than Claude's (DESIGN.md §18, "Conversation cards").</summary>
+    public bool IndentYourMessages
+    {
+        get => Settings.Appearance.IndentYourMessages;
+        set => Set(value, v => Settings.Appearance.IndentYourMessages = v);
+    }
+
+    /// <summary>Tool calls cards start folded to their header line (DESIGN.md §18, "Conversation cards").</summary>
+    public bool CollapseToolCalls
+    {
+        get => Settings.Appearance.CollapseToolCalls;
+        set => Set(value, v => Settings.Appearance.CollapseToolCalls = v);
     }
 
     public bool ExpandThinking

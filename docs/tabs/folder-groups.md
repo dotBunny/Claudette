@@ -65,9 +65,30 @@ Right-click a group's label, in the full sidebar or the rail:
 | **Reset name** | Goes back to the folder's name. Shown while the group has a name. |
 | **Change color…** | Picks the group's color. See above. |
 | **Account ▸** | Picks the account the group's new tabs use. Shown once there's an account besides Default. See [A folder's account](../accounts/a-folders-account.md). |
-| **Close group** | Closes the group's tabs, except pinned ones. |
+| **Close group** | Closes the group's tabs, except pinned ones. Not shown while the group is one of Claude Code's projects with nothing open in it. |
 
 **Close group** doesn't touch pinned tabs. See [Closing and restoring](closing-and-restoring.md).
+
+## Claude Code's projects
+
+{% include unreleased.html %}
+
+The sidebar can list every folder Claude Code has sessions in on this machine, so you work in your projects straight from the sidebar, as you would from their folders in a terminal, instead of through the new tab picker or History.
+
+1. Open Settings → Tabs → **Claude Code's projects**.
+2. Turn on **Show Claude Code's projects in the sidebar**.
+
+The first time Claudette starts with sessions to show, a card at the top of the sidebar asks instead: **Show them in the sidebar** turns the setting on, and **Not now** leaves it off. Either way it asks only once; the switch is in Settings after that.
+
+With it on:
+
+- **Every folder with sessions is a group**, whether or not a tab is open in it. The ones with nothing open come after the groups with tabs, the most recently used first, and each works like any group: its **+** opens a tab there, and its menu has **New tab here**, **History for this folder** and the rest. A group with nothing open has no **Close group**; it goes when you turn the setting off, or when its folder no longer exists.
+- **Past sessions.** A group with nothing open lists the folder's latest sessions straight away. Once a tab is open in it, they fold away under its tabs into a row such as *12 past sessions*: click it to unfold the latest five, newest first, each with its name and, under it, when it was last used and how many messages it has. Click a session to pick it up in a new tab in the group, as [History](../history/history.md) does. **Show all in History…**, under the five, opens History on the folder when there are more. A session that's open in a tab isn't listed, since its tab is above. Claudette remembers which folders you unfolded.
+- The sessions are the ones History lists: Claude Code's own on this machine, including sessions you started in a terminal, and the session library's. Claudette reads them when it starts, when you turn the setting on, and when it comes to the front, so a session started in a terminal meanwhile shows up.
+
+### Settings
+
+- Settings → Tabs → **Claude Code's projects** → **Show Claude Code's projects in the sidebar**: off until you choose. It belongs to this machine, since the folders differ from one machine to the next.
 
 ## The Project files button
 

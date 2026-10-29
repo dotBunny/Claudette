@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Claudette.App.Conversation;
 
@@ -21,6 +22,17 @@ public sealed partial class ToolGroupItem : ConversationItem
     public partial ToolUseItem? Expanded { get; private set; }
 
     public bool HasExpanded => Expanded is not null;
+
+    /// <summary>
+    /// Only the header line shows, not the tiles (Settings → Conversation → Collapse tool calls, or the chevron's own
+    /// choice). Opening a call, as find does, opens the card.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsCollapsed { get; set; }
+
+    /// <summary>The chevron: folds the tiles away, or brings them back.</summary>
+    [RelayCommand]
+    private void Toggle() => IsCollapsed = !IsCollapsed;
 
     /// <summary>When its first call was made.</summary>
     public DateTimeOffset? StartedAt => Calls.Count > 0 ? Calls[0].StartedAt : null;
@@ -123,6 +135,7 @@ public sealed partial class ToolGroupItem : ConversationItem
             open.IsExpanded = false;
         }
         Expanded = call;
+        IsCollapsed = false;
     }
 
     private void Changed()

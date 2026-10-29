@@ -65,6 +65,8 @@ The page starts with a preview that shows your choices as you make them.
 | Setting | Section | Default | Syncs | Explained in |
 |---|---|---|---|---|
 | **Quieter in-between steps** | Steps and replies | On | Yes | [Reading the conversation](../conversation/reading-the-conversation.md) |
+| **Indent your messages** | Steps and replies | On | Yes | [Reading the conversation](../conversation/reading-the-conversation.md#indent-your-messages) |
+| **Show tool calls collapsed** | Steps and replies | Off | Yes | [Tool calls](../conversation/tool-calls.md#folding-the-calls) |
 | **Show thinking expanded** | Steps and replies | Off | Yes | [Thinking, notes and hooks](../conversation/thinking-notes-and-hooks.md) |
 | **Show subagents' work** | Steps and replies | Under the tab in the sidebar | Yes | [Subagents](../conversation/subagents.md#subagents-under-their-tab) |
 | **Show every hook run** | Steps and replies | Off | No | [Thinking, notes and hooks](../conversation/thinking-notes-and-hooks.md) |
@@ -154,6 +156,7 @@ What each new tab starts with, and the folders you open them in.
 | **Recent folders to keep** | New tab picker | 20 (from 1 to 100) | Yes | No | [Opening tabs](../tabs/opening-tabs.md) |
 | **Clear recent folders** | New tab picker | | No | No | [Opening tabs](../tabs/opening-tabs.md) |
 | **Favorite folders**, with **Add folder…** | New tab picker | None | No | No | [Opening tabs](../tabs/opening-tabs.md) |
+| **Show Claude Code's projects in the sidebar** | Claude Code's projects | Off | No | No | [Folder groups](../tabs/folder-groups.md#claude-codes-projects) |
 
 Your favorite and recent folders belong to this machine. They stay put when settings sync is on, and **Reset to defaults** leaves them.
 

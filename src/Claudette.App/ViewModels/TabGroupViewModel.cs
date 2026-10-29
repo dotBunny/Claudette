@@ -4,6 +4,7 @@ using System.ComponentModel;
 using Avalonia.Media;
 using Claudette.Core;
 using Claudette.Core.Accounts;
+using Claudette.Core.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -112,8 +113,68 @@ public sealed partial class TabGroupViewModel : ObservableObject
 
     public bool HasNoFiles => Files is null;
 
-    /// <summary>Neither a session tab nor its Project Files tab is open: the group leaves the sidebar.</summary>
-    public bool IsEmpty => Tabs.Count == 0 && Files is null;
+    /// <summary>
+    /// Neither a session tab nor its Project Files tab is open, and the group isn't one of Claude Code's projects: it
+    /// leaves the sidebar.
+    /// </summary>
+    public bool IsEmpty => Tabs.Count == 0 && Files is null && !IsClaudeProject;
+
+    /// <summary>
+    /// A folder Claude Code has sessions in, kept in the sidebar while Settings → Tabs → <b>Show Claude Code's projects
+    /// in the sidebar</b> is on, tab or no tab (DESIGN.md §4, "Claude Code's projects").
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsProjectOnly), nameof(CanClose), nameof(ShowsPastSessionsFold), nameof(ShowsPastSessionList), nameof(ShowsMorePastSessions))]
+    public partial bool IsClaudeProject { get; set; }
+
+    /// <summary>One of Claude Code's projects with nothing open in it: its menu has no <b>Close group</b>.</summary>
+    public bool IsProjectOnly => IsClaudeProject && Tabs.Count == 0 && Files is null;
+
+    public bool CanClose => !IsProjectOnly;
+
+    /// <summary>How many past sessions are listed at the end of the group, before <b>Show all in History…</b>.</summary>
+    public const int PastSessionsShown = 5;
+
+    /// <summary>
+    /// The folder's past sessions that aren't open in a tab, newest first (DESIGN.md §4, "Claude Code's projects");
+    /// empty while the setting is off.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPastSessions), nameof(PastSessionsText), nameof(ShownPastSessions), nameof(HasMorePastSessions), nameof(ShowsPastSessionsFold),
+        nameof(ShowsPastSessionList), nameof(ShowsMorePastSessions))]
+    public partial IReadOnlyList<PastSessionRow> PastSessions { get; set; } = [];
+
+    public bool HasPastSessions => PastSessions.Count > 0;
+
+    /// <summary>The fold's row: <i>12 past sessions</i>.</summary>
+    public string PastSessionsText => $"{PastSessions.Count} past session{(PastSessions.Count == 1 ? "" : "s")}";
+
+    /// <summary>The latest few, under the fold.</summary>
+    public IReadOnlyList<PastSessionRow> ShownPastSessions => PastSessions.Count <= PastSessionsShown ? PastSessions : [.. PastSessions.Take(PastSessionsShown)];
+
+    public bool HasMorePastSessions => PastSessions.Count > PastSessionsShown;
+
+    /// <summary>Whether the user unfolded the past sessions; remembered for the folder on this machine.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowsPastSessionList), nameof(ShowsMorePastSessions), nameof(PastSessionsTip))]
+    public partial bool IsPastSessionsExpanded { get; set; }
+
+    /// <summary>
+    /// The fold's row, <i>12 past sessions</i>, under a group's tabs. A group with nothing open has no tabs to fold
+    /// its sessions under, so lists them straight away instead.
+    /// </summary>
+    public bool ShowsPastSessionsFold => HasPastSessions && !IsProjectOnly;
+
+    /// <summary>The latest sessions are listed: unfolded, or in a group with nothing open.</summary>
+    public bool ShowsPastSessionList => HasPastSessions && (IsPastSessionsExpanded || IsProjectOnly);
+
+    /// <summary><b>Show all in History…</b> shows under the listed sessions, when there are more.</summary>
+    public bool ShowsMorePastSessions => ShowsPastSessionList && HasMorePastSessions;
+
+    public string PastSessionsTip => IsPastSessionsExpanded ? "Fold the past sessions away" : "List the past sessions";
+
+    /// <summary>When the folder's latest session was last used, to order Claude Code's projects by; null with none.</summary>
+    public DateTimeOffset? LastSessionActivity { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Brush), nameof(SoftBrush))]
@@ -159,6 +220,19 @@ public sealed partial class TabGroupViewModel : ObservableObject
         OnPropertyChanged(nameof(UrgentGlyph));
         OnPropertyChanged(nameof(Summary));
         OnPropertyChanged(nameof(ProjectTab));
+        OnProjectOnlyChanged();
+    }
+
+    partial void OnFilesChanged(ProjectFilesViewModel? value) => OnProjectOnlyChanged();
+
+    /// <summary>Something open came or went: <b>Close group</b>, and how the past sessions show, may change.</summary>
+    private void OnProjectOnlyChanged()
+    {
+        OnPropertyChanged(nameof(IsProjectOnly));
+        OnPropertyChanged(nameof(CanClose));
+        OnPropertyChanged(nameof(ShowsPastSessionsFold));
+        OnPropertyChanged(nameof(ShowsPastSessionList));
+        OnPropertyChanged(nameof(ShowsMorePastSessions));
     }
 
     private void OnTabPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -187,6 +261,26 @@ public sealed partial class TabGroupViewModel : ObservableObject
         color = Color.FromRgb(parsed.R, parsed.G, parsed.B);
         return true;
     }
+}
+
+/// <summary>
+/// A past session under its folder's group in the sidebar (DESIGN.md §4, "Claude Code's projects"): History's entry, with
+/// the short line the row shows under its name, <i>2 h ago · 14 messages</i>.
+/// </summary>
+public sealed record PastSessionRow(HistoryEntry Entry, string Detail)
+{
+    public string Title => Entry.Title;
+
+    public TabMark? Mark => Entry.Mark;
+
+    public bool HasMark => Entry.Mark is not null;
+
+    public string? MarkTip => Entry.MarkTip;
+
+    /// <summary>The row's tip: the first prompt, when the name isn't it.</summary>
+    public string Tip => Entry.HasFirstPrompt ? $"{Entry.Title}\n{Entry.FirstPrompt}" : Entry.Title;
+
+    public string AccessibleName => $"{Entry.Title}, {Detail}";
 }
 
 /// <summary>One of the group colors, with the name its swatch has for screen readers and in its tip.</summary>

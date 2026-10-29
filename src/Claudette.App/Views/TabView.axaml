@@ -384,8 +384,18 @@
     <!-- A run of tool calls: one card, a tile for each call, and the open tile's detail under them (DESIGN.md §18). -->
     <DataTemplate DataType="conv:ToolGroupItem">
       <controls:Card Classes="tools quiet" Label="Tool calls" Icon="{StaticResource IconCardTools}" Detail="{Binding CountText}"
-                     TimeText="{Binding TimeText}" TimeTip="{Binding TimeTip}">
-        <StackPanel>
+                     TimeText="{Binding TimeText}" TimeTip="{Binding TimeTip}"
+                     IsCollapsible="True" IsCollapsed="{Binding IsCollapsed}" ToggleCommand="{Binding ToggleCommand}">
+        <!-- Every Tool calls card in the tab, and the ones to come, without changing Settings, as thinking's menu (DESIGN.md §18). -->
+        <controls:Card.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="Collapse all tool calls" Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).CollapseAllToolCallsCommand}"
+                      ToolTip.Tip="Collapse every Tool calls card in this tab, and start new ones collapsed" />
+            <MenuItem Header="Expand all tool calls" Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).ExpandAllToolCallsCommand}"
+                      ToolTip.Tip="Expand every Tool calls card in this tab, and start new ones expanded" />
+          </ContextMenu>
+        </controls:Card.ContextMenu>
+        <StackPanel IsVisible="{Binding !IsCollapsed}">
           <ItemsControl ItemsSource="{Binding Calls}" ItemTemplate="{StaticResource ToolTile}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
