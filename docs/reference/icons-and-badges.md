@@ -83,13 +83,13 @@ The rail shows each group's color, then a square per tab with the first letter o
 | An amber dot | A service is degraded, or under maintenance | |
 | A red dot | A service is in an outage | |
 | A grey dot | The status is unknown, or hasn't been checked yet | |
-| The sidebar's icon, mirrored | Opens the **Tool windows** menu | [Tool windows](../tabs/tool-windows.md) |
+| Three lines | The menu: **Settings**, **User Guide**, **Ask on Discord**, **Report an issue** and **About Claudette** | [A tour of the window](../getting-started/a-tour-of-the-window.md#the-header) |
 
 A banner under the header says what's wrong while Claude has an incident. A line under the meters says so when usage is on pace to hit a limit.
 
 ## Tool windows
 
-- A busy dot on a page's tab means that page has something running. When some page tabs don't fit, the **⋯** button after the row shows a dot while one of the hidden pages does. See [Tool windows](../tabs/tool-windows.md).
+- On the strip at the window's right, a dot on an icon means its window has something going on: subagents active on **Agents**, a job running on **Project**, a server that needs attention on **MCP**. An icon is filled in while its window shows. See [Tool windows](../tabs/tool-windows.md).
 - **Changed files** marks each file with `M` for modified or `A` for added. See [Changed files](../changes/changed-files.md).
 - **Agents** marks each agent with a dot while it runs or when it's done, `!` while it waits for your permission, `✕` when it failed, and a square when it was stopped. See [The agent map](../plans/the-agent-map.md).
 

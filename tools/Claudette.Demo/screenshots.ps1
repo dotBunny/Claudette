@@ -126,7 +126,10 @@ foreach ($style in 'standard', 'claude') {
 
             # Settings on Appearance, whose preview shows the style and theme.
             Set-Step 'Settings'
-            Invoke-ByText $window 'Settings'
+            Invoke-ByText $window 'Menu'
+            $menu = Get-OtherWindow $claudette $window 'the menu'
+            Start-Sleep -Seconds 1
+            Send-Click (Find-ByText $menu 'Settings')
             $settings = Get-OtherWindow $claudette $window 'the Settings window'
             Start-Sleep -Seconds 2
             Select-ListItem $settings 'Appearance'

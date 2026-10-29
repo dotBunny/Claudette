@@ -96,7 +96,7 @@ On the rail, which lists only a thread's sub-threads under a tab, **Collapse tab
 
 ## The top and the foot
 
-At the top, **New tab** opens the [picker](opening-tabs.md), and a button beside it collapses the sidebar. At the foot are the selected tab's project (a row that opens its menu of actions and links), **History**, the Claude Code and Claudette update badges when there's an update, a source build's new commits and **New build ready**, **Settings**, and **User Guide**, which opens this guide in your browser.
+At the top, over a line, **New tab** opens the [picker](opening-tabs.md), and a button beside it collapses the sidebar. At the foot, under a line, are the selected tab's project (a row that opens its menu of actions and links), **History**, the Claude Code and Claudette update badges when there's an update, and a source build's new commits and **New build ready**. **Settings** and **User Guide** are in the menu at the header's right ([A tour of the window](../getting-started/a-tour-of-the-window.md#the-header)).
 
 ## Resizing and collapsing
 

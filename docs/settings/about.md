@@ -16,6 +16,7 @@ Settings → About says which Claudette you have and where to find it on the web
 ## Opening it
 
 - **About**, the last page of the Claudette group in Settings' sidebar.
+- **About Claudette** in the menu at the header's right.
 - **About Claudette** in **Help**, the question mark at the foot of Settings' sidebar.
 - On macOS, **About Claudette** in the app menu.
 - **About** in the [command palette](../tabs/the-command-palette.md) (`Ctrl/Cmd+Shift+P`).

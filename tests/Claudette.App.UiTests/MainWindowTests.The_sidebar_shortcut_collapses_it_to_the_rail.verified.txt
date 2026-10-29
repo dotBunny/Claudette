@@ -5,5 +5,3 @@
   "W"
 [button] Project tools
 [button] History
-[button] Settings
-[button] User Guide

@@ -9,8 +9,6 @@
 [button] New tab
 [button] Collapse the sidebar
 [button] History
-[button] Settings
-[button] User Guide
 "Start a Claude Code session"
 "Pick the folder Claude should work in."
 [button] New tab

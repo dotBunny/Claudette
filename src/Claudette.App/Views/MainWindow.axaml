@@ -286,6 +286,21 @@
                       ToolTip.Tip="{Binding Account.HeaderPlanTip}" AutomationProperties.Name="{Binding Account.HeaderPlanName}">
                 <TextBlock Classes="muted" Text="{Binding Account.HeaderPlan}" VerticalAlignment="Center" />
               </Button>
+              <!-- The menu (DESIGN.md §3): Settings and the user guide first, then the rest of Help -->
+              <Button Name="MainMenu" Classes="flat" Padding="8" VerticalAlignment="Center" ToolTip.Tip="Menu" AutomationProperties.Name="Menu"
+                      IsVisible="{Binding Shell, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}">
+                <Path Data="{StaticResource IconMenu}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" StrokeLineCap="Round" Width="13" Height="13" Stretch="Uniform" />
+                <Button.Flyout>
+                  <MenuFlyout Placement="BottomEdgeAlignedRight">
+                    <MenuItem Header="Settings" Command="{Binding Shell.OpenSettingsCommand, FallbackValue={x:Null}}" />
+                    <MenuItem Header="User Guide" Command="{Binding Shell.OpenGuideCommand, FallbackValue={x:Null}}" />
+                    <Separator />
+                    <MenuItem Header="Ask on Discord" Command="{Binding Shell.OpenDiscordCommand, FallbackValue={x:Null}}" />
+                    <MenuItem Header="Report an issue" Command="{Binding Shell.ReportIssueCommand, FallbackValue={x:Null}}" />
+                    <MenuItem Header="About Claudette" Command="{Binding Shell.OpenAboutCommand, FallbackValue={x:Null}}" />
+                  </MenuFlyout>
+                </Button.Flyout>
+              </Button>
             </StackPanel>
 
             <!-- The detailed header (DESIGN.md §6): charts of the session and the week, the burn rate and the busiest

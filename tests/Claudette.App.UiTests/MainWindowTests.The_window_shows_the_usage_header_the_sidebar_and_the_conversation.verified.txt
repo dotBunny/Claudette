@@ -23,8 +23,6 @@
   [button] Context 1%
 [button] Project tools: work
 [button] History
-[button] Settings
-[button] User Guide
 "Claude"
 [button] Copy message
 [button] Add to scratch pad

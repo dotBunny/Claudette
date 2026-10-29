@@ -1019,9 +1019,23 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     [RelayCommand]
     private Task OpenSettingsAsync() => ShowSettingsAsync(null, ProjectTab);
 
-    /// <summary>The user guide, in the browser: the sidebar's row under Settings (DESIGN.md §2, "User Guide").</summary>
+    // ---- The header's menu (DESIGN.md §3): Settings, the user guide, then Help's others ----------------------------
+
+    /// <summary>The user guide, in the browser (DESIGN.md §2, "User Guide").</summary>
     [RelayCommand]
     private Task OpenGuideAsync() => HelpLinks.OpenGuideAsync(_services);
+
+    /// <summary>dotBunny's Discord, in the browser, for questions.</summary>
+    [RelayCommand]
+    private Task OpenDiscordAsync() => HelpLinks.OpenDiscordAsync(_services);
+
+    /// <summary>A new issue on Claudette's GitHub, with the versions filled in.</summary>
+    [RelayCommand]
+    private Task ReportIssueAsync() => HelpLinks.ReportIssueAsync(_services);
+
+    /// <summary>Settings → About (DESIGN.md §14, "About").</summary>
+    [RelayCommand]
+    private Task OpenAboutAsync() => OpenSettingsAtAsync(SettingsCategory.About);
 
     /// <summary>
     /// Opens Settings at a category, and brings the setting or section with <paramref name="key"/> into view: the quick

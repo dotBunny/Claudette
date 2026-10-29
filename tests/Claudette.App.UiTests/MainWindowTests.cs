@@ -138,6 +138,39 @@ public class MainWindowTests
     }
 
     /// <summary>
+    /// The header's menu after the plan (DESIGN.md §3): Settings and the user guide first, then the rest of Help; the
+    /// sidebar's foot no longer has them.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task The_menu_after_the_plan_has_Settings_and_the_user_guide_first()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        await h.OpenTabAsync();
+        var main = new MainWindowViewModel(h.Services);
+        main.UseShell(h.Shell);
+        main.Account.Status = new AuthStatus(true, "claude.ai", null, "me@example.com", null, "max", null, null);
+
+        var window = new MainWindow { DataContext = main, Width = 1200, Height = 800 };
+        window.Show();
+        await UiText.SettleUntilAsync(window, () => window.GetVisualDescendants().OfType<Button>().Any(b => b is { Name: "MainMenu", IsEffectivelyVisible: true }), "the menu");
+        var menu = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "MainMenu");
+        var plan = window.GetVisualDescendants().OfType<Button>().Single(b => AutomationProperties.GetName(b) == "Plan usage");
+
+        Assert.True(menu.TranslatePoint(default, window)!.Value.X > plan.TranslatePoint(default, window)!.Value.X);
+        Assert.Equal("Menu", AutomationProperties.GetName(menu));
+        var items = Assert.IsType<MenuFlyout>(menu.Flyout).Items.OfType<MenuItem>().ToList();
+        Assert.Equal(["Settings", "User Guide", "Ask on Discord", "Report an issue", "About Claudette"], items.Select(i => i.Header as string));
+        // Opened, its entries take their commands.
+        menu.Flyout!.ShowAt(menu);
+        await UiText.SettleUntilAsync(window, () => items[0].Command is not null, "the open menu");
+        Assert.Same(h.Shell.OpenSettingsCommand, items[0].Command);
+        Assert.Same(h.Shell.OpenGuideCommand, items[1].Command);
+        var sidebar = window.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "Sidebar");
+        Assert.DoesNotContain(sidebar.GetVisualDescendants().OfType<Button>(), b => AutomationProperties.GetName(b) is "Settings" or "User Guide");
+        window.Close();
+    }
+
+    /// <summary>
     /// The header's cup after the processes' total turns Keep this computer awake on and off, and steams while the
     /// computer is kept awake (DESIGN.md §9, "Keeping the computer awake").
     /// </summary>

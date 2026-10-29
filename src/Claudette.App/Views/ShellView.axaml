@@ -131,8 +131,8 @@
   </UserControl.Resources>
 
   <UserControl.Styles>
-    <!-- The sidebar's own rows: New tab, History, the update badge, Settings and User Guide. The icon keeps its place when the
-         sidebar collapses to its rail. -->
+    <!-- The sidebar's own rows: New tab, History and the update badges. The icon keeps its place when the sidebar collapses
+         to its rail. -->
     <Style Selector="Button.side">
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -317,32 +317,36 @@
 
   <Grid ColumnDefinitions="Auto,*">
 
-    <!-- The sidebar: tabs grouped by folder, with New tab above and History, updates and Settings below
+    <!-- The sidebar: tabs grouped by folder, with New tab above and History and updates below
          (DESIGN.md §3, §4). Collapses to a rail of status icons. -->
     <Border x:Name="Sidebar" Grid.Column="0" Classes="island" Width="{Binding Layout.SidebarDisplayWidth}" Margin="6,0,0,6">
       <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- New tab, and collapsing -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="6,8,6,4" IsVisible="{Binding Layout.IsSidebarExpanded}">
-          <Button Classes="flat side" Command="{Binding NewTabCommand}" ToolTip.Tip="{Binding Tips.NewTab}" AutomationProperties.Name="New tab">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-              <Path Classes="icon" Data="{StaticResource IconPlus}" />
-              <TextBlock Text="New tab" VerticalAlignment="Center" />
+        <!-- New tab, and collapsing: the sidebar's head, under a line as its foot is over one -->
+        <Border Grid.Row="0" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,0,1" Padding="6,8,6,6">
+          <Panel>
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Layout.IsSidebarExpanded}">
+              <Button Classes="flat side" Command="{Binding NewTabCommand}" ToolTip.Tip="{Binding Tips.NewTab}" AutomationProperties.Name="New tab">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Path Classes="icon" Data="{StaticResource IconPlus}" />
+                  <TextBlock Text="New tab" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Grid.Column="1" Classes="flat" Padding="8" Command="{Binding Layout.ToggleSidebarCommand}"
+                      ToolTip.Tip="{Binding Tips.CollapseSidebar}" AutomationProperties.Name="Collapse the sidebar">
+                <Path Data="{StaticResource IconSidebar}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="13" Height="13" Stretch="Uniform" />
+              </Button>
+            </Grid>
+            <StackPanel Spacing="2" IsVisible="{Binding Layout.IsSidebarCollapsed}">
+              <Button Classes="flat side" Command="{Binding Layout.ToggleSidebarCommand}" ToolTip.Tip="{Binding Tips.ExpandSidebar}" AutomationProperties.Name="Expand the sidebar">
+                <Path Classes="icon" Data="{StaticResource IconSidebar}" />
+              </Button>
+              <Button Classes="flat side" Command="{Binding NewTabCommand}" ToolTip.Tip="{Binding Tips.NewTab}" AutomationProperties.Name="New tab">
+                <Path Classes="icon" Data="{StaticResource IconPlus}" />
+              </Button>
             </StackPanel>
-          </Button>
-          <Button Grid.Column="1" Classes="flat" Padding="8" Command="{Binding Layout.ToggleSidebarCommand}"
-                  ToolTip.Tip="{Binding Tips.CollapseSidebar}" AutomationProperties.Name="Collapse the sidebar">
-            <Path Data="{StaticResource IconSidebar}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="13" Height="13" Stretch="Uniform" />
-          </Button>
-        </Grid>
-        <StackPanel Grid.Row="0" Margin="6,8,6,4" Spacing="2" IsVisible="{Binding Layout.IsSidebarCollapsed}">
-          <Button Classes="flat side" Command="{Binding Layout.ToggleSidebarCommand}" ToolTip.Tip="{Binding Tips.ExpandSidebar}" AutomationProperties.Name="Expand the sidebar">
-            <Path Classes="icon" Data="{StaticResource IconSidebar}" />
-          </Button>
-          <Button Classes="flat side" Command="{Binding NewTabCommand}" ToolTip.Tip="{Binding Tips.NewTab}" AutomationProperties.Name="New tab">
-            <Path Classes="icon" Data="{StaticResource IconPlus}" />
-          </Button>
-        </StackPanel>
+          </Panel>
+        </Border>
 
         <!-- Groups and their tabs. Drag a tab to reorder it in its group, or a group's label to move the group
              (DESIGN.md §4). -->
@@ -943,7 +947,7 @@
           </ItemsControl>
         </ScrollViewer>
 
-        <!-- The selected tab's project, History, the Claude Code update badge (DESIGN.md §12) and Settings -->
+        <!-- The selected tab's project, History and the update badges (DESIGN.md §12) -->
         <Border Grid.Row="2" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="6">
           <StackPanel Spacing="2">
             <!-- The selected tab's project tools and links (DESIGN.md §18, "Project tools"): its kind's icon, or a folder's
@@ -1202,20 +1206,6 @@
                   </StackPanel>
                 </Flyout>
               </Button.Flyout>
-            </Button>
-            <Button Classes="flat side" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{Binding Tips.Settings}" ToolTip.Placement="Right" AutomationProperties.Name="Settings">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <Path Classes="icon" Data="{StaticResource IconSettings}" />
-                <TextBlock Text="Settings" VerticalAlignment="Center" IsVisible="{Binding Layout.IsSidebarExpanded}" />
-              </StackPanel>
-            </Button>
-            <!-- The user guide on the web (DESIGN.md §2, "User Guide") -->
-            <Button Classes="flat side" Command="{Binding OpenGuideCommand}" ToolTip.Tip="Opens Claudette's user guide in your browser" ToolTip.Placement="Right"
-                    AutomationProperties.Name="User Guide">
-              <StackPanel Orientation="Horizontal" Spacing="10">
-                <Path Classes="icon" Data="{StaticResource IconGuide}" />
-                <TextBlock Text="User Guide" VerticalAlignment="Center" IsVisible="{Binding Layout.IsSidebarExpanded}" />
-              </StackPanel>
             </Button>
           </StackPanel>
         </Border>
