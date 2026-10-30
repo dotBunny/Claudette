@@ -197,19 +197,20 @@ public partial class ProjectFileView : UserControl
 
     // ---- The notes' buttons and the diff ------------------------------------------------------------------------------
 
+    // In its tab or its window of its own, the file's Files tab has the commands.
     private void OnOpenInSystem(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is ProjectFileViewModel file && this.FindAncestorOfType<ProjectFilesView>()?.DataContext is ProjectFilesViewModel files)
+        if (DataContext is ProjectFileViewModel file)
         {
-            files.OpenFileInSystemCommand.Execute(file);
+            file.Files.OpenFileInSystemCommand.Execute(file);
         }
     }
 
     private void OnOpenInViewer(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is ProjectFileViewModel file && this.FindAncestorOfType<ProjectFilesView>()?.DataContext is ProjectFilesViewModel files)
+        if (DataContext is ProjectFileViewModel file)
         {
-            files.OpenFileInViewerCommand.Execute(file);
+            file.Files.OpenFileInViewerCommand.Execute(file);
         }
     }
 

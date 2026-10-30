@@ -1,0 +1,85 @@
+﻿"12 mines left to flag."
+[choice] "Normal"
+[button] Row 1, column 1, flagged
+[button] Row 1, column 2, not opened
+[button] Row 1, column 3, not opened
+[button] Row 1, column 4, not opened
+[button] Row 1, column 5, not opened
+[button] Row 1, column 6, not opened
+[button] Row 1, column 7, not opened
+[button] Row 1, column 8, not opened
+[button] Row 1, column 9, not opened
+[button] Row 2, column 1, not opened
+[button] Row 2, column 2, not opened
+[button] Row 2, column 3, not opened
+[button] Row 2, column 4, not opened
+[button] Row 2, column 5, not opened
+[button] Row 2, column 6, not opened
+[button] Row 2, column 7, not opened
+[button] Row 2, column 8, not opened
+[button] Row 2, column 9, not opened
+[button] Row 3, column 1, not opened
+[button] Row 3, column 2, not opened
+[button] Row 3, column 3, not opened
+[button] Row 3, column 4, not opened
+[button] Row 3, column 5, not opened
+[button] Row 3, column 6, not opened
+[button] Row 3, column 7, not opened
+[button] Row 3, column 8, 3 mines around: 3
+[button] Row 3, column 9, 1 mine around: 1
+[button] Row 4, column 1, not opened
+[button] Row 4, column 2, not opened
+[button] Row 4, column 3, not opened
+[button] Row 4, column 4, 3 mines around: 3
+[button] Row 4, column 5, 1 mine around: 1
+[button] Row 4, column 6, 1 mine around: 1
+[button] Row 4, column 7, 1 mine around: 1
+[button] Row 4, column 8, 1 mine around: 1
+[button] Row 4, column 9, empty
+[button] Row 5, column 1, not opened
+[button] Row 5, column 2, not opened
+[button] Row 5, column 3, not opened
+[button] Row 5, column 4, 1 mine around: 1
+[button] Row 5, column 5, empty
+[button] Row 5, column 6, empty
+[button] Row 5, column 7, empty
+[button] Row 5, column 8, empty
+[button] Row 5, column 9, empty
+[button] Row 6, column 1, not opened
+[button] Row 6, column 2, not opened
+[button] Row 6, column 3, 2 mines around: 2
+[button] Row 6, column 4, 1 mine around: 1
+[button] Row 6, column 5, empty
+[button] Row 6, column 6, empty
+[button] Row 6, column 7, empty
+[button] Row 6, column 8, empty
+[button] Row 6, column 9, empty
+[button] Row 7, column 1, not opened
+[button] Row 7, column 2, not opened
+[button] Row 7, column 3, 1 mine around: 1
+[button] Row 7, column 4, empty
+[button] Row 7, column 5, empty
+[button] Row 7, column 6, empty
+[button] Row 7, column 7, empty
+[button] Row 7, column 8, empty
+[button] Row 7, column 9, empty
+[button] Row 8, column 1, not opened
+[button] Row 8, column 2, not opened
+[button] Row 8, column 3, 1 mine around: 1
+[button] Row 8, column 4, 1 mine around: 1
+[button] Row 8, column 5, 2 mines around: 2
+[button] Row 8, column 6, 2 mines around: 2
+[button] Row 8, column 7, 2 mines around: 2
+[button] Row 8, column 8, 1 mine around: 1
+[button] Row 8, column 9, 1 mine around: 1
+[button] Row 9, column 1, not opened
+[button] Row 9, column 2, not opened
+[button] Row 9, column 3, not opened
+[button] Row 9, column 4, not opened
+[button] Row 9, column 5, not opened
+[button] Row 9, column 6, not opened
+[button] Row 9, column 7, not opened
+[button] Row 9, column 8, not opened
+[button] Row 9, column 9, not opened
+[button] New game
+[button] Done playing

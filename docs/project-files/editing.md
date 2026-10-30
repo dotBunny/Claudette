@@ -12,7 +12,7 @@ The editor shows one file at a time, in the Files tab, under its [file tabs](fil
 ## What the editor does
 
 - Line numbers, with the current line drawn faintly.
-- Find and replace, with match case, whole word and regular expressions.
+- Find and replace, with match case, whole word and regular expressions. The find box's **Find in files** button takes the search to the whole project ([Finding in files](finding-in-files.md)).
 - **Go to line**, also in the [command palette](../tabs/the-command-palette.md) as **Go to line…**.
 - Folding by indentation, in any language.
 - Box selection: drag with `Alt` held (`Option` on macOS).

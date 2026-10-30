@@ -571,8 +571,8 @@ public sealed class AppearanceSettings
     public bool ClaudetteTips { get; set; } = true;
 
     /// <summary>
-    /// Tic-tac-toe, Connect Four and hangman against Claudette, on the side panel's Games page (DESIGN.md §18, "Games with
-    /// Claudette"). On by default.
+    /// Tic-tac-toe, Connect Four, hangman and Minesweeper against Claudette, in the Games tool window (DESIGN.md §18, "Games
+    /// with Claudette"). On by default.
     /// </summary>
     public bool GamesWithClaudette { get; set; } = true;
 

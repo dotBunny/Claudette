@@ -414,6 +414,7 @@ public partial class ShellView : UserControl
                 ? AboutWindow.ShowAsync(main.Services, owner)
                 : Task.CompletedTask;
             _shell.ShowImageWindow = viewer => ImageWindow.Open(viewer, TopLevel.GetTopLevel(this) as Window);
+            _shell.ShowFileWindow = ShowFileWindow;
             _shell.PropertyChanged += OnShellChanged;
             _shell.ToolWindows.FocusRequested += OnToolFocusRequested;
             if (Bounds.Width > 0)
@@ -429,6 +430,10 @@ public partial class ShellView : UserControl
         if (e.PropertyName == nameof(ShellViewModel.Updates))
         {
             WatchUpdates();
+        }
+        else if (e.PropertyName == nameof(ShellViewModel.FindInFiles))
+        {
+            BringForwardForFindInFiles();
         }
     }
 

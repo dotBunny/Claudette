@@ -16,7 +16,7 @@ The header has the group's name, then:
 - **New file**, a page with a plus ([New files and folders](#new-files-and-folders));
 - **Find file**, a magnifier, which is `Ctrl/Cmd+P` ([Finding a file by name](finding-a-file-by-name.md));
 - **Collapse all**;
-- **⋯**, which has **New folder**, **Show only changed files**, **Claude's changes** and **Against git HEAD** (in a repository), **Move to the right** (or **Move to the left**) and **Refresh**.
+- **⋯**, which has **New folder**, **Find in files…** and **Replace in files…** in the whole project ([Finding in files](finding-in-files.md)), **Show only changed files**, **Claude's changes** and **Against git HEAD** (in a repository), **Move to the right** (or **Move to the left**) and **Refresh**.
 
 ## The tree
 
@@ -93,7 +93,7 @@ On a program or shortcut that isn't text (`.exe`, `.lnk`, `.app`, `.desktop`), *
 
 Right-click a folder for **New file**, **New folder**, **Copy path**, **Copy relative path**, **Reveal in file manager**, **Collapse**, **Find in folder…**, **Replace in folder…** ([Finding in files](finding-in-files.md)), **Rename** and **Delete**.
 
-Right-click the empty space under the tree for **New file** and **New folder**, at the top of the project.
+Right-click the empty space under the tree for **New file** and **New folder**, at the top of the project, and **Find in files…** and **Replace in files…**.
 
 In a Perforce workspace, a file's and a folder's menus also have a Perforce section, **Check out**, **Mark for add**, **Mark for delete**, **Revert** and **Diff against the depot**, and the tree marks what Perforce has open, such as *edit* beside a file you've checked out. Renaming, deleting and new files are opened in Perforce too. See [Perforce](../project-tools/perforce.md#in-the-files-tab).
 

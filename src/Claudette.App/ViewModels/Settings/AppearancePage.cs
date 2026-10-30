@@ -102,9 +102,9 @@ public sealed class AppearancePage : SettingsPage
                 "Now and then she holds up a tip, such as a shortcut you might not know.",
                 "At most every ten minutes, and never while you're typing.", ["claudette", "hints"]),
             Setting("appearance.gamesWithClaudette", "Games with Claudette", s => s.Appearance.GamesWithClaudette, (s, v) => s.Appearance.GamesWithClaudette = v,
-                "Tic-tac-toe, Connect Four or hangman against her while Claude works.",
+                "Tic-tac-toe, Connect Four, hangman or Minesweeper against her while Claude works.",
                 "Or while a usage limit holds a task. Start one by right-clicking her, from the command palette, or from the usage limit bar; it opens in the Games tool window. She plays whether or not she's on the composer.",
-                ["play", "tic-tac-toe", "connect four", "hangman"]),
+                ["play", "tic-tac-toe", "connect four", "hangman", "minesweeper"]),
         ]);
         context.SettingsSaved += OnPreviewSettingsSaved;
         context.AllPagesChanged += OnPreviewSettingsSaved;
@@ -281,7 +281,7 @@ public sealed class AppearancePage : SettingsPage
         set => Set(value, v => Settings.Appearance.ClaudetteTips = v);
     }
 
-    /// <summary>Tic-tac-toe, Connect Four and hangman against her (DESIGN.md §18, "Games with Claudette").</summary>
+    /// <summary>Tic-tac-toe, Connect Four, hangman and Minesweeper against her (DESIGN.md §18, "Games with Claudette").</summary>
     public bool GamesWithClaudette
     {
         get => Settings.Appearance.GamesWithClaudette;

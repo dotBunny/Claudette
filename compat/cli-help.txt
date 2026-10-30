@@ -289,9 +289,10 @@ Commands:
                                         terminal output
   mcp                                   Configure and manage MCP servers
   plugin|plugins                        Manage Claude Code plugins
-  purge [options] [path]                Delete all Claude Code state for a
-                                        project (transcripts, tasks, file
-                                        history, config entry)
+  purge [options] [path]                Delete a project's Claude Code data
+                                        (transcripts, tasks, file history, and
+                                        its entry in ~/.claude.json) from this
+                                        computer only
   respawn [options] [id]                Restart a background session, or all of
                                         them with --all, so it runs the current
                                         Claude Code version

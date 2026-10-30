@@ -28,6 +28,12 @@ public class ClaudeProjectsTests
         return other;
     }
 
+    /// <summary>
+    /// Restores as the app does, on the UI thread, so the read of Claude Code's sessions lays the groups out under the
+    /// harness's lock after it: started from the test's thread instead, a wait could see a group before its past sessions.
+    /// </summary>
+    private static void Restore(TabTestHarness h) => InlineDispatcher.Run(() => h.Shell.Restore(null));
+
     private static Task ProjectsShown(TabTestHarness h, int count) =>
         TabTestHarness.Eventually(() => InlineDispatcher.Read(() => h.Shell.Groups.Count(g => g.IsClaudeProject) == count), $"{count} projects in the sidebar");
 
@@ -38,7 +44,7 @@ public class ClaudeProjectsTests
         h.Services.State.ClaudeProjectsOffered = true;
         var other = WriteProjects(h);
 
-        h.Shell.Restore(null);
+        Restore(h);
         await ProjectsShown(h, 2);
 
         // Nothing is open, so neither group counts as a tab, and both are placed by their latest session.
@@ -68,7 +74,7 @@ public class ClaudeProjectsTests
         await using var h = new TabTestHarness(s => s.Sidebar.ShowClaudeProjects = true);
         h.Services.State.ClaudeProjectsOffered = true;
         WriteProjects(h);
-        h.Shell.Restore(null);
+        Restore(h);
         await ProjectsShown(h, 2);
         var work = InlineDispatcher.Read(() => h.Shell.Groups.Single(g => g.Folder == h.WorkFolder));
         var row = work.PastSessions[0];
@@ -104,7 +110,7 @@ public class ClaudeProjectsTests
         await using var h = new TabTestHarness(s => s.Sidebar.ShowClaudeProjects = true);
         h.Services.State.ClaudeProjectsOffered = true;
         WriteProjects(h);
-        h.Shell.Restore(null);
+        Restore(h);
         await ProjectsShown(h, 2);
         var tab = await h.OpenTabAsync();
         var work = InlineDispatcher.Read(() => h.Shell.Groups.Single(g => g.Tabs.Contains(tab)));
@@ -133,7 +139,7 @@ public class ClaudeProjectsTests
         await using var h = new TabTestHarness(s => s.Sidebar.ShowClaudeProjects = true);
         h.Services.State.ClaudeProjectsOffered = true;
         WriteProjects(h);
-        h.Shell.Restore(null);
+        Restore(h);
         await ProjectsShown(h, 2);
         var work = InlineDispatcher.Read(() => h.Shell.Groups.Single(g => g.Folder == h.WorkFolder));
 
@@ -156,7 +162,7 @@ public class ClaudeProjectsTests
         {
             h.WriteTranscript($"s{i}", UserLine($"s{i}", $"Prompt {i}", h.WorkFolder, $"2026-09-28T0{i}:00:00Z"));
         }
-        h.Shell.Restore(null);
+        Restore(h);
         await ProjectsShown(h, 1);
         var work = InlineDispatcher.Read(() => h.Shell.Groups.Single());
 
@@ -181,7 +187,7 @@ public class ClaudeProjectsTests
         WriteProjects(h);
         Assert.False(h.Services.Settings.Sidebar.ShowClaudeProjects);
 
-        h.Shell.Restore(null);
+        Restore(h);
         await TabTestHarness.Eventually(() => InlineDispatcher.Read(() => h.Shell.HasClaudeProjectsOffer), "the offer");
 
         Assert.Equal("Claude Code has sessions in 2 folders on this machine.", h.Shell.ClaudeProjectsOffer!.Text);
@@ -200,7 +206,7 @@ public class ClaudeProjectsTests
     {
         await using var h = new TabTestHarness();
         WriteProjects(h);
-        h.Shell.Restore(null);
+        Restore(h);
         await TabTestHarness.Eventually(() => InlineDispatcher.Read(() => h.Shell.HasClaudeProjectsOffer), "the offer");
 
         InlineDispatcher.Run(() => h.Shell.DeclineClaudeProjectsCommand.Execute(null));
@@ -213,7 +219,7 @@ public class ClaudeProjectsTests
         await using var again = new TabTestHarness();
         again.Services.State.ClaudeProjectsOffered = true;
         WriteProjects(again);
-        again.Shell.Restore(null);
+        Restore(again);
         await TabTestHarness.Eventually(() => again.Shell.Picker is not null, "the picker, with no tabs");
         await Waiting.NeverAsync(() => InlineDispatcher.Read(() => again.Shell.HasClaudeProjectsOffer || again.Shell.Groups.Count > 0), "an offer or a group");
     }
@@ -223,7 +229,7 @@ public class ClaudeProjectsTests
     {
         await using var h = new TabTestHarness();
         h.WriteTranscript("g1", UserLine("g1", "In a deleted clone", Path.Combine(h.Root, "gone")));
-        h.Shell.Restore(null);
+        Restore(h);
         await TabTestHarness.Eventually(() => h.Shell.Picker is not null, "the picker, with no tabs");
 
         await Waiting.NeverAsync(() => InlineDispatcher.Read(() => h.Shell.HasClaudeProjectsOffer), "an offer");

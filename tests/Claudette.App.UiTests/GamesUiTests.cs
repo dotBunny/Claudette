@@ -15,8 +15,8 @@ using Claudette.App.Views;
 namespace Claudette.App.UiTests;
 
 /// <summary>
-/// Games with Claudette rendered (DESIGN.md §18): the side panel's Games page with each board, the keyboard while the
-/// page has focus, and the ways in: her menu and the usage limit bar.
+/// Games with Claudette rendered (DESIGN.md §18): the Games tool window with each board and the game's menu in its
+/// header, the keyboard while the page has focus, and the ways in: her menu and the usage limit bar.
 /// </summary>
 public class GamesUiTests
 {
@@ -131,6 +131,102 @@ public class GamesUiTests
     }
 
     [AvaloniaFact]
+    public async Task The_windows_header_names_the_game_and_its_menu_switches_to_another()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        tab.PlayGame(GameKind.TicTacToe);
+        UiText.Settle(window);
+
+        var choice = GameChoice(window);
+        Assert.Equal("Game: Tic-tac-toe", AutomationProperties.GetName(choice));
+        Assert.Contains("Tic-tac-toe", choice.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text));
+        // It's in the header, beside the window's title, and the page under it has no row of games.
+        var header = choice.GetVisualAncestors().OfType<Grid>().First(g => g.Classes.Contains("toolheader"));
+        Assert.Contains(header.GetVisualDescendants().OfType<TextBlock>(), t => t.Classes.Contains("tooltitle") && t.Text == "Games");
+        var page = window.GetVisualDescendants().OfType<GamesView>().Single();
+        Assert.DoesNotContain(page.GetVisualDescendants().OfType<Button>(), b => b.Content is "Connect Four" or TextBlock { Text: "Connect Four" });
+
+        var menu = Assert.IsType<MenuFlyout>(choice.Flyout);
+        var items = menu.Items.OfType<MenuItem>().ToList();
+        Assert.Equal(["Tic-tac-toe", "Connect Four", "Hangman", "Minesweeper"], items.Select(i => i.Header as string));
+        menu.ShowAt(choice);
+        await UiText.SettleUntilAsync(window, () => items[0].IsEffectivelyVisible, "the open menu");
+        Assert.Equal([true, false, false, false], items.Select(i => i.IsChecked));
+
+        items[3].Command!.Execute(items[3].CommandParameter);
+        menu.Hide();
+        UiText.Settle(window);
+
+        Assert.IsType<MinesweeperViewModel>(h.Services.Games.Game);
+        Assert.Equal("Game: Minesweeper", AutomationProperties.GetName(GameChoice(window)));
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public async Task Minesweeper_opens_with_a_click_flags_with_a_right_click_or_F_and_the_arrows_move_between_squares()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        h.Services.Random = new Random(5);
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        tab.PlayGame(GameKind.Minesweeper);
+        UiText.Settle(window);
+        var page = window.GetVisualDescendants().OfType<GamesView>().Single();
+        var game = (MinesweeperViewModel)h.Services.Games.Game!;
+        var squares = MineSquares(page);
+        Assert.Equal(81, squares.Count);
+        // Nine to a row, in the right side at its narrowest.
+        Point At(int square) => squares[square].TranslatePoint(default, page)!.Value;
+        Assert.Equal(At(0).Y, At(8).Y);
+        Assert.True(At(9).Y > At(0).Y);
+        Assert.True(At(8).X + squares[8].Bounds.Width <= ToolDockViewModel.MinRightWidth - 16);
+
+        Click(window, squares[40]);
+
+        Assert.True(game.Squares[40].IsOpen);
+        Assert.Contains("open", squares[40].Classes);
+        var shut = game.Squares.Where(s => s.State == MinesweeperSquareState.Shut).Select(s => s.Index).ToList();
+
+        // A right-click flags a shut square.
+        var center = squares[shut[0]].TranslatePoint(new Point(squares[shut[0]].Bounds.Width / 2, squares[shut[0]].Bounds.Height / 2), window)!.Value;
+        window.MouseMove(center);
+        window.MouseDown(center, MouseButton.Right);
+        window.MouseUp(center, MouseButton.Right);
+        UiText.Settle(window);
+        Assert.EndsWith(", flagged", AutomationProperties.GetName(MineSquares(page)[shut[0]]));
+
+        // F flags the one with the focus, and again takes the flag away.
+        var square = MineSquares(page)[shut[1]];
+        square.Focus();
+        UiText.Settle(window);
+        window.KeyPressQwerty(PhysicalKey.F, RawInputModifiers.None);
+        UiText.Settle(window);
+        Assert.True(game.Squares[shut[1]].ShowsFlag);
+        window.KeyPressQwerty(PhysicalKey.F, RawInputModifiers.None);
+        UiText.Settle(window);
+        Assert.False(game.Squares[shut[1]].ShowsFlag);
+        Assert.Equal("", tab.ComposerText ?? "");
+
+        // The arrow keys move the focus from square to square.
+        MineSquares(page)[0].Focus();
+        window.KeyPressQwerty(PhysicalKey.ArrowRight, RawInputModifiers.None);
+        window.KeyPressQwerty(PhysicalKey.ArrowDown, RawInputModifiers.None);
+        UiText.Settle(window);
+        Assert.Same(MineSquares(page)[10], window.FocusManager!.GetFocusedElement());
+        // Tab leaves the field, rather than going through its 81 squares.
+        window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.None);
+        UiText.Settle(window);
+        var next = Assert.IsAssignableFrom<Control>(window.FocusManager.GetFocusedElement());
+        Assert.DoesNotContain("minesquare", next.Classes);
+        var shown = UiText.Describe(page);
+        window.Close();
+
+        await Verify(shown);
+    }
+
+    [AvaloniaFact]
     public async Task Her_menu_offers_the_games_while_theyre_on()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
@@ -138,7 +234,7 @@ public class GamesUiTests
         var window = UiText.Show(new ShellView { DataContext = h.Shell });
         var layer = window.GetVisualDescendants().OfType<MascotLayer>().Single(l => !l.IsFront);
         var menu = layer.Figure.ContextMenu!;
-        Assert.Equal(["Play tic-tac-toe", "Play Connect Four", "Play hangman", "Hide Claudette", "Claudette settings…"],
+        Assert.Equal(["Play tic-tac-toe", "Play Connect Four", "Play hangman", "Play Minesweeper", "Hide Claudette", "Claudette settings…"],
             menu.Items.OfType<MenuItem>().Where(i => i.IsVisible).Select(i => i.Header as string));
 
         menu.Items.OfType<MenuItem>().Single(i => i.Header as string == "Play Connect Four").Command!.Execute(GameKind.ConnectFour);
@@ -160,6 +256,12 @@ public class GamesUiTests
         [.. window.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("stripicon") && b.IsEffectivelyVisible).Select(AutomationProperties.GetName)];
 
     private static List<Button> Squares(Control page) => [.. page.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("gamesquare"))];
+
+    private static List<Button> MineSquares(Control page) => [.. page.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("minesquare"))];
+
+    /// <summary>The game's menu in the Games window's header.</summary>
+    private static Button GameChoice(Window window) =>
+        window.GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("toolchoice") && b.IsEffectivelyVisible);
 
     private static void Click(Window window, Control target)
     {

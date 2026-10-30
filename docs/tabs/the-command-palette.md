@@ -43,7 +43,7 @@ For the whole window:
 While a project's Files tab has the focus:
 
 - **Save the file**, while it has unsaved edits, and **Save all files**, while any file does
-- **Close the file** and **Go to line…**, while a file is showing
+- **Close the file**, **Go to line…** and **Open the file in a window**, while a file is showing ([In a window of its own](../project-files/file-tabs.md#in-a-window-of-its-own))
 - **Preview the file**, **Edit and preview the file** and **Edit the file**, the ones not showing, while a Markdown file is. See [Markdown files](../project-files/markdown-files.md).
 - **Show only changed files** (or **Show every file in the explorer**) and **Hide the explorer** (or **Show the explorer**)
 - **Close this pane** and **Close the other panes**, with tabs [side by side](split-panes.md)
@@ -60,7 +60,7 @@ For the selected tab:
 - **Stash the message**, while something's typed in the composer
 - **Show changed files**, **Show the agent map**, **Show tasks**, **Show processes**, **Show MCP servers** (when the session has some) and **Show scratch pad**
 - **Open project files**, which opens the project's Files tab. See [Opening project files](../project-files/opening-project-files.md).
-- **Play tic-tac-toe with Claudette**, **Play Connect Four with Claudette** and **Play hangman with Claudette**, unless the games are turned off. See [Games with Claudette](../claudette/games-with-claudette.md).
+- **Play tic-tac-toe with Claudette**, **Play Connect Four with Claudette**, **Play hangman with Claudette** and **Play Minesweeper with Claudette**, unless the games are turned off. See [Games with Claudette](../claudette/games-with-claudette.md).
 - **Tab settings…**, **Duplicate tab** and **Export conversation…**
 - **Collapse tab** (or **Expand tab**), while the tab has rows under it. See [Collapsing a tab](the-sidebar.md#collapsing-a-tab).
 - **New tab in a worktree**, for a folder in a git repository

@@ -35,7 +35,7 @@ public sealed partial class GameService : ObservableObject, IGameHost, IDisposab
 
     /// <summary>The game open, or null.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsOpen), nameof(IsTicTacToe), nameof(IsConnectFour), nameof(IsHangman))]
+    [NotifyPropertyChangedFor(nameof(IsOpen), nameof(IsTicTacToe), nameof(IsConnectFour), nameof(IsHangman), nameof(IsMinesweeper))]
     public partial GameViewModel? Game { get; private set; }
 
     public bool IsOpen => Game is not null;
@@ -45,6 +45,8 @@ public sealed partial class GameService : ObservableObject, IGameHost, IDisposab
     public bool IsConnectFour => Game?.Kind == GameKind.ConnectFour;
 
     public bool IsHangman => Game?.Kind == GameKind.Hangman;
+
+    public bool IsMinesweeper => Game?.Kind == GameKind.Minesweeper;
 
     /// <summary>A game opened or closed: the tabs' Games pages come or go.</summary>
     public event Action? OpenChanged;
@@ -72,6 +74,7 @@ public sealed partial class GameService : ObservableObject, IGameHost, IDisposab
         {
             GameKind.ConnectFour => new ConnectFourViewModel(this),
             GameKind.Hangman => new HangmanViewModel(this),
+            GameKind.Minesweeper => new MinesweeperViewModel(this),
             _ => new TicTacToeViewModel(this),
         };
         old?.Dispose();
@@ -82,7 +85,7 @@ public sealed partial class GameService : ObservableObject, IGameHost, IDisposab
         return Game;
     }
 
-    /// <summary>The row of games at the page's top: another game, the one in progress dropped uncounted.</summary>
+    /// <summary>The game's menu in the window's header: another game, the one in progress dropped uncounted.</summary>
     [RelayCommand]
     private void Switch(GameKind kind) => Start(kind);
 

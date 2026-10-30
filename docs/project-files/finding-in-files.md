@@ -17,6 +17,13 @@ Find text in a project's files, and replace it, as JetBrains Rider's **Find in F
 - Or choose **Find in files…** or **Replace in files…** in the [command palette](../tabs/the-command-palette.md).
 - Or right-click a folder in the [explorer](the-explorer.md) for **Find in folder…** or **Replace in folder…**, which look only in that folder.
 
+A Files tab offers it too:
+
+- With no file open, it lists **Find in files** and **Replace in files**, with their shortcuts.
+- The explorer's **⋯** menu, and right-clicking the space under its tree, have **Find in files…** and **Replace in files…**.
+- In [Go to file](finding-a-file-by-name.md), click **Find "…" in files** under the list to look for what you typed in the files' text instead, or press `Ctrl+Shift+F` (`Cmd+Shift+F`) in the box.
+- The editor's find box (`Ctrl+F`, `Cmd+F` on macOS) has a **Find in files** button before its **×**. It takes what you're looking for to the whole project, with **Aa**, **W** and **.\*** as you set them, and replaces if the find box is replacing. Pressing `Ctrl+Shift+F` (`Cmd+Shift+F`) in the find box does the same.
+
 Text you've selected on one line in the editor is what it looks for. Otherwise it starts with what you looked for last.
 
 ## Find
@@ -37,7 +44,7 @@ It looks in the same files the composer's `@` list offers: those git tracks, and
 
 ## Replace
 
-In **Replace in files**, type what goes in place of the match. `Ctrl/Cmd+Shift+F` and `R` switch between finding and replacing.
+In **Replace in files**, type what goes in place of the match in the box under the one you search with. The chevron at the left of the boxes switches between finding and replacing, as in the editor's find box, and so do `Ctrl/Cmd+Shift+R` and `Ctrl/Cmd+Shift+F`. What you're looking for, and the matches, stay as they are.
 
 - **Replace** replaces the selected match.
 - **Replace all** asks first, saying how many matches in how many files.

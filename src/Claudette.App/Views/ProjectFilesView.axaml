@@ -48,10 +48,15 @@
                 <Path Data="{StaticResource IconCollapseAll}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.3" Width="11" Height="11" Stretch="Uniform" />
               </Button>
               <Button Grid.Column="4" Classes="flat" Padding="6,4" ToolTip.Tip="More" AutomationProperties.Name="More explorer actions">
-                <Path Data="{StaticResource IconMore}" Fill="{DynamicResource MutedTextBrush}" Width="11" Height="11" Stretch="Uniform" />
+                <!-- On its own 12×12 grid: stretched to fit, the dots would sit at the box's top -->
+                <Path Data="{StaticResource IconMore}" Fill="{DynamicResource MutedTextBrush}" Width="12" Height="12" Stretch="None" />
                 <Button.Flyout>
                   <MenuFlyout>
                     <MenuItem Header="New folder" Command="{Binding NewFolderCommand}" CommandParameter="{Binding SelectedRow}" />
+                    <Separator />
+                    <!-- Finding in files, in the whole project (§18, "Finding in files") -->
+                    <MenuItem Header="Find in files…" Command="{Binding FindInProjectCommand}" />
+                    <MenuItem Header="Replace in files…" Command="{Binding ReplaceInProjectCommand}" />
                     <Separator />
                     <MenuItem Header="Show only changed files" ToggleType="CheckBox" IsChecked="{Binding ShowOnlyChanged, Mode=OneWay}" Command="{Binding ToggleShowOnlyChangedCommand}" />
                     <Separator IsVisible="{Binding IsGitRepository}" />
@@ -105,7 +110,12 @@
           <!-- Finding a file by name ("Finding a file by name") -->
           <TextBox x:Name="FindBox" DockPanel.Dock="Top" Classes="findfile" Text="{Binding FindText}" IsVisible="{Binding IsFinding}"
                    PlaceholderText="Find a file by name" AutomationProperties.Name="Find a file by name" KeyDown="OnFindKeyDown" />
-          <TextBlock DockPanel.Dock="Bottom" Classes="muted small" Margin="12,4,12,8" Text="{Binding FindSummary}" TextWrapping="Wrap"
+          <!-- Under them, how many, and what's typed looked for in the files' text instead ("Finding in files") -->
+          <Button DockPanel.Dock="Bottom" Classes="findtyped" Command="{Binding FindTypedInFilesCommand}" ToolTip.Tip="{Binding FindTypedInFilesTip}"
+                  IsVisible="{Binding IsListingFound}">
+            <TextBlock Classes="small" Text="{Binding FindTypedInFilesText}" TextTrimming="CharacterEllipsis" />
+          </Button>
+          <TextBlock DockPanel.Dock="Bottom" Classes="muted small" Margin="12,4,12,0" Text="{Binding FindSummary}" TextWrapping="Wrap"
                      IsVisible="{Binding IsListingFound}" />
           <Panel>
             <!-- The tree -->
@@ -116,6 +126,9 @@
                 <ContextMenu>
                   <MenuItem Header="New file" Command="{Binding NewFileCommand}" />
                   <MenuItem Header="New folder" Command="{Binding NewFolderCommand}" />
+                  <Separator />
+                  <MenuItem Header="Find in files…" Command="{Binding FindInProjectCommand}" />
+                  <MenuItem Header="Replace in files…" Command="{Binding ReplaceInProjectCommand}" />
                 </ContextMenu>
               </ListBox.ContextMenu>
               <ListBox.DataTemplates>
@@ -244,9 +257,10 @@
                     ToolTip.Tip="{Binding ToggleExplorerText}" AutomationProperties.Name="{Binding ToggleExplorerText}">
               <Path Data="{StaticResource IconSidebar}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" Width="12" Height="12" Stretch="Uniform" />
             </Button>
-            <Button DockPanel.Dock="Right" Classes="flat" Padding="9,0" VerticalAlignment="Stretch" ToolTip.Tip="Every open file" AutomationProperties.Name="Every open file"
-                    IsVisible="{Binding HasShowing}">
-              <Path Data="{StaticResource IconMore}" Fill="{DynamicResource MutedTextBrush}" Width="11" Height="11" Stretch="Uniform" />
+            <Button DockPanel.Dock="Right" Classes="flat rowaction" ToolTip.Tip="Every open file" AutomationProperties.Name="Every open file"
+                    IsVisible="{Binding !!OpenFiles.Count}">
+              <!-- On its own 12×12 grid: stretched to fit, the dots would sit at the box's top -->
+              <Path Classes="filled" Data="{StaticResource IconMore}" />
               <Button.Flyout>
                 <MenuFlyout ItemsSource="{Binding OpenFiles}">
                   <MenuFlyout.ItemContainerTheme>
@@ -260,6 +274,11 @@
                   </MenuFlyout.ItemContainerTheme>
                 </MenuFlyout>
               </Button.Flyout>
+            </Button>
+            <!-- The file showing, in a window of its own ("A file in a window of its own") -->
+            <Button x:Name="OpenInWindowButton" DockPanel.Dock="Right" Classes="flat rowaction" Command="{Binding OpenShowingInWindowCommand}"
+                    ToolTip.Tip="{Binding OpenInWindowTip}" AutomationProperties.Name="Open in a window" IsVisible="{Binding HasShowing}">
+              <Path Classes="stroked" Data="{StaticResource IconOpenWindow}" />
             </Button>
             <ScrollViewer x:Name="TabsScroller" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
               <ItemsControl x:Name="FileTabs" ItemsSource="{Binding OpenFiles}">
@@ -277,6 +296,8 @@
                       <StackPanel Orientation="Horizontal" Spacing="4">
                         <Path Data="{StaticResource IconPin}" Fill="{DynamicResource MutedTextBrush}" Width="7" Height="9" Stretch="Uniform" IsVisible="{Binding IsPinned}" VerticalAlignment="Center" />
                         <TextBlock Classes="tablabel" Text="{Binding TabLabel}" />
+                        <Path Classes="inwindow" Data="{StaticResource IconOpenWindow}" IsVisible="{Binding IsInWindow}"
+                              ToolTip.Tip="In a window of its own" AutomationProperties.Name="In a window of its own" />
                         <Path Data="{StaticResource IconCheck}" Stroke="{DynamicResource OkTextBrush}" StrokeThickness="1.4" Width="8" Height="8" Stretch="Uniform"
                               IsVisible="{Binding IsReviewed}" VerticalAlignment="Center" ToolTip.Tip="Reviewed" />
                         <Panel Width="18" VerticalAlignment="Center">
@@ -296,6 +317,7 @@
                           <MenuItem Header="Close all" Command="{Binding $parent[UserControl].((vm:ProjectFilesViewModel)DataContext).CloseAllFilesCommand, FallbackValue={x:Null}}" />
                           <Separator />
                           <MenuItem Header="{Binding PinMenuText}" Command="{Binding $parent[UserControl].((vm:ProjectFilesViewModel)DataContext).TogglePinFileCommand, FallbackValue={x:Null}}" CommandParameter="{Binding}" />
+                          <MenuItem Header="{Binding WindowMenuText}" Command="{Binding $parent[UserControl].((vm:ProjectFilesViewModel)DataContext).ToggleFileWindowCommand, FallbackValue={x:Null}}" CommandParameter="{Binding}" />
                           <MenuItem Header="Reviewed" ToggleType="CheckBox" IsChecked="{Binding IsReviewed, Mode=OneWay}" IsVisible="{Binding CanReview}"
                                     Command="{Binding $parent[UserControl].((vm:ProjectFilesViewModel)DataContext).ToggleFileReviewedCommand, FallbackValue={x:Null}}" CommandParameter="{Binding}" />
                           <Separator />
@@ -332,11 +354,19 @@
           </DockPanel>
         </Border>
         <Panel>
+          <!-- With nothing open: what to do next, each with its shortcut as it's bound now, as Rider's empty editor has it -->
           <StackPanel Classes="nofile" IsVisible="{Binding !HasShowing}">
-            <TextBlock Classes="muted" Text="No files open" HorizontalAlignment="Center" />
-            <TextBlock Classes="muted small" TextWrapping="Wrap" TextAlignment="Center"
-                       Text="Pick a file in the explorer, or find one by name." />
-            <Button HorizontalAlignment="Center" Content="Go to file…" Command="{Binding StartFindCommand}" />
+            <TextBlock Classes="muted" Text="{Binding NoFileText}" HorizontalAlignment="Center" />
+            <Grid x:Name="NoFileActions" Classes="nofileactions" ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+              <Button Content="Go to file" Command="{Binding StartFindCommand}" />
+              <TextBlock Grid.Column="1" Classes="keys" Text="{Binding Tips.GoToFileKeys}" />
+              <Button Grid.Row="1" Content="Find in files" Command="{Binding FindInProjectCommand}" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Classes="keys" Text="{Binding Tips.FindInFilesKeys}" />
+              <Button Grid.Row="2" Content="Replace in files" Command="{Binding ReplaceInProjectCommand}" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Classes="keys" Text="{Binding Tips.ReplaceInFilesKeys}" />
+              <Button Grid.Row="3" Content="Command palette" Command="{Binding OpenPaletteCommand}" />
+              <TextBlock Grid.Row="3" Grid.Column="1" Classes="keys" Text="{Binding Tips.CommandPaletteKeys}" />
+            </Grid>
           </StackPanel>
           <ItemsControl x:Name="OpenFileViews" ItemsSource="{Binding OpenFiles}">
             <ItemsControl.Styles>
@@ -350,8 +380,9 @@
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
+              <!-- Nothing while the file is in a window of its own, whose view has it then -->
               <DataTemplate DataType="vm:ProjectFileViewModel">
-                <views:ProjectFileView />
+                <views:ProjectFileView DataContext="{Binding InTab}" />
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>

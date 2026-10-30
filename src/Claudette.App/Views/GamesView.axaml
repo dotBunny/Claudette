@@ -1,5 +1,6 @@
-<!-- Games with Claudette (DESIGN.md §18): the side panel's Games page, the same game in every tab. Made only while it
-     shows (the tab's ShownGames). Its look is in Themes/ConversationStyles.axaml. -->
+<!-- Games with Claudette (DESIGN.md §18): the Games tool window, the same game whichever tab has the focus; the game
+     to play is chosen in the window's header (ToolPanelView). Made only while it shows. Its look is in
+     Themes/ConversationStyles.axaml. -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Claudette.App.ViewModels"
@@ -10,18 +11,6 @@
              Focusable="True">
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Classes="gameheader">
-      <!-- The games: another one drops the round in progress, uncounted -->
-      <WrapPanel ItemSpacing="4" LineSpacing="4">
-        <Button Classes="flat gamechoice" Classes.selected="{Binding IsTicTacToe}" Command="{Binding SwitchCommand}" CommandParameter="{x:Static games:GameKind.TicTacToe}">
-          <TextBlock Text="Tic-tac-toe" Classes.muted="{Binding !IsTicTacToe}" />
-        </Button>
-        <Button Classes="flat gamechoice" Classes.selected="{Binding IsConnectFour}" Command="{Binding SwitchCommand}" CommandParameter="{x:Static games:GameKind.ConnectFour}">
-          <TextBlock Text="Connect Four" Classes.muted="{Binding !IsConnectFour}" />
-        </Button>
-        <Button Classes="flat gamechoice" Classes.selected="{Binding IsHangman}" Command="{Binding SwitchCommand}" CommandParameter="{x:Static games:GameKind.Hangman}">
-          <TextBlock Text="Hangman" Classes.muted="{Binding !IsHangman}" />
-        </Button>
-      </WrapPanel>
       <!-- A tab waits on the user: the game stays as it is -->
       <Border Classes="codeblock" IsVisible="{Binding HasCall}">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
@@ -126,6 +115,39 @@
                     <DataTemplate DataType="vm:HangmanLetter">
                       <Button Classes="gameletter" Classes.found="{Binding IsFound}" Classes.missed="{Binding IsMissed}" Content="{Binding Text}"
                               Command="{Binding GuessCommand}" AutomationProperties.Name="{Binding Name}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </DataTemplate>
+
+            <!-- Minesweeper: nine by nine; a click opens a square, a right-click or F flags it (GamesView.axaml.cs). Tab
+                 goes into the field once, and the arrow keys move between its squares. -->
+            <DataTemplate DataType="vm:MinesweeperViewModel">
+              <StackPanel Classes="gameboard">
+                <ItemsControl ItemsSource="{Binding Squares}" HorizontalAlignment="Left" AutomationProperties.Name="Minefield"
+                              XYFocus.NavigationModes="Keyboard" KeyboardNavigation.TabNavigation="Once">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <UniformGrid Columns="{x:Static games:Minesweeper.Columns}" Rows="{x:Static games:Minesweeper.Rows}" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:MinesweeperSquare">
+                      <Button Classes="minesquare" Classes.open="{Binding IsOpen}" Classes.exploded="{Binding IsExploded}"
+                              Classes.n1="{Binding Text, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=1}"
+                              Classes.n2="{Binding Text, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=2}"
+                              Classes.n3="{Binding Text, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=3}"
+                              Classes.n4="{Binding Text, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=4}"
+                              Classes.n5="{Binding Text, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=5}"
+                              Command="{Binding OpenCommand}" AutomationProperties.Name="{Binding Name}">
+                        <Panel>
+                          <TextBlock Text="{Binding Text}" />
+                          <Path Classes="mineflag" Data="{StaticResource IconMarkFlag}" IsVisible="{Binding ShowsFlag}" />
+                          <Path Classes="minewrong" Data="{StaticResource IconClose}" IsVisible="{Binding IsWrongFlag}" />
+                          <Ellipse Classes="mine" IsVisible="{Binding ShowsMine}" />
+                        </Panel>
+                      </Button>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>

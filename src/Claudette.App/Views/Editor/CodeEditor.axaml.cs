@@ -10,6 +10,7 @@ using Avalonia.VisualTree;
 using AvaloniaEdit;
 using AvaloniaEdit.Folding;
 using AvaloniaEdit.Rendering;
+using AvaloniaEdit.Search;
 using Claudette.App.Editor;
 using Claudette.App.ViewModels;
 
@@ -33,10 +34,14 @@ public partial class CodeEditor : UserControl
     private IBrush? _caretBrush;
     private bool _wordWrapOverridden;
 
+    /// <summary>What this editor gives its file, kept so it takes back only its own.</summary>
+    private readonly Func<int?> _peekLine;
+    private readonly Func<FindStart?> _findInFilesStart;
+
     public CodeEditor()
     {
         InitializeComponent();
-        SearchPanelButtons.Install(Editor);
+        SearchPanelButtons.Install(Editor, new FindInFilesButton(search => _file?.FindInFiles(FromFindBox(search), search.IsReplaceMode), () => _file?.FindInFilesTip ?? "Find in files"));
         ActualThemeVariantChanged += (_, _) =>
         {
             _coloring?.UseDark(ActualThemeVariant == ThemeVariant.Dark);
@@ -56,6 +61,8 @@ public partial class CodeEditor : UserControl
         area.LeftMargins.Insert(Math.Min(1, area.LeftMargins.Count), _margin);
         _margin.Clicked += line => _file?.TogglePeekAt(line);
         _peek = new ChangePeekGenerator(view, _peekView);
+        _peekLine = () => _peek.Line;
+        _findInFilesStart = FindInFilesStart;
         _peekCaret = new PeekCaretLayer(area, () => _peek.Line);
         view.InsertLayer(_peekCaret, KnownLayer.Caret, LayerInsertionPosition.Above);
         area.Caret.PositionChanged += OnCaretMoved;
@@ -106,8 +113,8 @@ public partial class CodeEditor : UserControl
         file.GoToLineRequested += OpenGoToLine;
         file.FocusRequested += FocusEditor;
         file.TextSettled += UpdateFoldings;
-        file.PeekLine = () => _peek.Line;
-        file.SelectionText = () => Editor.SelectedText;
+        file.PeekLine = _peekLine;
+        file.FindInFilesStart = _findInFilesStart;
         ShowDocument();
     }
 
@@ -123,11 +130,23 @@ public partial class CodeEditor : UserControl
         file.GoToLineRequested -= OpenGoToLine;
         file.FocusRequested -= FocusEditor;
         file.TextSettled -= UpdateFoldings;
-        file.PeekLine = null;
-        file.SelectionText = null;
+        // A file going to its window of its own is another editor's by now (DESIGN.md §18, "A file in a window of its own").
+        if (file.PeekLine == _peekLine)
+        {
+            file.PeekLine = null;
+        }
+        if (file.FindInFilesStart == _findInFilesStart)
+        {
+            file.FindInFilesStart = null;
+        }
         _peek.Remove();
         _coloring?.Dispose();
         _coloring = null;
+        // Its document goes too, so the next file's, or this one's again, is shown afresh, colored; with the file let go
+        // first, clearing it doesn't move the file's caret.
+        _file = null;
+        UninstallFolding();
+        Editor.Document = null;
     }
 
     /// <summary>The file's document, once it's read: shown, colored, and where it was left.</summary>
@@ -309,6 +328,19 @@ public partial class CodeEditor : UserControl
         // The first time, its box is only there once the panel has laid out; until then Reactivate does nothing.
         Later(search.Reactivate);
     }
+
+    /// <summary>
+    /// What Find in files starts with from here (DESIGN.md §18, "Finding in files"): what the find box has while the
+    /// keyboard's in it, so its shortcut takes the search to the whole project; or else the text selected.
+    /// </summary>
+    private FindStart? FindInFilesStart() =>
+        Editor.SearchPanel is { IsClosed: false, IsKeyboardFocusWithin: true } search ? FromFindBox(search)
+        : Editor.SelectedText is { Length: > 0 } selected ? new FindStart(selected)
+        : null;
+
+    /// <summary>What the find box has: its text and options, and while it's replacing, its replacement.</summary>
+    private static FindStart FromFindBox(SearchPanel search) =>
+        new(search.SearchPattern ?? "", search.MatchCase, search.WholeWords, search.UseRegex, search.IsReplaceMode ? search.ReplacePattern ?? "" : null);
 
     private void OpenGoToLine()
     {
