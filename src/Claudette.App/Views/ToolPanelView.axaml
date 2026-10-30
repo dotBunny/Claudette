@@ -8,7 +8,6 @@
              xmlns:services="using:Claudette.App.Services"
              xmlns:games="using:Claudette.App.Games"
              xmlns:views="using:Claudette.App.Views"
-             xmlns:sys="using:System"
              x:Class="Claudette.App.Views.ToolPanelView"
              x:DataType="tw:ToolGroupViewModel">
   <!-- The pages' looks and the tool windows', which the tab's view includes for its own (DESIGN.md §3, "Tool windows") -->
@@ -65,8 +64,9 @@
                   </Button.Flyout>
                 </Button>
               </DataTemplate>
-              <!-- The rest have only their title -->
-              <DataTemplate DataType="sys:Object">
+              <!-- The rest, which show a session, have only their title. Not Object: these templates reach everything under the
+                   header, and the games' menu would draw each entry's name as this empty panel. -->
+              <DataTemplate DataType="vm:TabViewModel">
                 <Panel />
               </DataTemplate>
             </ContentControl.DataTemplates>

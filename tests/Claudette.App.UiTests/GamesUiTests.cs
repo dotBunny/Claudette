@@ -154,6 +154,8 @@ public class GamesUiTests
         menu.ShowAt(choice);
         await UiText.SettleUntilAsync(window, () => items[0].IsEffectivelyVisible, "the open menu");
         Assert.Equal([true, false, false, false], items.Select(i => i.IsChecked));
+        // Each draws its game's name: the header's templates for what its windows show don't reach the menu's entries.
+        Assert.All(items, i => Assert.Contains(i.Header as string, i.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)));
 
         items[3].Command!.Execute(items[3].CommandParameter);
         menu.Hide();
