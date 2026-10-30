@@ -88,7 +88,6 @@ public class DraftsAndStashTests
     public async Task Stash_puts_the_whole_message_aside_for_any_tab()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var first = await h.OpenTabAsync();
         var second = await h.OpenTabAsync();
         Assert.False(second.HasStash);

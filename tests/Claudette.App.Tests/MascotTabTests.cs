@@ -71,7 +71,6 @@ public class MascotTabTests
     public async Task She_knows_how_many_other_tabs_wait_on_the_user()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         h.Services.Settings.Sessions.RestoreUnpinnedTabs = true;
         h.Services.State.Tabs = [new TabState { Folder = h.WorkFolder, IsPinned = true }, new TabState { Folder = h.WorkFolder }, new TabState { Folder = h.WorkFolder }];
         h.Shell.Restore(null);

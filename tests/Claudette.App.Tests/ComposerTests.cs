@@ -343,7 +343,6 @@ public partial class ComposerTests
     public async Task Tabs_in_the_same_folder_share_one_listing_of_its_files()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var first = await h.OpenTabAsync();
         await h.Shell.OpenFolderAsync(h.WorkFolder);
         var second = h.Shell.SelectedTab!;

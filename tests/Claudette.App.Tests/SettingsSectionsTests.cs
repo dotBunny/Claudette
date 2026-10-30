@@ -145,7 +145,6 @@ public class SettingsSectionsTests
     public async Task The_project_pages_follow_the_selected_tab_while_settings_is_open()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var first = await h.OpenTabAsync();
         var other = Directory.CreateDirectory(Path.Combine(h.Root, "other")).FullName;
         await h.Shell.OpenFolderAsync(other);

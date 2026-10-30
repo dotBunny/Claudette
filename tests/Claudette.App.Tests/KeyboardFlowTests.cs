@@ -66,7 +66,6 @@ public sealed class KeyboardFlowTests
     public async Task The_next_tab_waiting_for_you_is_found_in_sidebar_order_after_the_selected_one()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         h.Services.Settings.Sessions.RestoreUnpinnedTabs = true;
         h.Services.State.Tabs = [new TabState { Folder = h.WorkFolder, IsPinned = true }, new TabState { Folder = h.WorkFolder }, new TabState { Folder = h.WorkFolder }];
         h.Shell.Restore(null);

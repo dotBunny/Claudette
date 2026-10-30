@@ -50,7 +50,6 @@ public class GameServiceTests
     public async Task The_game_is_the_apps_so_every_tab_shows_the_same_one()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         h.Services.Settings.Sessions.RestoreUnpinnedTabs = true;
         h.Services.State.Tabs = [new TabState { Folder = h.WorkFolder }, new TabState { Folder = h.WorkFolder }];
         h.Shell.Restore(null);
@@ -307,7 +306,6 @@ public class GameServiceTests
     public async Task While_tabs_wait_on_the_user_a_line_over_the_board_says_where_with_Go_there()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         h.Services.Settings.Sessions.RestoreUnpinnedTabs = true;
         h.Services.State.Tabs = [new TabState { Folder = h.WorkFolder, IsPinned = true, UserName = "auth refactor" }, new TabState { Folder = h.WorkFolder, UserName = "docs" },
             new TabState { Folder = h.WorkFolder, UserName = "tests" }];

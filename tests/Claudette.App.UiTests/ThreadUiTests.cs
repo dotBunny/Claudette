@@ -20,7 +20,6 @@ public class ThreadUiTests
     public async Task A_threads_sub_threads_sit_indented_under_it_and_the_thread_has_its_icon()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
-        h.Factory.ProcessPerSession = true;
         var plan = await ThreadScript.OpenAsync(h, "Plan");
         await ThreadScript.OpenAsync(h, "Other");
         var art = await ThreadScript.OpenAsync(h, "Art page");
@@ -43,7 +42,6 @@ public class ThreadUiTests
     public async Task A_collapsed_thread_leaves_its_sub_threads_out_and_shows_its_badge()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
-        h.Factory.ProcessPerSession = true;
         var plan = await ThreadScript.OpenAsync(h, "Plan");
         await ThreadScript.OpenAsync(h, "Other");
         var art = await ThreadScript.OpenAsync(h, "Art page");
@@ -81,7 +79,6 @@ public class ThreadUiTests
     public async Task The_chevron_sits_on_the_groups_line_level_with_the_name_and_takes_no_room_before_it()
     {
         await using var h = new TabTestHarness(s => s.Appearance.ShowSubagents = SubagentDisplay.InSidebar, dispatcher: new AvaloniaUiDispatcher());
-        h.Factory.ProcessPerSession = true;
         var plan = await ThreadScript.OpenAsync(h, "Plan");
         var other = await ThreadScript.OpenAsync(h, "Other");
         var art = await ThreadScript.OpenAsync(h, "Art page");
@@ -137,7 +134,6 @@ public class ThreadUiTests
     public async Task The_strip_over_a_threads_composer_shows_a_message_to_let_go_and_a_sub_thread_waiting()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
-        h.Factory.ProcessPerSession = true;
         var plan = await ThreadScript.OpenAsync(h, "Plan");
         var art = await ThreadScript.OpenAsync(h, "Art page");
         h.Shell.MakeThreadCommand.Execute(plan);

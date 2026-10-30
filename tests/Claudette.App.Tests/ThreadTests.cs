@@ -17,7 +17,6 @@ public class ThreadTests
     public async Task A_sub_thread_sits_under_its_thread_and_both_are_saved()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var other = await ThreadScript.OpenAsync(h, "Other");
         var plan = await ThreadScript.OpenAsync(h, "Plan");
         var art = await ThreadScript.OpenAsync(h, "Art page");
@@ -469,7 +468,6 @@ public class ThreadTests
     /// <summary>A thread "Plan" on process 0 and its sub-thread "Art page" on process 1, not asking before sending unless told to.</summary>
     private static async Task<(TabViewModel Plan, TabViewModel Art)> ThreadAsync(TabTestHarness h, bool ask = false)
     {
-        h.Factory.ProcessPerSession = true;
         var plan = await ThreadScript.OpenAsync(h, "Plan");
         var art = await ThreadScript.OpenAsync(h, "Art page");
         h.Shell.MakeThreadCommand.Execute(plan);

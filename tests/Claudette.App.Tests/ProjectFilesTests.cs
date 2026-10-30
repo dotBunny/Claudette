@@ -90,7 +90,6 @@ public class ProjectFilesTests
     public async Task Moving_between_tabs_with_the_keyboard_skips_the_Files_tab()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var first = await h.OpenTabAsync();
         var second = await h.OpenTabAsync();
         InlineDispatcher.Run(() => h.Shell.OpenProjectFilesCommand.Execute(h.Shell.Groups.Single()));
@@ -974,7 +973,6 @@ public class ProjectFilesTests
     public async Task A_group_with_only_its_Files_tab_keeps_its_place()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var other = Path.Combine(h.Root, "other");
         Directory.CreateDirectory(other);
         h.Services.State.ProjectFiles = [new ProjectFilesState { Folder = h.WorkFolder }];

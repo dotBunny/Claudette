@@ -146,7 +146,6 @@ public class WorktreeTabTests
         await using var h = new TabTestHarness();
         await InitRepositoryAsync(h);
         var (tab, path) = await WorktreeTabAsync(h, realWorktree: true);
-        h.Factory.ProcessPerSession = true;
         await h.Shell.DuplicateTabCommand.ExecuteAsync(tab);
         var copy = h.Shell.SelectedTab!;
         Assert.NotSame(tab, copy);
@@ -165,7 +164,6 @@ public class WorktreeTabTests
         Assert.SkipWhen(!GitInstalled, "git isn't on PATH.");
         await using var h = new TabTestHarness();
         await InitRepositoryAsync(h);
-        h.Factory.ProcessPerSession = true;
         await h.Shell.OpenWorktreeTabAsync(h.WorkFolder);
         var tab = h.Shell.SelectedTab!;
         await TabTestHarness.Eventually(() => tab.Status == TabStatus.Idle && tab.IsSettled, "the tab to start");
@@ -190,7 +188,6 @@ public class WorktreeTabTests
         await using var h = new TabTestHarness();
         await InitRepositoryAsync(h);
         var (tab, path) = await WorktreeTabAsync(h, realWorktree: true);
-        h.Factory.ProcessPerSession = true;
         // Claude Code reports a worktree tab's folder by its real path, while a tab opened in it names it as the user
         // reached it: on macOS a folder under /var is really under /private/var.
         var link = Path.Combine(h.Root, "linked");

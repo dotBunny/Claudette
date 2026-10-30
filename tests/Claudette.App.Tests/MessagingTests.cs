@@ -241,7 +241,6 @@ public class MessagingTests
     /// </summary>
     private static async Task<(TabViewModel Plan, TabViewModel Art)> TwoTabsAsync(TabTestHarness h)
     {
-        h.Factory.ProcessPerSession = true;
         h.Transport.ProcessId = null;
         var sessions = new SessionsFolder(h);
         sessions.Add(1, "s-plan", "Plan", h.WorkFolder);
