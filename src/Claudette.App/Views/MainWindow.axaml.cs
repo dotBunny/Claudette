@@ -57,6 +57,9 @@ public partial class MainWindow : Window
     /// <summary>The header's padding, and its gap to the window's buttons.</summary>
     private const double HeaderPadding = 10;
 
+    /// <summary>The header's padding above and below, thin for the usage meters' two lines (MainWindow.axaml).</summary>
+    private const double HeaderVerticalPadding = 3;
+
     /// <summary>
     /// With the header as the window's title bar (DESIGN.md §3, "Window frame"): the title bar as tall as the header's first
     /// row, which the window's buttons fill, and the header clear of them, at its right on Windows and its left on macOS.
@@ -68,7 +71,7 @@ public partial class MainWindow : Window
         var room = Controls.WindowFrame.ButtonsRoom(this, _zoom);
         var left = room.Left > 0 ? room.Left : HeaderPadding;
         var right = room.Right > 0 ? room.Right + (HeaderPadding / 2) : HeaderPadding;
-        var padding = new Thickness(left, 6, right, 6);
+        var padding = new Thickness(left, HeaderVerticalPadding, right, HeaderVerticalPadding);
         if (Header.Padding != padding)
         {
             Header.Padding = padding;

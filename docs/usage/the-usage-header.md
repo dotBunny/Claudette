@@ -19,6 +19,12 @@ The strip across the top of the window shows how much of your plan's limits you'
 - **Weekly** meters are smaller and stacked, with the limit across all models on top. Each shows its percent and when it resets (*resets Thu 9:00 AM*). Hover over one for the full reset time.
 - **Model meters** sit under **Weekly**: one for each weekly limit your plan has for a particular model, named for the model.
 
+## Compact
+
+Turn on **Compact usage header** (Settings → Usage) and the meters take one line at the left of the header, each a short name, a small bar and its percent: *S 61%  W 41%  F 13%*. **S** is the session, **W** the weekly limit across all models, and a model's meter has its first letter, or as many as it takes to tell it from the others (*So* for Sonnet). Hover over a meter for its full name and when it resets.
+
+The countdown, the trendline and the line under the session meter are left out. Clicking the meters still opens [the Usage window](the-usage-window.md), and the chevron after them still opens [the detailed header](the-detailed-header.md).
+
 ## Colors and warning levels
 
 A meter turns amber at the warning level, 75% by default, and red at the alert level, 90% by default. The percent beside it takes the color too. The same two levels apply to every meter, and to the [alerts](alerts.md).
@@ -65,7 +71,7 @@ A sign-in with no plan limits, such as an API key, has no meters, and the header
 
 ## Opening the details
 
-Click anywhere on the meters to open [the Usage window](the-usage-window.md). The chevron at the header's right draws the header taller, with charts: see [The detailed header](the-detailed-header.md).
+Click anywhere on the meters to open [the Usage window](the-usage-window.md). The chevron just after them draws the header taller, with charts: see [The detailed header](the-detailed-header.md).
 
 ## Settings
 
@@ -76,6 +82,7 @@ All in Settings → Usage.
 | **Warn at (% of the session used)** | 75 |
 | **Alert at (% of the session used)** | 90 |
 | **Burn rate window (minutes)** | 30 (from 5 to 300) |
+| **Compact usage header** | Off |
 | **Show model-specific weekly limits** | On |
 | **If Claude Code stops reporting them, read them from /usage** | Off |
 

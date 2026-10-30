@@ -19,6 +19,9 @@
     </c:SettingsSection>
 
     <c:SettingsSection Key="header">
+      <c:SettingRow Key="usage.compactHeader">
+        <ToggleSwitch IsChecked="{Binding CompactHeader}" />
+      </c:SettingRow>
       <c:SettingRow Key="usage.showModelMeters">
         <ToggleSwitch IsChecked="{Binding ShowModelMeters}" />
         <c:SettingRow.Details>

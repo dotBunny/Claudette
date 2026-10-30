@@ -169,6 +169,7 @@ Your favorite and recent folders belong to this machine. They stay put when sett
 | **Warn at (% of the session used)** | Warnings | 75 | Yes | [The usage header](../usage/the-usage-header.md) |
 | **Alert at (% of the session used)** | Warnings | 90 | Yes | [The usage header](../usage/the-usage-header.md) |
 | **Burn rate window (minutes)** | Warnings | 30 (from 5 to 300) | Yes | [The usage header](../usage/the-usage-header.md) |
+| **Compact usage header** | The usage header | Off | Yes | [The usage header](../usage/the-usage-header.md#compact) |
 | **Show model-specific weekly limits** | The usage header | On | Yes | [The usage header](../usage/the-usage-header.md) |
 | **If Claude Code stops reporting them, read them from /usage** | The usage header | Off | Yes | [The usage header](../usage/the-usage-header.md) |
 | **Detailed usage header** | The usage header | Off | No | [The detailed header](../usage/the-detailed-header.md) |

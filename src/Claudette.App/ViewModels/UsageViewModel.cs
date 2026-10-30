@@ -8,9 +8,30 @@ using CommunityToolkit.Mvvm.Input;
 namespace Claudette.App.ViewModels;
 
 /// <summary>One limit meter in the header: session, weekly, or a model's weekly limit.</summary>
-public sealed partial class MeterViewModel(string label) : ObservableObject
+public sealed partial class MeterViewModel(string label, string shortLabel) : ObservableObject
 {
     public string Label { get; } = label;
+
+    /// <summary>Its name in the compact header (DESIGN.md §6, "Compact header"): S, W, or a model's first letter.</summary>
+    public string ShortLabel { get; } = shortLabel;
+
+    /// <summary>
+    /// <paramref name="label"/> as short as it can be beside the <paramref name="taken"/> short names: its first letter, or
+    /// as many as tell it apart (Sonnet beside the session is So).
+    /// </summary>
+    public static string ShortLabelOf(string label, IReadOnlyCollection<string> taken)
+    {
+        var text = label.Trim();
+        for (var length = 1; length < text.Length; length++)
+        {
+            var candidate = char.ToUpperInvariant(text[0]) + text[1..length];
+            if (!taken.Contains(candidate))
+            {
+                return candidate;
+            }
+        }
+        return text;
+    }
 
     [ObservableProperty]
     public partial double Percent { get; set; }
@@ -67,7 +88,7 @@ public sealed partial class UsageViewModel : ViewModelBase, IDisposable
         IsDetailed = services.State.DetailedUsageHeader;
     }
 
-    public MeterViewModel Session { get; } = new("Session");
+    public MeterViewModel Session { get; } = new("Session", "S");
 
     /// <summary>The weekly limit across all models, then each model-specific weekly limit.</summary>
     public ObservableCollection<MeterViewModel> Weekly { get; } = [];
@@ -102,6 +123,9 @@ public sealed partial class UsageViewModel : ViewModelBase, IDisposable
     public double WarnPercent => _services.Settings.Usage.WarnPercent;
 
     public double CriticalPercent => _services.Settings.Usage.CriticalPercent;
+
+    /// <summary>The meters on one line, without the countdown, the trendline and the line under them (DESIGN.md §6, "Compact header").</summary>
+    public bool IsCompact => _services.Settings.Usage.CompactHeader;
 
     /// <summary>"as of 14:02" when the values are old, for example after a restart before the first poll.</summary>
     [ObservableProperty]
@@ -200,6 +224,7 @@ public sealed partial class UsageViewModel : ViewModelBase, IDisposable
     {
         OnPropertyChanged(nameof(WarnPercent));
         OnPropertyChanged(nameof(CriticalPercent));
+        OnPropertyChanged(nameof(IsCompact));
         var snapshot = _tracker.Current;
         HasData = snapshot?.Session is not null || snapshot?.WeeklyAll is not null;
         var now = _services.Time.GetUtcNow();
@@ -254,7 +279,7 @@ public sealed partial class UsageViewModel : ViewModelBase, IDisposable
             var meter = Weekly.FirstOrDefault(m => m.Label == label);
             if (meter is null)
             {
-                meter = new MeterViewModel(label);
+                meter = new MeterViewModel(label, MeterViewModel.ShortLabelOf(label, [Session.ShortLabel, .. Weekly.Select(m => m.ShortLabel)]));
                 Weekly.Add(meter);
             }
             Fill(meter, reading, now, weekly: true);

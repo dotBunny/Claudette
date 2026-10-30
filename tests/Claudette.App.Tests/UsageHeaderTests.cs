@@ -31,6 +31,16 @@ public class UsageHeaderTests
         Assert.Equal("38%", weekly.PercentText);
     }
 
+    /// <summary>The compact header's names (DESIGN.md §6, "Compact header"): a first letter, or as many as tell it apart.</summary>
+    [Theory]
+    [InlineData("Session", "", "S")]
+    [InlineData("Weekly", "S", "W")]
+    [InlineData("Fable", "S,W", "F")]
+    [InlineData("Sonnet", "S,W", "So")]
+    [InlineData("opus", "S,W", "O")]
+    public void A_meters_short_name_is_its_first_letter_or_as_many_as_tell_it_apart(string label, string taken, string expected) =>
+        Assert.Equal(expected, MeterViewModel.ShortLabelOf(label, taken.Split(',', StringSplitOptions.RemoveEmptyEntries)));
+
     [Fact]
     public async Task Crossing_the_warning_threshold_raises_an_alert()
     {
