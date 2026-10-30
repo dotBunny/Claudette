@@ -182,12 +182,19 @@ public sealed class Card : ContentControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        // A click anywhere on the header line does what the chevron does, as the whole line of a folded chain is its button.
-        if (e.NameScope.Find<Control>("PART_Body") is { } body)
+        // A click anywhere on the header line does what the chevron does, as the whole line of a folded chain is its button,
+        // and the whole line lights under the pointer, as a thinking row's does.
+        if (e.NameScope.Find<Grid>("PART_Body") is { } body)
         {
             body.PointerPressed += OnHeaderPressed;
+            body.PointerMoved += OnBodyPointerMoved;
+            body.PointerExited += (_, _) => PseudoClasses.Set(":headerover", false);
         }
     }
+
+    /// <summary>The pointer is on the header line of a card that folds, its text and tips included, not the content under it.</summary>
+    private void OnBodyPointerMoved(object? sender, PointerEventArgs e) =>
+        PseudoClasses.Set(":headerover", IsCollapsible && sender is Grid body && e.GetPosition(body).Y <= body.RowDefinitions[0].ActualHeight);
 
     private void OnHeaderPressed(object? sender, PointerPressedEventArgs e)
     {

@@ -26,7 +26,7 @@ A call under ten seconds shows its duration with a decimal, such as *0.4s*. The 
 A question or a plan gives its tile up to its own card ([Questions](../permissions/questions.md), [Approving a plan](../permissions/approving-a-plan.md)). A subagent is a card of its own ([Subagents](subagents.md)).
 
 ## Folding the calls
-A long run of calls takes a lot of room. Click a Tool calls card's header line, or the chevron after its count, and the card folds to that line, such as *Tool calls · 4 calls · 1 failed ›*; a second click brings the tiles back. A call that is running or has failed still shows in the header's words.
+A long run of calls takes a lot of room. Click anywhere on a Tool calls card's header line, which lights up under the pointer as a thinking row does, and the card folds to that line, such as *Tool calls · 4 calls · 1 failed ›*; a second click brings the tiles back. A call that is running or has failed still shows in the header's words.
 
 It works as thinking does. Settings → Conversation → **Show tool calls collapsed** starts new cards folded. Right-click a Tool calls card for **Collapse all tool calls** and **Expand all tool calls**: they fold or open every card in the tab, and start the ones still to come the same way, without changing Settings. The tab remembers which you chose. Opening a call from elsewhere, as find does, opens its card.
 
