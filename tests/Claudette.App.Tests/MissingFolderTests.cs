@@ -92,10 +92,11 @@ public class MissingFolderTests
         await using var h = new TabTestHarness();
         var tab = RestoreMissing(h, out _);
 
-        tab.UnpinAndCloseCommand.Execute(null);
+        // As a click does: the close lists the tab's processes off the UI thread, and resumes under the harness's lock
+        // after it, so the wait can't read the tabs while the close is taking this one away.
+        InlineDispatcher.Run(() => tab.UnpinAndCloseCommand.Execute(null));
 
-        // The close goes on off the test's thread after it lists the tab's processes: the state is saved a moment after
-        // the tab leaves the shell.
+        // The state is saved a moment after the tab leaves the shell.
         await TabTestHarness.Eventually(() => !h.Shell.AllTabs.Any() && h.Services.State.Tabs.Count == 0, "the tab to close");
         Assert.Null(h.Shell.Confirmation);
     }

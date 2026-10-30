@@ -297,6 +297,12 @@ public sealed partial class MockAnthropicApi : IAsyncDisposable
         {
             return new Plan("suggestion", [TextBlock(Suggestion)]);
         }
+        // Compacting asks for the summary in a <summary> block. Since 2.1.311 Claude Code asks once more when the reply
+        // has none, so a "pong" would cost it a second call.
+        if (CompactionPattern().IsMatch(text))
+        {
+            return new Plan("compaction", [TextBlock("<summary>The user said hello, and Claude answered.</summary>")]);
+        }
 
         // EDIT_FILE needs two tool rounds (Claude Code requires a Read before an Edit), so count the tool rounds
         // since the prompt that asked for it.
@@ -536,6 +542,13 @@ public sealed partial class MockAnthropicApi : IAsyncDisposable
 
     [GeneratedRegex("title", RegexOptions.IgnoreCase)]
     private static partial Regex TitlePattern();
+
+    /// <summary>
+    /// Claude Code's request for a summary, which asks for "a &lt;summary&gt; block" or for it "inside
+    /// &lt;summary&gt;&lt;/summary&gt; tags". Not any &lt;summary&gt;: a background task's notification has one too.
+    /// </summary>
+    [GeneratedRegex(@"<summary> block|<summary></summary> tags")]
+    private static partial Regex CompactionPattern();
 
     [GeneratedRegex(@"(ENTER|EXIT)_WORKTREE (\S+)")]
     private static partial Regex WorktreePattern();
