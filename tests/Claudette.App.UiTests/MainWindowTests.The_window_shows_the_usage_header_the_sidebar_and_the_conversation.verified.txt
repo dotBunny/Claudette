@@ -21,8 +21,8 @@
 [button] New tab in this folder
 [button] (parts below)
   "work"
-  "Opus · Default"
   [button] Close tab
+  "Opus · Default"
   [button] Context 1%
 "Claude"
 [button] Copy message
