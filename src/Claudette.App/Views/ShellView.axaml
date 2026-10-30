@@ -196,10 +196,10 @@
       <Setter Property="Padding" Value="13,7,8,7" />
       <Setter Property="CornerRadius" Value="6" />
     </Style>
-    <!-- A group in the sidebar, in a band as wide as the sidebar, so the pinned groups' shade fills it from edge to edge;
-         the first group after them has the divider over it, right under the shade (DESIGN.md §4, "Pinning a group") -->
+    <!-- A group in the sidebar, in a band as wide as the sidebar, its rows set in by its padding (not the list's margin, as
+         a list's items are clipped to it), so the pinned groups' shade fills the sidebar from edge to edge; the first
+         group after them has the divider over it, right under the shade (DESIGN.md §4, "Pinning a group") -->
     <Style Selector="Border.groupband">
-      <Setter Property="Margin" Value="-6,0" />
       <Setter Property="Padding" Value="6,6,6,0" />
       <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     </Style>
@@ -462,7 +462,7 @@
               </WrapPanel>
             </StackPanel>
           </Border>
-          <ItemsControl x:Name="GroupList" ItemsSource="{Binding Groups}" Margin="6,0,6,8">
+          <ItemsControl x:Name="GroupList" ItemsSource="{Binding Groups}" Margin="0,0,0,8">
             <ItemsControl.ItemTemplate>
               <DataTemplate DataType="vm:TabGroupViewModel">
                 <!-- Pinned groups are a band of their own at the top, shaded, and a divider parts the rest from them (DESIGN.md §4,
