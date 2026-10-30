@@ -40,7 +40,11 @@ public partial class MainWindow : Window
         Deactivated += (_, _) => _viewModel?.Services.Notifications.SetAppActive(false);
         // A narrow window leaves the busiest tabs, then the weekly chart, out of the detailed header (DESIGN.md §6).
         SizeChanged += (_, e) => _viewModel?.Usage?.SetDetailsWidth(e.NewSize.Width / _zoom);
-        LayoutUpdated += (_, _) => FitTitleBar();
+        LayoutUpdated += (_, _) =>
+        {
+            FitTitleBar();
+            FitHeaderEnd();
+        };
         // With the header as the title bar, the logo is the window's icon to Windows: a click opens the window menu and a
         // double-click closes the window, as any window's icon does (DESIGN.md §3, "Window frame"). Avalonia 12.1's
         // hit-test values stop short of the icon's, which it passes on to Windows all the same. Elsewhere it drags.
@@ -80,6 +84,41 @@ public partial class MainWindow : Window
         if (merged && height > 0 && Math.Abs(ExtendClientAreaTitleBarHeightHint - height) > 0.5)
         {
             ExtendClientAreaTitleBarHeightHint = height;
+        }
+    }
+
+    /// <summary>How wide the header's end is with the plan, the processes' totals and the email, when it last had them.</summary>
+    private double _headerEndWidth;
+
+    /// <summary>
+    /// A window too narrow for the session's meter and the weekly meters beside everything else in the header (DESIGN.md
+    /// §6, "Header meters"), the trendline and the countdown gone already: the plan and the processes' totals make room,
+    /// and the account is its icon, before the weekly meters go. Whether it fits goes by the header's end as wide as it was
+    /// with them all, so making the room doesn't bring them straight back, nor, while it's folded, the trendline or the
+    /// countdown (the meters' Lean).
+    /// </summary>
+    private void FitHeaderEnd()
+    {
+        if (_viewModel is not { } main)
+        {
+            return;
+        }
+        if (!main.IsHeaderNarrow)
+        {
+            _headerEndWidth = HeaderEnd.DesiredSize.Width;
+        }
+        var meters = this.FindControl<Controls.UsageMetersPanel>(main.Usage?.IsCompact == true ? "CompactMeters" : "FullMeters");
+        var narrow = false;
+        if (main.HasUsage && meters is not null && this.FindControl<Button>("UsageMeters") is { } button
+            && this.FindControl<Button>("UsageDetailsToggle") is { } chevron)
+        {
+            var needs = HeaderGrid.ColumnDefinitions[0].ActualWidth + meters.CoreWidth + button.Padding.Left + button.Padding.Right
+                + chevron.DesiredSize.Width + 2 + _headerEndWidth;
+            narrow = needs > HeaderGrid.Bounds.Width + 0.5;
+        }
+        if (main.IsHeaderNarrow != narrow)
+        {
+            main.IsHeaderNarrow = narrow;
         }
     }
 

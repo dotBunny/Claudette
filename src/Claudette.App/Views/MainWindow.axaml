@@ -252,7 +252,7 @@
                 <Panel>
                   <!-- The meters (DESIGN.md §6, "Header meters"). In a narrow window the panel leaves out the trendline, then the
                        countdown, then the weekly meters, and last narrows the session's bar, so the session's meter always shows. -->
-                  <controls:UsageMetersPanel Name="FullMeters" Spacing="14" LineSpacing="8" IsVisible="{Binding !Usage.IsCompact, FallbackValue=True}">
+                  <controls:UsageMetersPanel Name="FullMeters" Spacing="14" LineSpacing="8" Lean="{Binding IsHeaderNarrow}" IsVisible="{Binding !Usage.IsCompact, FallbackValue=True}">
                     <!-- Session, the most prominent: its name, its bar, 160 wide while there's room and 40 at the narrowest, and its percent -->
                     <TextBlock Name="SessionName" controls:UsageMetersPanel.Part="Session" Text="Session" FontWeight="SemiBold" ToolTip.Tip="{Binding Usage.Session.Tooltip}" />
                     <ProgressBar Name="SessionBar" controls:UsageMetersPanel.Part="SessionBar" Classes="meter" Value="{Binding Usage.Session.Percent}"
@@ -303,7 +303,7 @@
                   </controls:UsageMetersPanel>
                   <!-- Settings → Usage → Compact usage header (DESIGN.md §6, "Compact header"): the meters on one line, the weekly ones
                        left out in a narrow window -->
-                  <controls:UsageMetersPanel Name="CompactMeters" Spacing="12" IsVisible="{Binding Usage.IsCompact, FallbackValue=False}">
+                  <controls:UsageMetersPanel Name="CompactMeters" Spacing="12" Lean="{Binding IsHeaderNarrow}" IsVisible="{Binding Usage.IsCompact, FallbackValue=False}">
                     <ContentControl Name="CompactSession" controls:UsageMetersPanel.Part="Session" Content="{Binding Usage.Session}" ContentTemplate="{StaticResource CompactMeter}" />
                     <ItemsControl Name="CompactWeekly" controls:UsageMetersPanel.Part="Weekly" ItemsSource="{Binding Usage.Weekly}" ItemTemplate="{StaticResource CompactMeter}">
                       <ItemsControl.ItemsPanel>
@@ -328,14 +328,22 @@
               </Button>
             </Grid>
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <!-- In a window too narrow for the session's meter beside it all, the plan and the processes' totals go and the
+                 account is its icon (IsHeaderNarrow, which MainWindow.axaml.cs sets; DESIGN.md §6, "Header meters") -->
+            <StackPanel x:Name="HeaderEnd" Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
               <TextBlock Classes="muted small" Text="{Binding UsageNote}" VerticalAlignment="Center"
                          IsVisible="{Binding UsageNote, Converter={x:Static ObjectConverters.IsNotNull}}" />
               <!-- Every tab's processes together, Claude Code included, while the process monitor is on (DESIGN.md §4,
                    "Process monitor"): each tab's part in the tooltip -->
               <TextBlock Name="ProcessTotals" Classes="muted small" VerticalAlignment="Center" Margin="0,0,4,0"
-                         Text="{Binding Shell.ProcessTotalsText, FallbackValue={x:Null}}" ToolTip.Tip="{Binding Shell.ProcessTotalsTip, FallbackValue={x:Null}}"
-                         IsVisible="{Binding Shell.ProcessTotalsText, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}" />
+                         Text="{Binding Shell.ProcessTotalsText, FallbackValue={x:Null}}" ToolTip.Tip="{Binding Shell.ProcessTotalsTip, FallbackValue={x:Null}}">
+                <TextBlock.IsVisible>
+                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="Shell.ProcessTotalsText" Converter="{x:Static ObjectConverters.IsNotNull}" FallbackValue="False" />
+                    <Binding Path="!IsHeaderNarrow" />
+                  </MultiBinding>
+                </TextBlock.IsVisible>
+              </TextBlock>
               <!-- Keeping the computer awake (DESIGN.md §9): the switch for Settings → General's Keep this computer awake,
                    with when in its menu. The cup steams while sleep is held off, for whatever reason, which the tip says. -->
               <ToggleButton Name="KeepAwakeToggle" Classes="header keepawake" Padding="8" VerticalAlignment="Center"
@@ -369,7 +377,12 @@
               <!-- The account menu (DESIGN.md §11): the email and plan from claude auth status, and Sign out -->
               <Button Classes="header" IsVisible="{Binding Account.Status, Converter={x:Static ObjectConverters.IsNotNull}}"
                       ToolTip.Tip="Your Claude Code account" AutomationProperties.Name="Account">
-                <TextBlock Classes="muted" Text="{Binding Account.HeaderName}" VerticalAlignment="Center" />
+                <Panel>
+                  <TextBlock Name="AccountName" Classes="muted" Text="{Binding Account.HeaderName}" VerticalAlignment="Center" IsVisible="{Binding !IsHeaderNarrow}" />
+                  <!-- In a narrow window, its icon in place of the email -->
+                  <Path Name="AccountIcon" Data="{StaticResource IconCardYou}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.3" Stretch="Uniform"
+                        Width="13" Height="13" VerticalAlignment="Center" IsVisible="{Binding IsHeaderNarrow}" />
+                </Panel>
                 <Button.Flyout>
                   <Flyout Placement="BottomEdgeAlignedRight">
                     <StackPanel Spacing="10" Width="300" Margin="4" DataContext="{Binding Account}" x:DataType="vm:AccountViewModel">
@@ -393,8 +406,14 @@
                 </Button.Flyout>
               </Button>
               <!-- The plan beside the email opens its usage on claude.ai, or the Console's billing (DESIGN.md §11) -->
-              <Button Classes="header" Command="{Binding Account.OpenHeaderPlanCommand}" IsVisible="{Binding Account.HeaderPlan, Converter={x:Static ObjectConverters.IsNotNull}}"
+              <Button Classes="header" Command="{Binding Account.OpenHeaderPlanCommand}"
                       ToolTip.Tip="{Binding Account.HeaderPlanTip}" AutomationProperties.Name="{Binding Account.HeaderPlanName}">
+                <Button.IsVisible>
+                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="Account.HeaderPlan" Converter="{x:Static ObjectConverters.IsNotNull}" />
+                    <Binding Path="!IsHeaderNarrow" />
+                  </MultiBinding>
+                </Button.IsVisible>
                 <TextBlock Classes="muted" Text="{Binding Account.HeaderPlan}" VerticalAlignment="Center" />
               </Button>
               <!-- Settings (DESIGN.md §14) -->

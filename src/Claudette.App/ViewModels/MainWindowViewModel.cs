@@ -83,6 +83,13 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
     public bool ShowsTitle => !HasUsage && !ShowsSpend;
 
     /// <summary>
+    /// Set by the window: it's too narrow for the session's meter beside everything else in the header, so the plan and
+    /// the processes' totals make room, and the account is its icon (DESIGN.md §6, "Header meters").
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsHeaderNarrow { get; set; }
+
+    /// <summary>
     /// The header is the window's title bar, as in JetBrains Rider (DESIGN.md §3, "Window frame"), with Claudette's logo
     /// first: where the platform can (<see cref="IPlatformServices.CanMergeTitleBar"/>), unless Settings → Appearance → Use
     /// the system's title bar is on.

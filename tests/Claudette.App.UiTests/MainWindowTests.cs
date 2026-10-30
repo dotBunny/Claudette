@@ -417,10 +417,14 @@ public class MainWindowTests
         using var usage = new UsageViewModel(h.Services, tracker);
         await TabTestHarness.Eventually(() => usage.Weekly.Count == 2, "the weekly meters");
         var main = new MainWindowViewModel(h.Services) { CurrentPage = h.Shell, Usage = usage };
+        main.Account.Status = new AuthStatus(true, "claude.ai", null, "me@example.com", null, "max", null, null);
         var window = new MainWindow { DataContext = main, Width = 2400, Height = 800 };
         window.Show();
         UiText.Settle(window);
         var panel = window.GetVisualDescendants().OfType<UsageMetersPanel>().Single(p => p.Name == "FullMeters");
+        var (email, accountIcon) = (window.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Name == "AccountName"),
+            window.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>().Single(p => p.Name == "AccountIcon"));
+        Assert.True(email.IsVisible && !accountIcon.IsVisible);
         Control Part(string name) => panel.Children.Single(c => c.Name == name);
         var (session, countdown, trend, weekly) = (Part("SessionBar"), Part("SessionReset"), Part("Sparkline"), Part("WeeklyMeters"));
         var chevron = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageDetailsToggle");
@@ -438,6 +442,12 @@ public class MainWindowTests
             }
             Assert.False(UsageMetersPanel.GetIsLeftOut(session));
             Assert.True(Right(panel) <= chevron.TranslatePoint(default, window)!.Value.X + 0.5, $"At {at}, the meters run past the chevron");
+            // The header's end folds, the plan going and the email becoming its icon, before the weekly meters go; and
+            // while it's folded, the trendline and the countdown stay out.
+            Assert.True(!UsageMetersPanel.GetIsLeftOut(weekly) || main.IsHeaderNarrow, $"At {at}, the weekly meters went before the header's end folded");
+            Assert.Equal(main.IsHeaderNarrow, !email.IsVisible);
+            Assert.Equal(main.IsHeaderNarrow, accountIcon.IsVisible);
+            Assert.True(!main.IsHeaderNarrow || (UsageMetersPanel.GetIsLeftOut(trend) && UsageMetersPanel.GetIsLeftOut(countdown)));
         }
 
         // Narrowing a step at a time, each part goes in its turn, and the meters stay clear of the chevron; past the
@@ -447,9 +457,10 @@ public class MainWindowTests
             window.Width = width;
             Check($"{width} px");
         }
-        for (var zoom = 110; !(Shown() == "SessionName,SessionBar,SessionPercent,Projection" && bar.Bounds.Width < 159) && zoom <= 400; zoom += 10)
+        var zoom = 100;
+        while (!(Shown() == "SessionName,SessionBar,SessionPercent,Projection" && bar.Bounds.Width < 159) && zoom < 600)
         {
-            window.UseZoom(zoom);
+            window.UseZoom(zoom += 10);
             Check($"{zoom}%");
         }
         Assert.Equal(
@@ -462,12 +473,25 @@ public class MainWindowTests
         Assert.InRange(bar.Bounds.Width, 40, 159);
         Assert.True(UsageMetersPanel.GetIsLeftOut(countdown) && UsageMetersPanel.GetIsLeftOut(trend) && UsageMetersPanel.GetIsLeftOut(weekly));
 
+        // Narrower still, past the bar's narrowest, the session's name goes, and its bar and percent stay, whole.
+        var name = Part("SessionName");
+        while (!UsageMetersPanel.GetIsLeftOut(name) && zoom < 600)
+        {
+            window.UseZoom(zoom += 10);
+            Check($"{zoom}%");
+        }
+        Assert.True(UsageMetersPanel.GetIsLeftOut(name));
+        Assert.False(UsageMetersPanel.GetIsLeftOut(Part("SessionPercent")));
+        Assert.InRange(bar.Bounds.Width, 40, 160);
+
         // Widened again, everything is back.
         window.UseZoom(100);
         window.Width = 2400;
         UiText.Settle(window);
         Assert.Equal(seen[0], Shown());
         Assert.Equal(160, bar.Bounds.Width);
+        Assert.False(main.IsHeaderNarrow);
+        Assert.True(email.IsVisible);
 
         // Compact, the weekly meters go before the session's.
         h.Services.Settings.Usage.CompactHeader = true;
@@ -476,9 +500,9 @@ public class MainWindowTests
         UiText.Settle(window);
         var compact = window.GetVisualDescendants().OfType<UsageMetersPanel>().Single(p => p.Name == "CompactMeters");
         var (compactSession, compactWeekly) = (compact.Children.Single(c => c.Name == "CompactSession"), compact.Children.Single(c => c.Name == "CompactWeekly"));
-        for (var zoom = 110; !UsageMetersPanel.GetIsLeftOut(compactWeekly) && zoom <= 400; zoom += 10)
+        for (var compactZoom = 110; !UsageMetersPanel.GetIsLeftOut(compactWeekly) && compactZoom <= 400; compactZoom += 10)
         {
-            window.UseZoom(zoom);
+            window.UseZoom(compactZoom);
             UiText.Settle(window);
         }
         Assert.True(UsageMetersPanel.GetIsLeftOut(compactWeekly));

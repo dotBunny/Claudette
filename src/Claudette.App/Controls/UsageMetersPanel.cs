@@ -31,11 +31,13 @@ public enum UsageMetersPart
 /// <summary>
 /// Lays out the usage header's meters (DESIGN.md §6, "Header meters"), left to right: the session's line, its name, bar,
 /// percent and countdown, with the projection under it, then the trendline, then the weekly meters. Where the header
-/// hasn't the room for them all, it leaves out the trendline first, then the countdown, then the weekly meters, and last
-/// narrows the session's bar from <see cref="BarWidth"/> to <see cref="BarMinWidth"/>, so the session's meter always shows
-/// rather than being cut off. What it leaves out is still measured, and laid out past its edge, where the panel clips it,
-/// so the room it would take is always known and it comes back as soon as there's room. The bar is given its width rather
-/// than asked for it: a progress bar's own measure follows its last layout.
+/// hasn't the room for them all, it leaves out the trendline first, then the countdown, then the weekly meters, then
+/// narrows the session's bar from <see cref="BarWidth"/> to <see cref="BarMinWidth"/>, and last leaves out the session's
+/// name, so its bar and percent always show rather than being cut off; the bar's tip still names it. What it leaves out
+/// is still measured, and laid out far past its edge, where what holds the panel clips it (the meters' button), so the
+/// room it would take is always known and it comes back as soon as there's room. The panel doesn't clip itself: its last
+/// part's text can reach a pixel past what it measures. The bar is given its width rather than asked for it: a progress
+/// bar's own measure follows its last layout.
 /// </summary>
 public sealed class UsageMetersPanel : Panel
 {
@@ -54,17 +56,35 @@ public sealed class UsageMetersPanel : Panel
 
     public static readonly StyledProperty<double> BarMinWidthProperty = AvaloniaProperty.Register<UsageMetersPanel, double>(nameof(BarMinWidth), 40);
 
+    public static readonly StyledProperty<bool> LeanProperty = AvaloniaProperty.Register<UsageMetersPanel, bool>(nameof(Lean));
+
     /// <summary>What it shows, richest first: each leaves out one more part than the one before.</summary>
     private static readonly (bool Trend, bool Reset, bool Weekly)[] Levels = [(true, true, true), (false, true, true), (false, false, true), (false, false, false)];
 
     private (bool Trend, bool Reset, bool Weekly) _shown = Levels[0];
+    private bool _name = true;
     private double _barWidth;
     private double _lineHeight;
 
     static UsageMetersPanel()
     {
-        AffectsMeasure<UsageMetersPanel>(SpacingProperty, LineSpacingProperty, BarWidthProperty, BarMinWidthProperty);
-        ClipToBoundsProperty.OverrideDefaultValue<UsageMetersPanel>(true);
+        AffectsMeasure<UsageMetersPanel>(SpacingProperty, LineSpacingProperty, BarWidthProperty, BarMinWidthProperty, LeanProperty);
+    }
+
+    /// <summary>
+    /// The meters without the trendline and the countdown, the session's line whole and the weekly meters there: what the
+    /// header folds its end to make room for, before the weekly meters go (MainWindow.axaml.cs). From the last measure.
+    /// </summary>
+    public double CoreWidth { get; private set; }
+
+    /// <summary>
+    /// The trendline and the countdown left out whatever the room: the header has folded its end for the rest, which
+    /// comes before them (MainWindow.axaml.cs).
+    /// </summary>
+    public bool Lean
+    {
+        get => GetValue(LeanProperty);
+        set => SetValue(LeanProperty, value);
     }
 
     public static UsageMetersPart GetPart(Control control) => control.GetValue(PartProperty);
@@ -110,15 +130,23 @@ public sealed class UsageMetersPanel : Panel
     /// <summary>A part of the session's line after the first, with the space before it: none for a part that isn't there.</summary>
     private double After(Control? part, double width) => part is null ? 0 : LineSpacing + width;
 
-    /// <summary>The session's line without its countdown, its bar <paramref name="bar"/> wide.</summary>
-    private double SessionWidth(double bar) =>
-        WidthOf(Find(UsageMetersPart.Session))
-        + After(Find(UsageMetersPart.SessionBar), bar)
-        + After(Find(UsageMetersPart.SessionPercent), WidthOf(Find(UsageMetersPart.SessionPercent)));
+    /// <summary>
+    /// The session's line without its countdown, its bar <paramref name="bar"/> wide, with its name or without: the name
+    /// goes only where there's a bar to say it, so the compact header's meter, a part on its own, stays whole.
+    /// </summary>
+    private double SessionWidth(double bar, bool name)
+    {
+        var (session, sessionBar) = (Find(UsageMetersPart.Session), Find(UsageMetersPart.SessionBar));
+        var named = name || sessionBar is null;
+        var first = named ? WidthOf(session) : 0;
+        return first
+            + (sessionBar is null ? 0 : (named && session is not null ? LineSpacing : 0) + bar)
+            + After(Find(UsageMetersPart.SessionPercent), WidthOf(Find(UsageMetersPart.SessionPercent)));
+    }
 
     /// <summary>How wide the meters are showing <paramref name="shown"/>, the session's bar <paramref name="bar"/> wide.</summary>
-    private double WidthOf((bool Trend, bool Reset, bool Weekly) shown, double bar) =>
-        SessionWidth(bar)
+    private double WidthOf((bool Trend, bool Reset, bool Weekly) shown, double bar, bool name = true) =>
+        SessionWidth(bar, name)
         + (shown.Reset ? After(Find(UsageMetersPart.Reset), WidthOf(Find(UsageMetersPart.Reset))) : 0)
         + (shown.Trend && Find(UsageMetersPart.Trend) is { } trend ? Spacing + WidthOf(trend) : 0)
         + (shown.Weekly && Find(UsageMetersPart.Weekly) is { } weekly ? Spacing + WidthOf(weekly) : 0);
@@ -139,12 +167,15 @@ public sealed class UsageMetersPanel : Panel
             }
         }
         var room = availableSize.Width;
-        _shown = Levels.FirstOrDefault(level => WidthOf(level, BarWidth) <= room, Levels[^1]);
-        var narrowBy = WidthOf(_shown, BarWidth) - room;
+        CoreWidth = WidthOf(Levels[2], BarWidth);
+        _shown = Levels.Skip(Lean ? 2 : 0).FirstOrDefault(level => WidthOf(level, BarWidth) <= room, Levels[^1]);
+        // The name stays while narrowing the bar makes room enough.
+        _name = WidthOf(_shown, BarMinWidth) <= room || Find(UsageMetersPart.SessionBar) is null;
+        var narrowBy = WidthOf(_shown, BarWidth, _name) - room;
         _barWidth = narrowBy <= 0 ? BarWidth : Math.Max(BarMinWidth, BarWidth - narrowBy);
 
         var reset = _shown.Reset ? Find(UsageMetersPart.Reset) : null;
-        var line = SessionWidth(_barWidth) + After(reset, WidthOf(reset));
+        var line = SessionWidth(_barWidth, _name) + After(reset, WidthOf(reset));
         _lineHeight = new[] { Find(UsageMetersPart.Session), Find(UsageMetersPart.SessionBar), Find(UsageMetersPart.SessionPercent), reset }.Max(HeightOf);
         // The projection trims to the line's width rather than widen it.
         var projection = Find(UsageMetersPart.Projection);
@@ -162,6 +193,7 @@ public sealed class UsageMetersPanel : Panel
         {
             var shown = GetPart(child) switch
             {
+                UsageMetersPart.Session => _name || Find(UsageMetersPart.SessionBar) is null,
                 UsageMetersPart.Trend => _shown.Trend,
                 UsageMetersPart.Reset => _shown.Reset,
                 UsageMetersPart.Weekly => _shown.Weekly,
@@ -170,8 +202,8 @@ public sealed class UsageMetersPanel : Panel
             child.SetValue(IsLeftOutProperty, !shown);
             if (!shown)
             {
-                // Past the edge, where the panel clips it, and nothing reaches it.
-                child.Arrange(new Rect(finalSize.Width + WidthOf(child) + 100, 0, WidthOf(child), HeightOf(child)));
+                // Far past the edge, where what holds the panel clips it, and nothing reaches it.
+                child.Arrange(new Rect(finalSize.Width + 10000, 0, WidthOf(child), HeightOf(child)));
             }
         }
 
@@ -180,7 +212,7 @@ public sealed class UsageMetersPanel : Panel
         var first = true;
         foreach (var part in (UsageMetersPart[])[UsageMetersPart.Session, UsageMetersPart.SessionBar, UsageMetersPart.SessionPercent, UsageMetersPart.Reset])
         {
-            if (Find(part) is not { } control || (part == UsageMetersPart.Reset && !_shown.Reset))
+            if (Find(part) is not { } control || GetIsLeftOut(control))
             {
                 continue;
             }

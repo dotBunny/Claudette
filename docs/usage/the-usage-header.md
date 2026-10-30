@@ -27,7 +27,14 @@ The countdown, the trendline and the line under the session meter are left out. 
 
 ## In a narrow window
 
-When the window is too narrow for every meter, the header leaves some out rather than cut them off: first the trendline, then the session's countdown, then the weekly meters. Last of all the session's bar gets shorter, so the session's meter, with its percent, always shows. The line under it is shortened to fit, with the whole of it in its tooltip. Widen the window and they come back. Hover over the session's meter for when it resets, or click the meters for [the Usage window](the-usage-window.md).
+When the window is too narrow for everything, the header makes room for the session's meter rather than cut it off, in this order:
+
+1. The trendline goes, then the session's countdown.
+2. At the header's right, your plan and the processes' totals go, and your email becomes an icon, which opens the same account menu. The menu still has your plan's usage, and the Processes window the totals.
+3. The weekly meters go.
+4. The session's bar gets shorter, and in the narrowest window the word *Session* goes too, its bar and percent staying.
+
+The line under the session's meter is shortened to fit, with the whole of it in its tooltip. Widen the window and everything comes back in the same order. Hover over the session's meter for when it resets, or click the meters for [the Usage window](the-usage-window.md).
 
 The compact header leaves out its weekly meters first in the same way, keeping **S**.
 
