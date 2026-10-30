@@ -770,20 +770,31 @@
       </controls:Card>
     </DataTemplate>
 
-    <!-- Where one of Claude's tasks started (DESIGN.md §5, "Tasks"): a rule with the task in it, which opens the Tasks page -->
+    <!-- Where one of Claude's tasks started (DESIGN.md §5, "Tasks"): a rule with the task in it, which opens the Tasks page.
+         With chains folding, the task's work right after it is on the row, "3 steps · 2m 10s", and opens under it (DESIGN.md §18). -->
     <DataTemplate DataType="conv:TaskStartItem">
-      <Button Classes="flat taskstart" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="0,2"
-              Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).OpenTasksPageCommand}"
-              ToolTip.Tip="Show on the Tasks page" AutomationProperties.Name="{Binding Todo.Title}">
-        <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
-          <TextBlock Classes="small" Classes.status="{Binding Todo.IsActive}" Classes.busy="{Binding Todo.IsActive}" Classes.muted="{Binding !Todo.IsActive}"
-                     Text="{Binding Todo.Glyph}" VerticalAlignment="Center" />
-          <TextBlock Grid.Column="1" Classes="small" FontWeight="SemiBold" Text="{Binding Todo.Title}" MaxWidth="560" TextTrimming="CharacterEllipsis"
-                     VerticalAlignment="Center" />
-          <Border Grid.Column="2" Height="1" Background="{DynamicResource DividerBrush}" VerticalAlignment="Center" />
-          <TextBlock Grid.Column="3" Classes="muted small" Text="{Binding TimeText}" VerticalAlignment="Center" />
-        </Grid>
-      </Button>
+      <StackPanel>
+        <Button Classes="flat taskstart" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="0,2"
+                Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).OpenTasksPageCommand}"
+                ToolTip.Tip="Show on the Tasks page" AutomationProperties.Name="{Binding Todo.Title}">
+          <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+            <TextBlock Classes="small" Classes.status="{Binding Todo.IsActive}" Classes.busy="{Binding Todo.IsActive}" Classes.muted="{Binding !Todo.IsActive}"
+                       Text="{Binding Todo.Glyph}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Classes="small" FontWeight="SemiBold" Text="{Binding Todo.Title}" MaxWidth="560" TextTrimming="CharacterEllipsis"
+                       VerticalAlignment="Center" />
+            <ContentControl Grid.Column="2" Content="{Binding Steps}" ContentTemplate="{StaticResource StepsPill}" Margin="0,-3"
+                            IsVisible="{Binding Steps, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <Border Grid.Column="3" Height="1" Background="{DynamicResource DividerBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="4" Classes="muted small" Text="{Binding TimeText}" VerticalAlignment="Center" />
+          </Grid>
+        </Button>
+        <!-- The task's steps, opened from the row: a box of their own under it, as in a reply's card -->
+        <Border Name="TaskSteps" Classes="stepsbox" IsVisible="{Binding Steps.IsOpen, FallbackValue=False}">
+          <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Steps.Rows, FallbackValue={x:Null}}" ItemTemplate="{StaticResource StepRow}" />
+          </ScrollViewer>
+        </Border>
+      </StackPanel>
     </DataTemplate>
 
     <!-- Where the task list stands as a turn that changed it ends, with Continue while tasks are left (DESIGN.md §5, "Tasks") -->

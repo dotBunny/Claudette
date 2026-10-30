@@ -119,11 +119,12 @@ public sealed partial class StepRowItem : ObservableObject
 }
 
 /// <summary>
-/// A run of steps folded into one (DESIGN.md §18, "Conversation cards"): <i>7 steps · 18m 43s</i>. With Claude's reply
-/// right after it, the reply carries it in its header (<see cref="AssistantTextItem.Steps"/>), and opens its steps inside
-/// its own card; otherwise it's a line of its own, with what the steps were beside it. Either way it opens into a list of
-/// the steps, a line each, which scrolls once it's long and whose lines open further. While Claude is on the run its
-/// last step stays under the line.
+/// A run of steps folded into one (DESIGN.md §18, "Conversation cards"): <i>7 steps · 18m 43s</i>. Right after the row
+/// of the task it's for, that row carries it (<see cref="TaskStartItem.Steps"/>), and opens its steps under itself; else,
+/// with Claude's reply right after it, the reply carries it in its header (<see cref="AssistantTextItem.Steps"/>), and
+/// opens its steps inside its own card; otherwise it's a line of its own, with what the steps were beside it. Either way
+/// it opens into a list of the steps, a line each, which scrolls once it's long and whose lines open further. While
+/// Claude is on the run its last step stays under the line, or the task's row.
 /// </summary>
 public sealed partial class StepsMarkerItem : ConversationItem
 {
@@ -140,8 +141,11 @@ public sealed partial class StepsMarkerItem : ConversationItem
     /// </summary>
     internal bool KeepsLast { get; set; }
 
-    /// <summary>The reply that carries the run in its header, or null while the run is a line of its own.</summary>
-    internal AssistantTextItem? Reply { get; set; }
+    /// <summary>
+    /// The row that carries the run: the task's row before it or Claude's reply after it, or null while the run is a line
+    /// of its own.
+    /// </summary>
+    internal ConversationItem? Carrier { get; set; }
 
     /// <summary>The list is open, and the chevron points down.</summary>
     [ObservableProperty]
@@ -254,9 +258,9 @@ public sealed partial class StepsMarkerItem : ConversationItem
 
 /// <summary>
 /// Folds each run of steps on the way (thinking, Tool calls cards, subagents, with nothing else between them) into one
-/// <see cref="StepsMarkerItem"/>, <i>7 steps · 18m 43s</i>: in the header of Claude's reply right after it, or a line of
-/// its own, with the run's last step under it while Claude is on it (Settings → Conversation → Fold each chain of
-/// steps, DESIGN.md §18). The folded steps stay in the conversation, so
+/// <see cref="StepsMarkerItem"/>, <i>7 steps · 18m 43s</i>: on the row of the task right before it, whose work it is, in
+/// the header of Claude's reply right after it, or a line of its own, with the run's last step under it while Claude is
+/// on it (Settings → Conversation → Fold each chain of steps, DESIGN.md §18). The folded steps stay in the conversation, so
 /// find, export and the agent map still see them; they are flagged <see cref="ConversationItem.IsFolded"/> and the list
 /// gives them no height, and the line opens a list of them of its own. A run of one step Claude is still on is left as
 /// it is. Without chain folding there are no lines at all.
@@ -339,7 +343,7 @@ public sealed class StepRuns(ObservableCollection<ConversationItem> items)
 
     /// <summary>
     /// A step the user is being taken to (find, the agent map): opens the list it is in, at its line, and returns where
-    /// the list shows: the reply that carries it, or its own line.
+    /// the list shows: the task's row or the reply that carries it, or its own line.
     /// </summary>
     public ConversationItem? Reveal(ConversationItem? step)
     {
@@ -350,24 +354,44 @@ public sealed class StepRuns(ObservableCollection<ConversationItem> items)
         marker.IsOpen = true;
         marker.Describe();
         marker.OpenRowOf(step!);
-        return marker.Reply ?? (ConversationItem)marker;
+        return marker.Carrier ?? marker;
     }
 
-    /// <summary>Gives the run to <paramref name="reply"/>'s header, or back to a line of its own with null.</summary>
-    private static void Carry(StepsMarkerItem marker, AssistantTextItem? reply)
+    /// <summary>Gives the run to <paramref name="carrier"/>, a task's row or a reply, or back to a line of its own with null.</summary>
+    private static void Carry(StepsMarkerItem marker, ConversationItem? carrier)
     {
-        if (ReferenceEquals(marker.Reply, reply))
+        if (ReferenceEquals(marker.Carrier, carrier))
         {
             return;
         }
-        if (marker.Reply is { } before && ReferenceEquals(before.Steps, marker))
+        if (marker.Carrier is { } before && ReferenceEquals(StepsOf(before), marker))
         {
-            before.Steps = null;
+            SetSteps(before, null);
         }
-        marker.Reply = reply;
-        if (reply is not null)
+        marker.Carrier = carrier;
+        if (carrier is not null)
         {
-            reply.Steps = marker;
+            SetSteps(carrier, marker);
+        }
+    }
+
+    private static StepsMarkerItem? StepsOf(ConversationItem carrier) => carrier switch
+    {
+        TaskStartItem task => task.Steps,
+        AssistantTextItem reply => reply.Steps,
+        _ => null,
+    };
+
+    private static void SetSteps(ConversationItem carrier, StepsMarkerItem? steps)
+    {
+        switch (carrier)
+        {
+            case TaskStartItem task:
+                task.Steps = steps;
+                break;
+            case AssistantTextItem reply:
+                reply.Steps = steps;
+                break;
         }
     }
 
@@ -417,12 +441,15 @@ public sealed class StepRuns(ObservableCollection<ConversationItem> items)
                 changed = true;
             }
         }
-        // Claude's reply right after a finished run carries it in its header, and the line itself takes no room.
-        var reply = !marker.KeepsLast && end < items.Count ? items[end] as AssistantTextItem : null;
-        Carry(marker, reply);
-        if (marker.IsFolded != reply is not null)
+        // The row of the task the run is for carries it, Claude still on it or not; else Claude's reply right after a
+        // finished run carries it in its header. Either way the line itself takes no room.
+        var carrier = start > 0 && items[start - 1] is TaskStartItem task ? task
+            : !marker.KeepsLast && end < items.Count ? items[end] as AssistantTextItem
+            : (ConversationItem?)null;
+        Carry(marker, carrier);
+        if (marker.IsFolded != carrier is not null)
         {
-            marker.IsFolded = reply is not null;
+            marker.IsFolded = carrier is not null;
             changed = true;
         }
         marker.Describe();

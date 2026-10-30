@@ -298,7 +298,8 @@ public sealed partial class AssistantTextItem : MessageItem
     /// <summary>
     /// The chain of steps that led to this reply, folded into its header (Settings → Conversation → Fold each chain of
     /// steps, DESIGN.md §18): <i>7 steps · 18m 43s</i>, which opens the steps inside the card. Null when no chain comes
-    /// just before it, or chains don't fold. Set by <see cref="StepRuns"/>.
+    /// just before it, the row of the task it's for carries it (<see cref="TaskStartItem.Steps"/>), or chains don't fold.
+    /// Set by <see cref="StepRuns"/>.
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSteps))]
@@ -1230,6 +1231,14 @@ public sealed partial class TaskStartItem : ConversationItem
     }
 
     public TodoItem Todo { get; }
+
+    /// <summary>
+    /// The chain of steps right after the row, the task's work, folded onto it (Settings → Conversation → Fold each chain
+    /// of steps, DESIGN.md §18): <i>3 steps · 2m 10s</i>, which opens the steps under the row. Null when no chain follows
+    /// it, or chains don't fold. Set by <see cref="StepRuns"/>.
+    /// </summary>
+    [ObservableProperty]
+    public partial StepsMarkerItem? Steps { get; internal set; }
 
     /// <summary>When it started, by the tab's clock or its transcript entry; null when not known.</summary>
     public DateTimeOffset? StartedAt { get; }

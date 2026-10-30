@@ -273,8 +273,11 @@
     <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     <Setter Property="Background" Value="Transparent" />
   </Style>
-  <!-- The open steps inside a reply's card: a box of their own under the reply's text, which scrolls once it's long. -->
+  <!-- The open steps inside a reply's card: a box of their own under the reply's text, which scrolls once it's long. On
+       the conversation's own surface, not the reply's tint, so the steps' muted text reads as it does outside the card,
+       however the card is lit by the pointer. -->
   <Style Selector="Border.stepsbox">
+    <Setter Property="Background" Value="{DynamicResource IslandBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     <Setter Property="CornerRadius" Value="6" />
