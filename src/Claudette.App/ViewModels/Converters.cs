@@ -11,6 +11,12 @@ public static class Converters
     /// <summary>A color as a brush of it, such as a group's on its panes' headers; none for none.</summary>
     public static readonly IValueConverter ColorBrush = new FuncValueConverter<Color?, IBrush?>(color => color is { } c ? new SolidColorBrush(c) : null);
 
+    /// <summary>
+    /// The room a list keeps at its right for its scroll viewer's vertical bar, while it can scroll (bound to
+    /// <c>ScrollBarMaximum.Y</c>): the bar is drawn over the list, so it would otherwise cover the list's right edge.
+    /// </summary>
+    public static readonly IValueConverter ScrollBarGutter = new FuncValueConverter<double, Thickness>(max => max > 0 ? new Thickness(0, 0, 12, 0) : default);
+
     /// <summary>An indent, for tree rows.</summary>
     public static readonly IValueConverter LeftMargin = new FuncValueConverter<double, Thickness>(left => new Thickness(left, 0, 0, 0));
 

@@ -33,6 +33,8 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         _onAuthenticationRequired = onAuthenticationRequired;
         _opener = new SessionOpener(services, this);
         Layout = new ShellLayout(services.State, services.SaveState);
+        // The pinned groups' band follows the groups as they come, go and move (DESIGN.md §4, "Pinning a group").
+        Groups.CollectionChanged += (_, _) => MarkPinnedBand();
         ToolWindows = new ToolDockViewModel(services.State, services.SaveState);
         WatchToolWindows();
         // Panes fold away as the window narrows, and come back as it widens (DESIGN.md §18, "Split panes").
@@ -768,8 +770,8 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// The pin before a group's buttons, or <b>Pin to the top</b> in its menu (DESIGN.md §4, "Grouped by folder"): the
-    /// group moves up among the pinned ones, and <b>Unpin from the top</b> lets it go back down. Remembered for the folder.
+    /// <b>Pin to the top</b> in a group's menu (DESIGN.md §4, "Pinning a group"): the group moves up among the pinned ones,
+    /// and <b>Unpin from the top</b> lets it go back down. Remembered for the folder.
     /// </summary>
     [RelayCommand]
     private void TogglePinGroup(TabGroupViewModel? group)
@@ -786,7 +788,25 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
             pinned.Add(group.Folder);
         }
         OrderGroups();
+        // Already in its place, so nothing moved: the band changes all the same.
+        MarkPinnedBand();
         SaveTabs();
+    }
+
+    /// <summary>
+    /// The pinned groups, which <see cref="OrderGroups"/> keeps first, are a band of their own at the top of the sidebar,
+    /// with a divider under it while other groups follow (DESIGN.md §4, "Pinning a group").
+    /// </summary>
+    private void MarkPinnedBand()
+    {
+        var pinned = Groups.Count(g => g.IsPinned);
+        for (var i = 0; i < Groups.Count; i++)
+        {
+            var group = Groups[i];
+            group.IsFirstPinned = group.IsPinned && i == 0;
+            group.IsLastPinned = group.IsPinned && i == pinned - 1;
+            group.HasDividerAbove = pinned > 0 && i == pinned;
+        }
     }
 
     /// <summary>

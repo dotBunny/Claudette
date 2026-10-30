@@ -3,7 +3,7 @@ using Claudette.App.Tests.Support;
 
 namespace Claudette.App.Tests;
 
-/// <summary>Pinned groups first in the sidebar (DESIGN.md §4, "Grouped by folder").</summary>
+/// <summary>Pinned groups first in the sidebar, in a band of their own (DESIGN.md §4, "Pinning a group").</summary>
 public class PinnedGroupsTests
 {
     private static string UserLine(string sessionId, string text, string cwd, string time) => new JsonObject
@@ -29,6 +29,10 @@ public class PinnedGroupsTests
 
     private static string[] Folders(TabTestHarness h) => InlineDispatcher.Read(() => h.Shell.Groups.Select(g => g.Folder).ToArray());
 
+    /// <summary>Each group's place in the band, in order: F first pinned, L last pinned, D the divider over it, - none.</summary>
+    private static string Band(TabTestHarness h) => InlineDispatcher.Read(() => string.Join(" ", h.Shell.Groups.Select(g =>
+        (g.IsFirstPinned ? "F" : "") + (g.IsLastPinned ? "L" : "") + (g.HasDividerAbove ? "D" : "") is { Length: > 0 } marks ? marks : "-")));
+
     [Fact]
     public async Task A_pinned_group_goes_first_and_stays_there_however_recently_the_others_were_used()
     {
@@ -38,6 +42,8 @@ public class PinnedGroupsTests
         h.Shell.Restore(null);
         await TabTestHarness.Eventually(() => InlineDispatcher.Read(() => h.Shell.Groups.Count == 3), "three projects");
         Assert.Equal([c, b, h.WorkFolder], Folders(h));
+        // No pins, no band and no divider.
+        Assert.Equal("- - -", Band(h));
 
         var work = InlineDispatcher.Read(() => h.Shell.Groups.Single(g => g.Folder == h.WorkFolder));
         Assert.Equal("Pin to the top", work.PinMenuText);
@@ -46,15 +52,26 @@ public class PinnedGroupsTests
         Assert.Equal("Unpin from the top", work.PinMenuText);
         Assert.Equal([h.WorkFolder, c, b], Folders(h));
         Assert.Equal([h.WorkFolder], h.Services.State.PinnedGroups);
+        // One pinned group is the whole band, and the divider is over the group after it.
+        Assert.Equal("FL D -", Band(h));
 
         // A second pin goes after the first, and unpinning lets a group go back to where its use puts it.
         var bGroup = InlineDispatcher.Read(() => h.Shell.Groups.Single(g => g.Folder == b));
         InlineDispatcher.Read(() => { h.Shell.TogglePinGroupCommand.Execute(bGroup); return 0; });
         Assert.Equal([h.WorkFolder, b, c], Folders(h));
+        Assert.Equal("F L D", Band(h));
         InlineDispatcher.Read(() => { h.Shell.TogglePinGroupCommand.Execute(work); return 0; });
         Assert.False(work.IsPinned);
         Assert.Equal([b, c, h.WorkFolder], Folders(h));
         Assert.Equal([b], h.Services.State.PinnedGroups);
+        Assert.Equal("FL D -", Band(h));
+
+        // Every group pinned: the band is all of them, with nothing after it to part from.
+        foreach (var group in InlineDispatcher.Read(() => h.Shell.Groups.Where(g => !g.IsPinned).ToList()))
+        {
+            InlineDispatcher.Read(() => { h.Shell.TogglePinGroupCommand.Execute(group); return 0; });
+        }
+        Assert.Equal("F - L", Band(h));
     }
 
     [Fact]

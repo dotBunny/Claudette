@@ -52,7 +52,7 @@ Dragging a tab out onto the conversation shows it beside the tab you're in inste
 
 ## Pinning a group
 
-With many projects, the ones you work in all the time can be hard to find. The pin before a group's other buttons puts the group first in the sidebar: an outline while it isn't pinned, solid in the accent color while it is. **Pin to the top** in the group's menu does the same. Pinned groups keep the order they were in among themselves, and stay ahead of the rest. It works on [Claude Code's projects](#claude-codes-projects) too, so a project with nothing open in it can be at the top.
+With many projects, the ones you work in all the time can be hard to find. Right-click a group's label and choose **Pin to the top** to put the group first in the sidebar, or **Unpin from the top** to let it go. Pinned groups sit in a shaded band of their own at the top, with a line between them and the rest. They keep the order they were in among themselves, and stay ahead of the others. It works on [Claude Code's projects](#claude-codes-projects) too, so a project with nothing open in it can be at the top.
 
 Dragging a group by its label moves it among the pinned groups, or among the others, not from one to the other. The pins are remembered for each folder, on this computer.
 

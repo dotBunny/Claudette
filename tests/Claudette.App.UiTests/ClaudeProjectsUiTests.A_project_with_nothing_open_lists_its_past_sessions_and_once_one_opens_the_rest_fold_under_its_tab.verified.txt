@@ -1,5 +1,4 @@
 ﻿[button] work
-[button] Pin to the top
 [button] Open the folder
 [button] Project files
 [button] New tab in this folder

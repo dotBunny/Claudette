@@ -22,6 +22,8 @@
       <SolidColorBrush x:Key="ToolIconSelectedTextBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="TabSelectedBrush" Color="#E8E6DC" />
       <SolidColorBrush x:Key="SidebarBrush" Color="#F5F4ED" />
+      <!-- The pinned groups' band at the top of the sidebar (DESIGN.md §4, "Pinning a group"): a shade off the sidebar's own -->
+      <SolidColorBrush x:Key="PinnedGroupsBrush" Color="#EEECE3" />
       <SolidColorBrush x:Key="ExplorerBrush" Color="#F5F4ED" />
       <SolidColorBrush x:Key="ComposerBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="ComposerBorderBrush" Color="#261F1E1D" />
@@ -86,6 +88,7 @@
       <SolidColorBrush x:Key="ToolIconSelectedTextBrush" Color="#FFFFFF" />
       <SolidColorBrush x:Key="TabSelectedBrush" Color="#30302E" />
       <SolidColorBrush x:Key="SidebarBrush" Color="#1F1E1D" />
+      <SolidColorBrush x:Key="PinnedGroupsBrush" Color="#262523" />
       <!-- The Files tab's explorer: the sidebar's #1F1E1D is the frame's too, so the explorer would read as the frame and
            its divider as a stray line; a shade between the frame and the editor's island (#262624) sets it apart. -->
       <SolidColorBrush x:Key="ExplorerBrush" Color="#232221" />

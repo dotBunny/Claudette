@@ -208,8 +208,22 @@ public sealed partial class TabGroupViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(PinMenuText))]
     public partial bool IsPinned { get; set; }
 
-    /// <summary>The pin button's tip and the menu's item: what a click does.</summary>
+    /// <summary>The group menu's item: what a click does.</summary>
     public string PinMenuText => IsPinned ? "Unpin from the top" : "Pin to the top";
+
+    /// <summary>
+    /// The first of the pinned groups, which starts their band at the top of the sidebar, and the last, which ends it
+    /// (DESIGN.md §4, "Pinning a group"). Set by the shell as the groups change.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsFirstPinned { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsLastPinned { get; set; }
+
+    /// <summary>The first group after the pinned ones: the divider between them goes over it.</summary>
+    [ObservableProperty]
+    public partial bool HasDividerAbove { get; set; }
 
     /// <summary>The most urgent status among the group's tabs, shown when it's collapsed.</summary>
     public string UrgentGlyph => RowUrgencies.Glyph(Tabs.Select(t => RowUrgencies.Of(t.Status)).DefaultIfEmpty().Max());

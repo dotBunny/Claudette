@@ -16,7 +16,6 @@
 [button] History
 [button] Collapse the sidebar
 [button] work
-[button] Pin to the top
 [button] Project tools
 [button] Project files
 [button] New tab in this folder
