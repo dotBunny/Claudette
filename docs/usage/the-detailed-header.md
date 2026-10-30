@@ -13,7 +13,7 @@ The header can be drawn taller, with charts, so you can keep an eye on usage wit
 
 ## Turning it on
 
-Click the chevron at the header's right (its tip says **Expand the usage header**), and click it again to collapse it. Settings → Usage → **Detailed usage header** is the same switch. It's off by default, and the choice is remembered on this machine, not synced.
+Click the chevron just after the meters (its tip says **Expand the usage header**), and click it again to collapse it. Settings → Usage → **Detailed usage header** is the same switch. It's off by default, and the choice is remembered on this machine, not synced.
 
 Collapsed, the header is as described in [The usage header](the-usage-header.md). Under it, about 150 pixels high, the detailed header has the session chart, the weekly chart, two numbers and the busiest tabs, left to right. Click any of them to open the Usage window.
 

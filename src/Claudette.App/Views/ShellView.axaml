@@ -473,7 +473,7 @@
                     <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                       <!-- Group label: click to collapse; right-click for group actions -->
                       <Button Classes="flat grouplabel" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="4,4"
-                              ToolTip.Tip="{Binding Summary}"
+                              ToolTip.Tip="{Binding Summary}" AutomationProperties.Name="{Binding Label}"
                               Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ToggleGroupCollapsedCommand}" CommandParameter="{Binding}">
                         <DockPanel>
                           <Panel DockPanel.Dock="Left" Width="12" Margin="0,0,4,0">
@@ -493,27 +493,55 @@
                           <TextBlock Text="{Binding Label}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                         </DockPanel>
                         <Button.ContextMenu>
-                          <ContextMenu>
-                            <MenuItem Header="New tab here" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewTabInGroupCommand}" CommandParameter="{Binding}" />
+                          <ContextMenu Classes="sectioned">
+                            <!-- In sections, as Themes/MenuStyles.axaml draws them (DESIGN.md §4, "Grouped by folder"): new tabs, the folder, and
+                                 the group -->
+                            <MenuItem Classes="menusection" Header="Tabs" IsEnabled="False" />
+                            <MenuItem Header="New tab here" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewTabInGroupCommand}" CommandParameter="{Binding}">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconPlus}" /></MenuItem.Icon>
+                            </MenuItem>
                             <!-- Its own git worktree, so its edits don't meet the other tabs' (DESIGN.md §4, "Worktree tabs") -->
                             <MenuItem Header="New tab in a worktree" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewWorktreeTabCommand}" CommandParameter="{Binding}"
-                                      IsVisible="{Binding CanMakeWorktrees}" ToolTip.Tip="A tab whose Claude works in a separate checkout, on its own branch" />
+                                      IsVisible="{Binding CanMakeWorktrees}" ToolTip.Tip="A tab whose Claude works in a separate checkout, on its own branch">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconBranch}" /></MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Classes="menusection" Header="Folder" IsEnabled="False" />
+                            <MenuItem Header="Open project files" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenProjectFilesCommand}" CommandParameter="{Binding}">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconFiles}" /></MenuItem.Icon>
+                            </MenuItem>
                             <!-- History listing only this project's sessions (DESIGN.md §9, "History") -->
-                            <MenuItem Header="History for this folder" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenHistoryForGroupCommand}" CommandParameter="{Binding}" />
-                            <MenuItem Header="Open project files" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenProjectFilesCommand}" CommandParameter="{Binding}" />
-                            <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ToggleGroupCollapsedCommand}" CommandParameter="{Binding}" />
-                            <MenuItem Header="{Binding PinMenuText}" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).TogglePinGroupCommand}" CommandParameter="{Binding}" />
+                            <MenuItem Header="History for this folder" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenHistoryForGroupCommand}" CommandParameter="{Binding}">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconHistory}" /></MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Classes="menusection" Header="Group" IsEnabled="False" />
+                            <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ToggleGroupCollapsedCommand}" CommandParameter="{Binding}">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCollapseAll}" /></MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{Binding PinMenuText}" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).TogglePinGroupCommand}" CommandParameter="{Binding}">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconPin}" /></MenuItem.Icon>
+                            </MenuItem>
                             <!-- A name of the user's own in place of the folder's (DESIGN.md §4, "Grouped by folder") -->
-                            <MenuItem Header="Rename…" Click="OnRenameGroup" />
+                            <MenuItem Header="Rename…" Click="OnRenameGroup">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconToolEdit}" /></MenuItem.Icon>
+                            </MenuItem>
                             <MenuItem Header="Reset name" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ResetGroupNameCommand}" CommandParameter="{Binding}"
                                       IsVisible="{Binding HasName}" />
-                            <MenuItem Header="Change color…" Click="OnChangeGroupColor" />
+                            <!-- Its icon is the group's color as it is now -->
+                            <MenuItem Header="Change color…" Click="OnChangeGroupColor">
+                              <MenuItem.Icon><Ellipse Width="10" Height="10" Fill="{Binding Brush}" /></MenuItem.Icon>
+                            </MenuItem>
                             <!-- The account the group's new tabs use (DESIGN.md §4, "Accounts") -->
                             <MenuItem Header="Account" ItemsSource="{Binding AccountMenu}" IsVisible="{Binding HasAccountMenu}"
-                                      ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}" />
-                            <Separator />
+                                      ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCardYou}" /></MenuItem.Icon>
+                            </MenuItem>
+                            <Separator IsVisible="{Binding CanClose}" />
                             <MenuItem Header="Close group" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseGroupCommand}" CommandParameter="{Binding}"
-                                      IsVisible="{Binding CanClose}" />
+                                      IsVisible="{Binding CanClose}">
+                              <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconClose}" /></MenuItem.Icon>
+                            </MenuItem>
                           </ContextMenu>
                         </Button.ContextMenu>
                       </Button>
@@ -727,33 +755,49 @@
                                   </StackPanel>
                                 </Grid>
                                 <Button.ContextMenu>
-                                  <ContextMenu>
-                                    <MenuItem Header="Rename" Command="{Binding StartRenameCommand}" />
+                                  <ContextMenu Classes="sectioned">
+                                    <!-- In sections, as Themes/MenuStyles.axaml draws them (DESIGN.md §4, "Sidebar"): the tab, how it shows, its session,
+                                         and reaching it from other devices -->
+                                    <MenuItem Classes="menusection" Header="Tab" IsEnabled="False" />
+                                    <MenuItem Header="Rename" Command="{Binding StartRenameCommand}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconToolEdit}" /></MenuItem.Icon>
+                                    </MenuItem>
                                     <MenuItem Header="Reset name" Command="{Binding ResetNameCommand}" IsVisible="{Binding HasUserName}" />
-                                    <MenuItem Header="{Binding PinMenuText}" Command="{Binding TogglePinCommand}" ToolTip.Tip="{x:Static vm:TabViewModel.PinMenuTip}" />
+                                    <MenuItem Header="{Binding PinMenuText}" Command="{Binding TogglePinCommand}" ToolTip.Tip="{x:Static vm:TabViewModel.PinMenuTip}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconPin}" /></MenuItem.Icon>
+                                    </MenuItem>
                                     <!-- An icon of the user's own under the status icon (DESIGN.md §4, "Marks") -->
                                     <MenuItem Header="Mark" ItemsSource="{Binding MarkMenu}" ItemContainerTheme="{StaticResource MarkMenuItemTheme}"
-                                              ItemTemplate="{StaticResource MarkMenuItemTemplate}" />
+                                              ItemTemplate="{StaticResource MarkMenuItemTemplate}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconMarkFlag}" /></MenuItem.Icon>
+                                    </MenuItem>
                                     <MenuItem Header="Clear mark" Command="{Binding ClearMarkCommand}" IsVisible="{Binding HasMark}" />
-                                    <!-- The account the tab runs under; moving it carries the conversation on (DESIGN.md §4, "Accounts") -->
-                                    <MenuItem Header="Account" ItemsSource="{Binding AccountMenu}" IsVisible="{Binding HasAccountMenu}"
-                                              ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}" />
-                                    <!-- Whether the tab carries on with usage credits once a limit is used up (DESIGN.md §6, "Tabs that don't use usage credits") -->
-                                    <MenuItem Header="Use usage credits" ToggleType="CheckBox" IsChecked="{Binding UsesUsageCredits, Mode=OneWay}"
-                                              Command="{Binding ToggleUseUsageCreditsCommand}" IsVisible="{Binding HasUsageCreditsMenu}"
-                                              ToolTip.Tip="{x:Static vm:TabViewModel.UsageCreditsMenuTip}" />
-                                    <!-- The item ticks itself as it's clicked, then runs the command, so the binding stays one-way -->
-                                    <MenuItem Header="Sync to other machines" ToggleType="CheckBox" IsChecked="{Binding SyncToLibrary, Mode=OneWay}"
-                                              Command="{Binding ToggleSyncToLibraryCommand}" />
-                                    <!-- Copies to the library now, rather than after the next turn (DESIGN.md §9); disabled while Claude writes -->
-                                    <MenuItem Header="Sync now" Command="{Binding SyncNowCommand}" IsVisible="{Binding SyncToLibrary}"
-                                              ToolTip.Tip="{Binding SyncNowTip}" ToolTip.ShowOnDisabled="True" />
-                                    <!-- Remote Control (DESIGN.md §18): disabled, with the reason as its tip, when the account can't use it -->
-                                    <MenuItem Header="Connect to the Claude app" ToggleType="CheckBox" IsChecked="{Binding RemoteControl.IsOn, Mode=OneWay}"
-                                              Command="{Binding RemoteControl.ToggleCommand}" ToolTip.Tip="{Binding RemoteControl.ToggleTip}" ToolTip.ShowOnDisabled="True" />
-                                    <MenuItem Header="Open in the Claude app" Command="{Binding RemoteControl.OpenInClaudeAppCommand}" IsVisible="{Binding RemoteControl.HasUrl}" />
+                                    <MenuItem Header="Duplicate tab" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).DuplicateTabCommand}" CommandParameter="{Binding}"
+                                              ToolTip.Tip="A new tab that carries this session on as a copy">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconSettingsTabs}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Tab settings…" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenTabSettingsCommand}" CommandParameter="{Binding}">
+                                      <!-- A dot on the icon while the tab has settings of its own -->
+                                      <MenuItem.Icon>
+                                        <Panel>
+                                          <Path Classes="menuicon" Data="{StaticResource IconSettings}" />
+                                          <Ellipse Width="5" Height="5" Fill="{DynamicResource AccentStatusBrush}" IsVisible="{Binding HasOverrides}"
+                                                   HorizontalAlignment="Right" VerticalAlignment="Top" ToolTip.Tip="This tab has its own settings" />
+                                        </Panel>
+                                      </MenuItem.Icon>
+                                    </MenuItem>
+                                    <Separator />
+                                    <MenuItem Classes="menusection" Header="View" IsEnabled="False" />
+                                    <!-- Tabs side by side (DESIGN.md §18, "Split panes") -->
+                                    <MenuItem Header="Open beside" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenBesideCommand}" CommandParameter="{Binding}"
+                                              IsVisible="{Binding !IsShown}" ToolTip.Tip="Shows this tab beside the one you're in, each with its own conversation and message box">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconSidebar}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Close pane" Command="{Binding ClosePaneCommand}" IsVisible="{Binding IsInSplit}"
+                                              ToolTip.Tip="Takes this tab off the screen; it stays open in the sidebar" />
                                     <!-- Folding each chain of steps in this tab, or Settings → Conversation's default (DESIGN.md §18, "Conversation cards") -->
                                     <MenuItem Header="Steps">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconToolTodo}" /></MenuItem.Icon>
                                       <MenuItem Header="{Binding StepsDefaultText}" ToggleType="Radio" IsChecked="{Binding StepsByDefault, Mode=OneWay}" Command="{Binding UseDefaultStepsCommand}"
                                                 ToolTip.Tip="Fold the steps as Settings → Conversation → Fold each chain of steps says" />
                                       <MenuItem Header="Folded" ToggleType="Radio" IsChecked="{Binding StepsFolded, Mode=OneWay}" Command="{Binding FoldStepsCommand}"
@@ -761,21 +805,21 @@
                                       <MenuItem Header="All" ToggleType="Radio" IsChecked="{Binding StepsAll, Mode=OneWay}" Command="{Binding ShowAllStepsCommand}"
                                                 ToolTip.Tip="Show every step in this tab" />
                                     </MenuItem>
-                                    <MenuItem Header="Tab settings…" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenTabSettingsCommand}" CommandParameter="{Binding}">
-                                      <MenuItem.Icon>
-                                        <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentStatusBrush}" IsVisible="{Binding HasOverrides}"
-                                                 ToolTip.Tip="This tab has its own settings" />
-                                      </MenuItem.Icon>
+                                    <!-- What's under the row (DESIGN.md §4, "Sidebar") -->
+                                    <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding ToggleRowsCollapsedCommand}" IsVisible="{Binding HasRowsUnder}" ToolTip.Tip="{Binding CollapseTip}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCollapseAll}" /></MenuItem.Icon>
                                     </MenuItem>
-                                    <MenuItem Header="Duplicate tab" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).DuplicateTabCommand}" CommandParameter="{Binding}"
-                                              ToolTip.Tip="A new tab that carries this session on as a copy" />
-                                    <!-- Tabs side by side (DESIGN.md §18, "Split panes") -->
-                                    <MenuItem Header="Open beside" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenBesideCommand}" CommandParameter="{Binding}"
-                                              IsVisible="{Binding !IsShown}" ToolTip.Tip="Shows this tab beside the one you're in, each with its own conversation and message box" />
-                                    <MenuItem Header="Close pane" Command="{Binding ClosePaneCommand}" IsVisible="{Binding IsInSplit}"
-                                              ToolTip.Tip="Takes this tab off the screen; it stays open in the sidebar" />
+                                    <MenuItem Header="Move up" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).MoveTabUpCommand}" CommandParameter="{Binding}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconChevronUp}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Move down" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).MoveTabDownCommand}" CommandParameter="{Binding}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconChevronDown}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <Separator />
+                                    <MenuItem Classes="menusection" Header="Session" IsEnabled="False" />
                                     <!-- Threads (DESIGN.md §18): a tab whose Claude hands work to others in its group -->
                                     <MenuItem Header="Thread">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconThread}" /></MenuItem.Icon>
                                       <MenuItem Header="Make this tab a thread" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).MakeThreadCommand}" CommandParameter="{Binding}" IsVisible="{Binding CanMakeThread}"
                                                 ToolTip.Tip="Its Claude can hand work to other tabs in this folder, its sub-threads, and gets their results back" />
                                       <MenuItem Header="New sub-thread" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewSubThreadCommand}" CommandParameter="{Binding}" IsVisible="{Binding IsThread}" />
@@ -790,21 +834,50 @@
                                       <MenuItem Header="Stop being a thread" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).StopBeingThreadCommand}" CommandParameter="{Binding}" IsVisible="{Binding IsThread}"
                                                 ToolTip.Tip="Its sub-threads carry on as ordinary tabs" />
                                     </MenuItem>
-
-                                    <MenuItem Header="Export conversation…" Command="{Binding ExportConversationCommand}"
-                                              ToolTip.Tip="Save the conversation as a Markdown file or a web page" />
-                                    <MenuItem Header="Copy session ID" Command="{Binding CopySessionIdCommand}" IsVisible="{Binding HasSessionId}"
-                                              ToolTip.Tip="What claude --resume takes" />
+                                    <!-- The account the tab runs under; moving it carries the conversation on (DESIGN.md §4, "Accounts") -->
+                                    <MenuItem Header="Account" ItemsSource="{Binding AccountMenu}" IsVisible="{Binding HasAccountMenu}"
+                                              ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCardYou}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <!-- Whether the tab carries on with usage credits once a limit is used up (DESIGN.md §6, "Tabs that don't use usage credits") -->
+                                    <MenuItem Header="Use usage credits" ToggleType="CheckBox" IsChecked="{Binding UsesUsageCredits, Mode=OneWay}"
+                                              Command="{Binding ToggleUseUsageCreditsCommand}" IsVisible="{Binding HasUsageCreditsMenu}"
+                                              ToolTip.Tip="{x:Static vm:TabViewModel.UsageCreditsMenuTip}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCardStats}" /></MenuItem.Icon>
+                                    </MenuItem>
                                     <!-- Started without the folder's own configuration (DESIGN.md §7, "Folder trust") -->
                                     <MenuItem Header="Trust this folder" Command="{Binding TrustFolderCommand}" IsVisible="{Binding IsWithoutFolderSettings}"
-                                              ToolTip.Tip="Start Claude Code again with this folder's own settings, MCP servers and CLAUDE.md" />
+                                              ToolTip.Tip="Start Claude Code again with this folder's own settings, MCP servers and CLAUDE.md">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCardPermission}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Export conversation…" Command="{Binding ExportConversationCommand}"
+                                              ToolTip.Tip="Save the conversation as a Markdown file or a web page">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconToolWrite}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Copy session ID" Command="{Binding CopySessionIdCommand}" IsVisible="{Binding HasSessionId}"
+                                              ToolTip.Tip="What claude --resume takes">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCopy}" /></MenuItem.Icon>
+                                    </MenuItem>
                                     <Separator />
-                                    <MenuItem Header="Move up" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).MoveTabUpCommand}" CommandParameter="{Binding}" />
-                                    <MenuItem Header="Move down" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).MoveTabDownCommand}" CommandParameter="{Binding}" />
-                                    <!-- What's under the row (DESIGN.md §4, "Sidebar") -->
-                                    <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding ToggleRowsCollapsedCommand}" IsVisible="{Binding HasRowsUnder}" ToolTip.Tip="{Binding CollapseTip}" />
+                                    <MenuItem Classes="menusection" Header="Other devices" IsEnabled="False" />
+                                    <!-- The item ticks itself as it's clicked, then runs the command, so the binding stays one-way -->
+                                    <MenuItem Header="Sync to other machines" ToggleType="CheckBox" IsChecked="{Binding SyncToLibrary, Mode=OneWay}"
+                                              Command="{Binding ToggleSyncToLibraryCommand}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconSync}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <!-- Copies to the library now, rather than after the next turn (DESIGN.md §9); disabled while Claude writes -->
+                                    <MenuItem Header="Sync now" Command="{Binding SyncNowCommand}" IsVisible="{Binding SyncToLibrary}"
+                                              ToolTip.Tip="{Binding SyncNowTip}" ToolTip.ShowOnDisabled="True" />
+                                    <!-- Remote Control (DESIGN.md §18): disabled, with the reason as its tip, when the account can't use it -->
+                                    <MenuItem Header="Connect to the Claude app" ToggleType="CheckBox" IsChecked="{Binding RemoteControl.IsOn, Mode=OneWay}"
+                                              Command="{Binding RemoteControl.ToggleCommand}" ToolTip.Tip="{Binding RemoteControl.ToggleTip}" ToolTip.ShowOnDisabled="True">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconPhone}" /></MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="Open in the Claude app" Command="{Binding RemoteControl.OpenInClaudeAppCommand}" IsVisible="{Binding RemoteControl.HasUrl}" />
                                     <Separator />
-                                    <MenuItem Header="Close" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseTabCommand}" CommandParameter="{Binding}" />
+                                    <MenuItem Header="Close" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseTabCommand}" CommandParameter="{Binding}">
+                                      <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconClose}" /></MenuItem.Icon>
+                                    </MenuItem>
                                     <MenuItem Header="Close other tabs" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseOtherTabsCommand}" CommandParameter="{Binding}" />
                                   </ContextMenu>
                                 </Button.ContextMenu>
@@ -1030,24 +1103,52 @@
                       <TextBlock Classes="status alert small" Text="{Binding UrgentGlyph}" IsVisible="{Binding IsCollapsed}" VerticalAlignment="Center" />
                     </StackPanel>
                     <Button.ContextMenu>
-                      <ContextMenu>
-                        <MenuItem Header="New tab here" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewTabInGroupCommand}" CommandParameter="{Binding}" />
+                      <ContextMenu Classes="sectioned">
+                        <!-- In sections, as Themes/MenuStyles.axaml draws them (DESIGN.md §4, "Grouped by folder"): new tabs, the folder, and
+                             the group -->
+                        <MenuItem Classes="menusection" Header="Tabs" IsEnabled="False" />
+                        <MenuItem Header="New tab here" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewTabInGroupCommand}" CommandParameter="{Binding}">
+                          <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconPlus}" /></MenuItem.Icon>
+                        </MenuItem>
                         <!-- Its own git worktree, so its edits don't meet the other tabs' (DESIGN.md §4, "Worktree tabs") -->
                         <MenuItem Header="New tab in a worktree" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewWorktreeTabCommand}" CommandParameter="{Binding}"
-                                  IsVisible="{Binding CanMakeWorktrees}" ToolTip.Tip="A tab whose Claude works in a separate checkout, on its own branch" />
+                                  IsVisible="{Binding CanMakeWorktrees}" ToolTip.Tip="A tab whose Claude works in a separate checkout, on its own branch">
+                          <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconBranch}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Classes="menusection" Header="Folder" IsEnabled="False" />
+                        <MenuItem Header="Open project files" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenProjectFilesCommand}" CommandParameter="{Binding}">
+                          <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconFiles}" /></MenuItem.Icon>
+                        </MenuItem>
                         <!-- History listing only this project's sessions (DESIGN.md §9, "History") -->
-                        <MenuItem Header="History for this folder" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenHistoryForGroupCommand}" CommandParameter="{Binding}" />
-                        <MenuItem Header="Open project files" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenProjectFilesCommand}" CommandParameter="{Binding}" />
-                        <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ToggleGroupCollapsedCommand}" CommandParameter="{Binding}" />
-                        <MenuItem Header="Rename…" Click="OnRenameGroup" />
+                        <MenuItem Header="History for this folder" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenHistoryForGroupCommand}" CommandParameter="{Binding}">
+                          <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconHistory}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Classes="menusection" Header="Group" IsEnabled="False" />
+                        <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ToggleGroupCollapsedCommand}" CommandParameter="{Binding}">
+                          <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCollapseAll}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <!-- A name of the user's own in place of the folder's (DESIGN.md §4, "Grouped by folder") -->
+                        <MenuItem Header="Rename…" Click="OnRenameGroup">
+                          <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconToolEdit}" /></MenuItem.Icon>
+                        </MenuItem>
                         <MenuItem Header="Reset name" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).ResetGroupNameCommand}" CommandParameter="{Binding}"
                                   IsVisible="{Binding HasName}" />
-                        <MenuItem Header="Change color…" Click="OnChangeGroupColor" />
+                        <!-- Its icon is the group's color as it is now -->
+                        <MenuItem Header="Change color…" Click="OnChangeGroupColor">
+                          <MenuItem.Icon><Ellipse Width="10" Height="10" Fill="{Binding Brush}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <!-- The account the group's new tabs use (DESIGN.md §4, "Accounts") -->
                         <MenuItem Header="Account" ItemsSource="{Binding AccountMenu}" IsVisible="{Binding HasAccountMenu}"
-                                  ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}" />
-                        <Separator />
+                                  ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}">
+                          <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCardYou}" /></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator IsVisible="{Binding CanClose}" />
                         <MenuItem Header="Close group" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseGroupCommand}" CommandParameter="{Binding}"
-                                  IsVisible="{Binding CanClose}" />
+                                  IsVisible="{Binding CanClose}">
+                          <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconClose}" /></MenuItem.Icon>
+                        </MenuItem>
                       </ContextMenu>
                     </Button.ContextMenu>
                   </Button>
@@ -1093,26 +1194,48 @@
                                             HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="4,0,0,4" AutomationProperties.Name="{Binding MarkTip}" />
                           </Panel>
                           <Button.ContextMenu>
-                            <ContextMenu>
-                              <MenuItem Header="Rename" Command="{Binding StartRenameCommand}" />
-                              <MenuItem Header="{Binding PinMenuText}" Command="{Binding TogglePinCommand}" ToolTip.Tip="{x:Static vm:TabViewModel.PinMenuTip}" />
+                            <ContextMenu Classes="sectioned">
+                              <!-- In sections, as Themes/MenuStyles.axaml draws them (DESIGN.md §4, "Sidebar"): the tab, how it shows, its session,
+                                   and reaching it from other devices -->
+                              <MenuItem Classes="menusection" Header="Tab" IsEnabled="False" />
+                              <MenuItem Header="Rename" Command="{Binding StartRenameCommand}">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconToolEdit}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <MenuItem Header="{Binding PinMenuText}" Command="{Binding TogglePinCommand}" ToolTip.Tip="{x:Static vm:TabViewModel.PinMenuTip}">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconPin}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <!-- An icon of the user's own under the status icon (DESIGN.md §4, "Marks") -->
                               <MenuItem Header="Mark" ItemsSource="{Binding MarkMenu}" ItemContainerTheme="{StaticResource MarkMenuItemTheme}"
-                                        ItemTemplate="{StaticResource MarkMenuItemTemplate}" />
+                                        ItemTemplate="{StaticResource MarkMenuItemTemplate}">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconMarkFlag}" /></MenuItem.Icon>
+                              </MenuItem>
                               <MenuItem Header="Clear mark" Command="{Binding ClearMarkCommand}" IsVisible="{Binding HasMark}" />
-                              <MenuItem Header="Account" ItemsSource="{Binding AccountMenu}" IsVisible="{Binding HasAccountMenu}"
-                                        ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}" />
-                              <MenuItem Header="Use usage credits" ToggleType="CheckBox" IsChecked="{Binding UsesUsageCredits, Mode=OneWay}"
-                                        Command="{Binding ToggleUseUsageCreditsCommand}" IsVisible="{Binding HasUsageCreditsMenu}"
-                                        ToolTip.Tip="{x:Static vm:TabViewModel.UsageCreditsMenuTip}" />
-                              <MenuItem Header="Sync to other machines" ToggleType="CheckBox" IsChecked="{Binding SyncToLibrary, Mode=OneWay}"
-                                        Command="{Binding ToggleSyncToLibraryCommand}" />
-                              <MenuItem Header="Sync now" Command="{Binding SyncNowCommand}" IsVisible="{Binding SyncToLibrary}"
-                                        ToolTip.Tip="{Binding SyncNowTip}" ToolTip.ShowOnDisabled="True" />
-                              <MenuItem Header="Connect to the Claude app" ToggleType="CheckBox" IsChecked="{Binding RemoteControl.IsOn, Mode=OneWay}"
-                                        Command="{Binding RemoteControl.ToggleCommand}" ToolTip.Tip="{Binding RemoteControl.ToggleTip}" ToolTip.ShowOnDisabled="True" />
-                              <MenuItem Header="Open in the Claude app" Command="{Binding RemoteControl.OpenInClaudeAppCommand}" IsVisible="{Binding RemoteControl.HasUrl}" />
+                              <MenuItem Header="Duplicate tab" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).DuplicateTabCommand}" CommandParameter="{Binding}"
+                                        ToolTip.Tip="A new tab that carries this session on as a copy">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconSettingsTabs}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <MenuItem Header="Tab settings…" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenTabSettingsCommand}" CommandParameter="{Binding}">
+                                <!-- A dot on the icon while the tab has settings of its own -->
+                                <MenuItem.Icon>
+                                  <Panel>
+                                    <Path Classes="menuicon" Data="{StaticResource IconSettings}" />
+                                    <Ellipse Width="5" Height="5" Fill="{DynamicResource AccentStatusBrush}" IsVisible="{Binding HasOverrides}"
+                                             HorizontalAlignment="Right" VerticalAlignment="Top" ToolTip.Tip="This tab has its own settings" />
+                                  </Panel>
+                                </MenuItem.Icon>
+                              </MenuItem>
+                              <Separator />
+                              <MenuItem Classes="menusection" Header="View" IsEnabled="False" />
+                              <!-- Tabs side by side (DESIGN.md §18, "Split panes") -->
+                              <MenuItem Header="Open beside" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenBesideCommand}" CommandParameter="{Binding}"
+                                        IsVisible="{Binding !IsShown}" ToolTip.Tip="Shows this tab beside the one you're in, each with its own conversation and message box">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconSidebar}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <MenuItem Header="Close pane" Command="{Binding ClosePaneCommand}" IsVisible="{Binding IsInSplit}"
+                                        ToolTip.Tip="Takes this tab off the screen; it stays open in the sidebar" />
                               <!-- Folding each chain of steps in this tab, or Settings → Conversation's default (DESIGN.md §18, "Conversation cards") -->
                               <MenuItem Header="Steps">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconToolTodo}" /></MenuItem.Icon>
                                 <MenuItem Header="{Binding StepsDefaultText}" ToggleType="Radio" IsChecked="{Binding StepsByDefault, Mode=OneWay}" Command="{Binding UseDefaultStepsCommand}"
                                           ToolTip.Tip="Fold the steps as Settings → Conversation → Fold each chain of steps says" />
                                 <MenuItem Header="Folded" ToggleType="Radio" IsChecked="{Binding StepsFolded, Mode=OneWay}" Command="{Binding FoldStepsCommand}"
@@ -1120,21 +1243,15 @@
                                 <MenuItem Header="All" ToggleType="Radio" IsChecked="{Binding StepsAll, Mode=OneWay}" Command="{Binding ShowAllStepsCommand}"
                                           ToolTip.Tip="Show every step in this tab" />
                               </MenuItem>
-                              <MenuItem Header="Tab settings…" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenTabSettingsCommand}" CommandParameter="{Binding}">
-                                  <MenuItem.Icon>
-                                    <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentStatusBrush}" IsVisible="{Binding HasOverrides}"
-                                             ToolTip.Tip="This tab has its own settings" />
-                                  </MenuItem.Icon>
-                                </MenuItem>
-                              <MenuItem Header="Duplicate tab" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).DuplicateTabCommand}" CommandParameter="{Binding}"
-                                        ToolTip.Tip="A new tab that carries this session on as a copy" />
-                              <!-- Tabs side by side (DESIGN.md §18, "Split panes") -->
-                              <MenuItem Header="Open beside" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).OpenBesideCommand}" CommandParameter="{Binding}"
-                                        IsVisible="{Binding !IsShown}" ToolTip.Tip="Shows this tab beside the one you're in, each with its own conversation and message box" />
-                              <MenuItem Header="Close pane" Command="{Binding ClosePaneCommand}" IsVisible="{Binding IsInSplit}"
-                                        ToolTip.Tip="Takes this tab off the screen; it stays open in the sidebar" />
+                              <!-- The rail lists only sub-threads under a tab (DESIGN.md §4, "Sidebar") -->
+                              <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding ToggleRowsCollapsedCommand}" IsVisible="{Binding HasSubThreads}" ToolTip.Tip="{Binding CollapseTip}">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCollapseAll}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <Separator />
+                              <MenuItem Classes="menusection" Header="Session" IsEnabled="False" />
                               <!-- Threads (DESIGN.md §18): a tab whose Claude hands work to others in its group -->
                               <MenuItem Header="Thread">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconThread}" /></MenuItem.Icon>
                                 <MenuItem Header="Make this tab a thread" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).MakeThreadCommand}" CommandParameter="{Binding}" IsVisible="{Binding CanMakeThread}"
                                           ToolTip.Tip="Its Claude can hand work to other tabs in this folder, its sub-threads, and gets their results back" />
                                 <MenuItem Header="New sub-thread" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).NewSubThreadCommand}" CommandParameter="{Binding}" IsVisible="{Binding IsThread}" />
@@ -1149,18 +1266,50 @@
                                 <MenuItem Header="Stop being a thread" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).StopBeingThreadCommand}" CommandParameter="{Binding}" IsVisible="{Binding IsThread}"
                                           ToolTip.Tip="Its sub-threads carry on as ordinary tabs" />
                               </MenuItem>
-
-                              <MenuItem Header="Export conversation…" Command="{Binding ExportConversationCommand}"
-                                        ToolTip.Tip="Save the conversation as a Markdown file or a web page" />
-                              <MenuItem Header="Copy session ID" Command="{Binding CopySessionIdCommand}" IsVisible="{Binding HasSessionId}"
-                                        ToolTip.Tip="What claude --resume takes" />
+                              <!-- The account the tab runs under; moving it carries the conversation on (DESIGN.md §4, "Accounts") -->
+                              <MenuItem Header="Account" ItemsSource="{Binding AccountMenu}" IsVisible="{Binding HasAccountMenu}"
+                                        ItemContainerTheme="{StaticResource AccountMenuItemTheme}" ItemTemplate="{StaticResource AccountMenuItemTemplate}">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCardYou}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <!-- Whether the tab carries on with usage credits once a limit is used up (DESIGN.md §6, "Tabs that don't use usage credits") -->
+                              <MenuItem Header="Use usage credits" ToggleType="CheckBox" IsChecked="{Binding UsesUsageCredits, Mode=OneWay}"
+                                        Command="{Binding ToggleUseUsageCreditsCommand}" IsVisible="{Binding HasUsageCreditsMenu}"
+                                        ToolTip.Tip="{x:Static vm:TabViewModel.UsageCreditsMenuTip}">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCardStats}" /></MenuItem.Icon>
+                              </MenuItem>
                               <!-- Started without the folder's own configuration (DESIGN.md §7, "Folder trust") -->
                               <MenuItem Header="Trust this folder" Command="{Binding TrustFolderCommand}" IsVisible="{Binding IsWithoutFolderSettings}"
-                                        ToolTip.Tip="Start Claude Code again with this folder's own settings, MCP servers and CLAUDE.md" />
-                              <!-- The rail lists only sub-threads under a tab (DESIGN.md §4, "Sidebar") -->
-                              <MenuItem Header="{Binding CollapseMenuText}" Command="{Binding ToggleRowsCollapsedCommand}" IsVisible="{Binding HasSubThreads}" ToolTip.Tip="{Binding CollapseTip}" />
+                                        ToolTip.Tip="Start Claude Code again with this folder's own settings, MCP servers and CLAUDE.md">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCardPermission}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <MenuItem Header="Export conversation…" Command="{Binding ExportConversationCommand}"
+                                        ToolTip.Tip="Save the conversation as a Markdown file or a web page">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconToolWrite}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <MenuItem Header="Copy session ID" Command="{Binding CopySessionIdCommand}" IsVisible="{Binding HasSessionId}"
+                                        ToolTip.Tip="What claude --resume takes">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconCopy}" /></MenuItem.Icon>
+                              </MenuItem>
                               <Separator />
-                              <MenuItem Header="Close" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseTabCommand}" CommandParameter="{Binding}" />
+                              <MenuItem Classes="menusection" Header="Other devices" IsEnabled="False" />
+                              <!-- The item ticks itself as it's clicked, then runs the command, so the binding stays one-way -->
+                              <MenuItem Header="Sync to other machines" ToggleType="CheckBox" IsChecked="{Binding SyncToLibrary, Mode=OneWay}"
+                                        Command="{Binding ToggleSyncToLibraryCommand}">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconSync}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <!-- Copies to the library now, rather than after the next turn (DESIGN.md §9); disabled while Claude writes -->
+                              <MenuItem Header="Sync now" Command="{Binding SyncNowCommand}" IsVisible="{Binding SyncToLibrary}"
+                                        ToolTip.Tip="{Binding SyncNowTip}" ToolTip.ShowOnDisabled="True" />
+                              <!-- Remote Control (DESIGN.md §18): disabled, with the reason as its tip, when the account can't use it -->
+                              <MenuItem Header="Connect to the Claude app" ToggleType="CheckBox" IsChecked="{Binding RemoteControl.IsOn, Mode=OneWay}"
+                                        Command="{Binding RemoteControl.ToggleCommand}" ToolTip.Tip="{Binding RemoteControl.ToggleTip}" ToolTip.ShowOnDisabled="True">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconPhone}" /></MenuItem.Icon>
+                              </MenuItem>
+                              <MenuItem Header="Open in the Claude app" Command="{Binding RemoteControl.OpenInClaudeAppCommand}" IsVisible="{Binding RemoteControl.HasUrl}" />
+                              <Separator />
+                              <MenuItem Header="Close" Command="{Binding $parent[UserControl].((vm:ShellViewModel)DataContext).CloseTabCommand}" CommandParameter="{Binding}">
+                                <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconClose}" /></MenuItem.Icon>
+                              </MenuItem>
                             </ContextMenu>
                           </Button.ContextMenu>
                         </Button>

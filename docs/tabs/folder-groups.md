@@ -58,20 +58,37 @@ Dragging a group by its label moves it among the pinned groups, or among the oth
 
 ## The group's menu
 
-Right-click a group's label, in the full sidebar or the rail:
+Right-click a group's label, in the full sidebar or the rail. The menu's items are in sections under small titles, as in the header's **≡** menu, with an icon before each; **Change color…**'s is the group's color. The rail's menu has no **Pin to the top**.
+
+**Tabs**
 
 | Item | What it does |
 |---|---|
 | **New tab here** | Opens a tab in the group's folder. |
 | **New tab in a worktree** | For a folder in a git repository: opens a tab that works in a worktree of its own. See [Worktree tabs](worktree-tabs.md). |
-| **History for this folder** | Opens [History](../history/history.md) listing only this folder's sessions. |
+
+**Folder**
+
+| Item | What it does |
+|---|---|
 | **Open project files** | Opens the folder's Files tab. See [The Project files button](#the-project-files-button). |
+| **History for this folder** | Opens [History](../history/history.md) listing only this folder's sessions. |
+
+**Group**
+
+| Item | What it does |
+|---|---|
 | **Collapse group** or **Expand group** | Collapses the group to its label, or expands it. |
 | **Pin to the top** or **Unpin from the top** | Pins the group to the top of the sidebar, or lets it go. See [Pinning a group](#pinning-a-group). |
 | **Rename…** | Names the group. See above. |
 | **Reset name** | Goes back to the folder's name. Shown while the group has a name. |
 | **Change color…** | Picks the group's color. See above. |
 | **Account ▸** | Picks the account the group's new tabs use. Shown once there's an account besides Default. See [A folder's account](../accounts/a-folders-account.md). |
+
+Then, under a line:
+
+| Item | What it does |
+|---|---|
 | **Close group** | Closes the group's tabs, except pinned ones. Not shown while the group is one of Claude Code's projects with nothing open in it. |
 
 **Close group** doesn't touch pinned tabs. See [Closing and restoring](closing-and-restoring.md).

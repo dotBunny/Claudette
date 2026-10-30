@@ -24,6 +24,19 @@
       <Setter Property="Background" Value="{DynamicResource MeterTrackBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource MeterBrush}" />
     </Style>
+    <!-- The compact header's thin bars (DESIGN.md §6, "Compact header") -->
+    <Style Selector="ProgressBar.meter.compact">
+      <Setter Property="Height" Value="4" />
+      <Setter Property="MinHeight" Value="4" />
+      <Setter Property="CornerRadius" Value="2" />
+    </Style>
+    <!-- Its names: the session's bold in the text's color, as the full header's Session, and the weekly limits' muted -->
+    <Style Selector="ContentControl#CompactSession TextBlock.shortname">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="ItemsControl#CompactWeekly TextBlock.shortname">
+      <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
+    </Style>
     <Style Selector="ProgressBar.meter.warning">
       <Setter Property="Foreground" Value="{DynamicResource MeterWarningBrush}" />
     </Style>
@@ -39,6 +52,13 @@
     </Style>
     <Style Selector=":is(Button).header:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    </Style>
+    <!-- The meters' two lines fill the header's height; the compact header's one line has the other buttons' room -->
+    <Style Selector="Button#UsageMeters">
+      <Setter Property="Padding" Value="8,2" />
+    </Style>
+    <Style Selector="Button#UsageMeters.compact">
+      <Setter Property="Padding" Value="8,4" />
     </Style>
     <!-- The header's cup (DESIGN.md §9, "Keeping the computer awake"): a switch that stays flat when it's on. The cup
          takes the accent while the setting is on, and steams while the computer is kept awake. -->
@@ -128,54 +148,38 @@
     <Style Selector="Window:not(.merged) Button#SettingsButton">
       <Setter Property="Margin" Value="0,0,-5,0" />
     </Style>
-    <!-- The menu's own look (DESIGN.md §3): small muted titles over its sections, an icon before each entry, and lines
-         between the sections from edge to edge -->
-    <Style Selector="MenuFlyoutPresenter.mainmenu">
-      <Setter Property="Padding" Value="0,4" />
-      <Setter Property="MinWidth" Value="220" />
-    </Style>
-    <Style Selector="MenuFlyoutPresenter.mainmenu Separator">
-      <Setter Property="Margin" Value="0,4" />
-    </Style>
-    <Style Selector="MenuItem.menusection">
-      <Setter Property="FontSize" Value="11" />
-      <Setter Property="MinHeight" Value="0" />
-      <Setter Property="Padding" Value="12,4,12,2" />
-      <Setter Property="Focusable" Value="False" />
-      <Setter Property="IsHitTestVisible" Value="False" />
-    </Style>
-    <Style Selector="MenuItem.menusection /template/ ContentPresenter#PART_HeaderPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
-    </Style>
-    <Style Selector="MenuItem.menusection:disabled /template/ ContentPresenter#PART_HeaderPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
-    </Style>
-    <Style Selector="Path.menuicon">
-      <Setter Property="Stroke" Value="{DynamicResource MutedTextBrush}" />
-      <Setter Property="StrokeThickness" Value="1.3" />
-      <Setter Property="StrokeLineCap" Value="Round" />
-      <Setter Property="StrokeJoin" Value="Round" />
-      <Setter Property="Stretch" Value="Uniform" />
-      <Setter Property="MaxWidth" Value="14" />
-      <Setter Property="MaxHeight" Value="14" />
-      <Setter Property="HorizontalAlignment" Value="Center" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
     <!-- The header as the window's title bar (DESIGN.md §3, "Window frame"): its gaps drag the window, so each of its
          controls says it takes its own clicks, and the meters and totals their hover, for their tips -->
     <Style Selector="Border#Header :is(Button), Border#Header TextBlock#ProcessTotals">
       <Setter Property="(chrome:WindowDecorationProperties.ElementRole)" Value="User" />
     </Style>
   </Window.Styles>
+  <Window.Resources>
+    <!-- A meter in the compact header (DESIGN.md §6, "Compact header"): its short name, a thin bar and its percent -->
+    <DataTemplate x:Key="CompactMeter" DataType="vm:MeterViewModel">
+      <StackPanel Orientation="Horizontal" Spacing="5" ToolTip.Tip="{Binding Tooltip}">
+        <TextBlock Classes="small shortname" Text="{Binding ShortLabel}" AutomationProperties.Name="{Binding Label}" VerticalAlignment="Center" />
+        <ProgressBar Classes="meter compact" Width="36" Value="{Binding Percent}"
+                     Classes.warning="{Binding IsWarning}" Classes.critical="{Binding IsCritical}" VerticalAlignment="Center" />
+        <TextBlock Classes="small" Text="{Binding PercentText}" FontWeight="SemiBold" VerticalAlignment="Center"
+                   Classes.warning="{Binding IsWarning}" Classes.error="{Binding IsCritical}" />
+      </StackPanel>
+    </DataTemplate>
+  </Window.Resources>
 
   <!-- Settings → Appearance → Zoom and Ctrl/Cmd +, −, 0 scale everything inside (DESIGN.md §3, "Accessibility") -->
   <LayoutTransformControl x:Name="Zoomed">
     <Grid>
       <DockPanel>
         <!-- Header: usage meters (DESIGN.md §6) and the account; the window's title bar, unless the system's is used
-             (DESIGN.md §3, "Window frame"), when MainWindow.axaml.cs keeps it clear of the window's buttons -->
-        <Border x:Name="Header" DockPanel.Dock="Top" Padding="10,6">
-          <Grid x:Name="HeaderGrid" ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+             (DESIGN.md §3, "Window frame"), when MainWindow.axaml.cs keeps it clear of the window's buttons. Its padding
+             is thin for the meters' two lines, and its first row as tall as they are, so it's as tall without them. -->
+        <Border x:Name="Header" DockPanel.Dock="Top" Padding="10,3">
+          <Grid x:Name="HeaderGrid" ColumnDefinitions="Auto,*,Auto">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" MinHeight="36" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <!-- Claudette's logo, as the title bar's, then the menu (DESIGN.md §3): the user guide first, then the rest of Help -->
             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,8,0">
               <!-- The window's icon on Windows, with room around it as a title bar's icon has (MainWindow.axaml.cs) -->
@@ -189,7 +193,8 @@
                 <Path Data="{StaticResource IconMenu}" Stroke="{DynamicResource MutedTextBrush}" StrokeThickness="1.4" StrokeLineCap="Round" Stretch="Uniform"
                       MaxWidth="13" MaxHeight="13" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 <Button.Flyout>
-                  <MenuFlyout Placement="BottomEdgeAlignedLeft" FlyoutPresenterClasses="mainmenu">
+                  <!-- In sections, as Themes/MenuStyles.axaml draws them -->
+                  <MenuFlyout Placement="BottomEdgeAlignedLeft" FlyoutPresenterClasses="sectioned">
                     <MenuItem Classes="menusection" Header="Help" IsEnabled="False" />
                     <MenuItem Header="User Guide" Command="{Binding Shell.OpenGuideCommand, FallbackValue={x:Null}}">
                       <MenuItem.Icon><Path Classes="menuicon" Data="{StaticResource IconGuide}" /></MenuItem.Icon>
@@ -238,67 +243,79 @@
               </StackPanel>
             </Button>
 
-            <!-- Click anywhere on the meters for the Usage panel -->
-            <Button Grid.Column="1" Classes="header" HorizontalAlignment="Left" IsVisible="{Binding HasUsage}" Command="{Binding Usage.OpenPanelCommand}"
-                    ToolTip.Tip="Click for usage details" AutomationProperties.Name="Usage details">
-              <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="14">
-                <!-- Session, the most prominent -->
-                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8" ToolTip.Tip="{Binding Usage.Session.Tooltip}">
-                  <TextBlock Text="Session" FontWeight="SemiBold" VerticalAlignment="Center" />
-                  <ProgressBar Classes="meter" Width="160" Value="{Binding Usage.Session.Percent}"
-                               Classes.warning="{Binding Usage.Session.IsWarning}" Classes.critical="{Binding Usage.Session.IsCritical}" VerticalAlignment="Center" />
-                  <TextBlock Text="{Binding Usage.Session.PercentText}" FontWeight="SemiBold" VerticalAlignment="Center"
-                             Classes.warning="{Binding Usage.Session.IsWarning}" Classes.error="{Binding Usage.Session.IsCritical}" />
-                  <TextBlock Classes="muted small" Text="{Binding Usage.Session.ResetText}" VerticalAlignment="Center" />
-                </StackPanel>
-                <!-- The sparkline, as tall as the meter and the projection line together -->
-                <controls:UsageChart Name="Sparkline" Grid.RowSpan="2" Grid.Column="1" Width="120"
-                                     Points="{Binding Usage.SessionPoints}" Projection="{Binding Usage.SessionProjection}"
-                                     RangeStart="{Binding Usage.WindowStart}" RangeEnd="{Binding Usage.WindowEnd}"
-                                     WarnLevel="{Binding Usage.WarnPercent}" CriticalLevel="{Binding Usage.CriticalPercent}"
-                                     LineBrush="{DynamicResource MeterBrush}" ProjectionBrush="{DynamicResource MutedTextBrush}"
-                                     WarnBrush="{DynamicResource MeterWarningBrush}" CriticalBrush="{DynamicResource MeterCriticalBrush}" />
+            <!-- The meters, then the chevron that draws the header taller with charts. Where the window is too narrow for
+                 the meters, they give way and are cut off, so the chevron stays beside them. -->
+            <Grid Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="2" HorizontalAlignment="Left" IsVisible="{Binding HasUsage}">
+              <!-- Click anywhere on the meters for the Usage panel -->
+              <Button Name="UsageMeters" Classes="header" Classes.compact="{Binding Usage.IsCompact, FallbackValue=False}" VerticalAlignment="Center" ClipToBounds="True"
+                      Command="{Binding Usage.OpenPanelCommand}" ToolTip.Tip="Click for usage details" AutomationProperties.Name="Usage details">
+                <Panel>
+                  <Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="14" IsVisible="{Binding !Usage.IsCompact, FallbackValue=True}">
+                    <!-- Session, the most prominent -->
+                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8" ToolTip.Tip="{Binding Usage.Session.Tooltip}">
+                      <TextBlock Text="Session" FontWeight="SemiBold" VerticalAlignment="Center" />
+                      <ProgressBar Classes="meter" Width="160" Value="{Binding Usage.Session.Percent}"
+                                   Classes.warning="{Binding Usage.Session.IsWarning}" Classes.critical="{Binding Usage.Session.IsCritical}" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding Usage.Session.PercentText}" FontWeight="SemiBold" VerticalAlignment="Center"
+                                 Classes.warning="{Binding Usage.Session.IsWarning}" Classes.error="{Binding Usage.Session.IsCritical}" />
+                      <TextBlock Classes="muted small" Text="{Binding Usage.Session.ResetText}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <!-- The sparkline, as tall as the meter and the projection line together -->
+                    <controls:UsageChart Name="Sparkline" Grid.RowSpan="2" Grid.Column="1" Width="120"
+                                         Points="{Binding Usage.SessionPoints}" Projection="{Binding Usage.SessionProjection}"
+                                         RangeStart="{Binding Usage.WindowStart}" RangeEnd="{Binding Usage.WindowEnd}"
+                                         WarnLevel="{Binding Usage.WarnPercent}" CriticalLevel="{Binding Usage.CriticalPercent}"
+                                         LineBrush="{DynamicResource MeterBrush}" ProjectionBrush="{DynamicResource MutedTextBrush}"
+                                         WarnBrush="{DynamicResource MeterWarningBrush}" CriticalBrush="{DynamicResource MeterCriticalBrush}" />
 
-                <!-- Weekly limits, smaller: stacked, the limit across all models on top -->
-                <ItemsControl Name="WeeklyMeters" Grid.RowSpan="2" Grid.Column="2" ItemsSource="{Binding Usage.Weekly}" VerticalAlignment="Center"
-                              Grid.IsSharedSizeScope="True">
-                  <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                      <StackPanel Spacing="2" />
-                    </ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="vm:MeterViewModel">
-                      <!-- The labels share a width, right-aligned, so stacked meters' bars line up -->
-                      <Grid ColumnSpacing="6" HorizontalAlignment="Left" ToolTip.Tip="{Binding Tooltip}">
-                        <Grid.ColumnDefinitions>
-                          <ColumnDefinition Width="Auto" SharedSizeGroup="WeeklyLabel" />
-                          <ColumnDefinition Width="Auto" />
-                          <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Classes="muted small" Text="{Binding Label}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                        <ProgressBar Grid.Column="1" Classes="meter" Width="60" Value="{Binding Percent}"
-                                     Classes.warning="{Binding IsWarning}" Classes.critical="{Binding IsCritical}" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="2" Classes="small" Text="{Binding PercentText}" VerticalAlignment="Center"
-                                   Classes.warning="{Binding IsWarning}" Classes.error="{Binding IsCritical}" />
-                      </Grid>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                    <!-- Weekly limits, smaller: stacked, the limit across all models on top -->
+                    <ItemsControl Name="WeeklyMeters" Grid.RowSpan="2" Grid.Column="2" ItemsSource="{Binding Usage.Weekly}" VerticalAlignment="Center"
+                                  Grid.IsSharedSizeScope="True">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Spacing="2" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:MeterViewModel">
+                          <!-- The labels share a width, right-aligned, so stacked meters' bars line up -->
+                          <Grid ColumnSpacing="6" HorizontalAlignment="Left" ToolTip.Tip="{Binding Tooltip}">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="Auto" SharedSizeGroup="WeeklyLabel" />
+                              <ColumnDefinition Width="Auto" />
+                              <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Classes="muted small" Text="{Binding Label}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <ProgressBar Grid.Column="1" Classes="meter" Width="60" Value="{Binding Percent}"
+                                         Classes.warning="{Binding IsWarning}" Classes.critical="{Binding IsCritical}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Classes="small" Text="{Binding PercentText}" VerticalAlignment="Center"
+                                       Classes.warning="{Binding IsWarning}" Classes.error="{Binding IsCritical}" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-                <!-- The plain-language projection, under the session meter -->
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,2,0,0">
-                  <TextBlock Classes="small muted" Classes.warning="{Binding Usage.IsProjectionWarning}" Text="{Binding Usage.ProjectionText}" />
-                  <TextBlock Classes="small muted" Text="{Binding Usage.AsOfText}" IsVisible="{Binding Usage.AsOfText, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                </StackPanel>
-              </Grid>
-            </Button>
-
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-              <TextBlock Classes="muted small" Text="{Binding UsageNote}" VerticalAlignment="Center"
-                         IsVisible="{Binding UsageNote, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    <!-- The plain-language projection, under the session meter -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10">
+                      <TextBlock Classes="small muted" Classes.warning="{Binding Usage.IsProjectionWarning}" Text="{Binding Usage.ProjectionText}" />
+                      <TextBlock Classes="small muted" Text="{Binding Usage.AsOfText}" IsVisible="{Binding Usage.AsOfText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                    </StackPanel>
+                  </Grid>
+                  <!-- Settings → Usage → Compact usage header (DESIGN.md §6, "Compact header"): the meters on one line -->
+                  <StackPanel Name="CompactMeters" Orientation="Horizontal" Spacing="12" IsVisible="{Binding Usage.IsCompact, FallbackValue=False}">
+                    <ContentControl Name="CompactSession" Content="{Binding Usage.Session}" ContentTemplate="{StaticResource CompactMeter}" />
+                    <ItemsControl Name="CompactWeekly" ItemsSource="{Binding Usage.Weekly}" ItemTemplate="{StaticResource CompactMeter}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <StackPanel Orientation="Horizontal" Spacing="12" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                  </StackPanel>
+                </Panel>
+              </Button>
               <!-- Draws the header taller with charts, and back (DESIGN.md §6, "Detailed header") -->
-              <Button Name="UsageDetailsToggle" Classes="flat" Padding="8" VerticalAlignment="Center" IsVisible="{Binding HasUsage}"
+              <Button Name="UsageDetailsToggle" Grid.Column="1" Classes="flat" Padding="8" VerticalAlignment="Center"
                       Command="{Binding Usage.ToggleDetailsCommand, FallbackValue={x:Null}}"
                       ToolTip.Tip="{Binding Usage.DetailsToggleText, FallbackValue=''}" AutomationProperties.Name="{Binding Usage.DetailsToggleText, FallbackValue=''}">
                 <Panel Width="12" Height="12">
@@ -308,6 +325,11 @@
                         Width="11" Height="6" IsVisible="{Binding Usage.IsDetailed, FallbackValue=False}" />
                 </Panel>
               </Button>
+            </Grid>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <TextBlock Classes="muted small" Text="{Binding UsageNote}" VerticalAlignment="Center"
+                         IsVisible="{Binding UsageNote, Converter={x:Static ObjectConverters.IsNotNull}}" />
               <!-- Every tab's processes together, Claude Code included, while the process monitor is on (DESIGN.md §4,
                    "Process monitor"): each tab's part in the tooltip -->
               <TextBlock Name="ProcessTotals" Classes="muted small" VerticalAlignment="Center" Margin="0,0,4,0"

@@ -23,6 +23,9 @@ public sealed partial class UsagePage : SettingsPage
         ]);
         Section("header", "The usage header",
         [
+            Setting("usage.compactHeader", "Compact usage header", s => s.Usage.CompactHeader, (s, v) => s.Usage.CompactHeader = v,
+                "Each limit on one line: its first letter, a small bar and its percent, such as S 61%.",
+                "Hover over a meter for its name and when it resets.", ["one line", "short", "small", "chip"]),
             Setting("usage.showModelMeters", "Show model-specific weekly limits", s => s.Usage.ShowModelMeters, (s, v) => s.Usage.ShowModelMeters = v,
                 "A meter for each model with a weekly limit of its own.", keywords: ["opus", "fable", "weekly"]),
             Setting("usage.useUsageCommandFallback", "If Claude Code stops reporting them, read them from /usage", s => s.Usage.UseUsageCommandFallback,
@@ -30,7 +33,7 @@ public sealed partial class UsagePage : SettingsPage
                 "Free, but can break when Claude Code changes its wording.", keywords: ["model limits", "fallback"]),
             Setting("state.detailedUsageHeader", "Detailed usage header", () => !Services.State.DetailedUsageHeader, () => Services.State.DetailedUsageHeader = false,
                 "Taller, with charts of the session and the week, the burn rate and the busiest tabs.",
-                "The chevron at the header's right does the same.", ["charts", "sparkline"]),
+                "The chevron after the meters does the same.", ["charts", "sparkline"]),
         ]);
         Section("history", "History",
         [
@@ -91,6 +94,13 @@ public sealed partial class UsagePage : SettingsPage
     {
         get => Settings.Usage.BurnRateWindowMinutes;
         set => Set(value, v => Settings.Usage.BurnRateWindowMinutes = Math.Clamp((int)(v ?? 30), 5, 300));
+    }
+
+    /// <summary>DESIGN.md §6, "Compact header".</summary>
+    public bool CompactHeader
+    {
+        get => Settings.Usage.CompactHeader;
+        set => Set(value, v => Settings.Usage.CompactHeader = v);
     }
 
     public bool ShowModelMeters

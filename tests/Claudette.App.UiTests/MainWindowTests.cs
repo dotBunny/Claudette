@@ -375,6 +375,8 @@ public class MainWindowTests
         var (weekly, fable) = (meters.GetVisualDescendants().OfType<ProgressBar>().First(), meters.GetVisualDescendants().OfType<ProgressBar>().Last());
         var sparkline = window.GetVisualDescendants().OfType<UsageChart>().Single(c => c.Name == "Sparkline");
         var header = sparkline.FindAncestorOfType<Grid>()!;
+        var session = header.Children.OfType<StackPanel>().Single(s => Grid.GetRow(s) == 0);
+        var projection = header.Children.OfType<StackPanel>().Single(s => Grid.GetRow(s) == 1);
         Point At(Control c) => c.TranslatePoint(default, window)!.Value;
 
         Assert.Equal(["Weekly", "Fable"], usage.Weekly.Select(m => m.Label));
@@ -382,10 +384,68 @@ public class MainWindowTests
         Assert.True(At(fable).Y > At(weekly).Y + weekly.Bounds.Height, "Fable's meter should be under the weekly one");
         Assert.Equal(At(header).Y, At(sparkline).Y);
         Assert.Equal(header.Bounds.Height, sparkline.Bounds.Height);
-        Assert.True(sparkline.Bounds.Height > 30, $"The sparkline is {sparkline.Bounds.Height} px high.");
+        Assert.True(sparkline.Bounds.Height >= session.Bounds.Height + projection.Bounds.Height,
+            $"The sparkline is {sparkline.Bounds.Height} px high, the session meter {session.Bounds.Height} and the line under it {projection.Bounds.Height}.");
         var right = meters.GetVisualDescendants().OfType<TextBlock>().Max(t => t.TranslatePoint(new Point(t.Bounds.Width, 0), window)!.Value.X);
         var chevron = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageDetailsToggle");
         Assert.True(right <= At(chevron).X, $"The meters end at {right}, past the chevron at {At(chevron).X}");
+    }
+
+    /// <summary>
+    /// Settings → Usage → Compact usage header puts the meters on one line, each its short name, a thin bar and its
+    /// percent, with the chevron straight after them, at the left (DESIGN.md §6, "Compact header").
+    /// </summary>
+    [AvaloniaFact]
+    public async Task The_compact_header_puts_the_meters_on_one_line_with_the_chevron_after_them()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        h.Services.Settings.Usage.CompactHeader = true;
+        var store = new UsageStore(Path.Combine(h.Root, "usage.db"), h.Time);
+        var reset = h.Time.GetUtcNow().AddHours(2);
+        Assert.True(store.AddSample(new UsageSnapshot(
+            [
+                new LimitReading(LimitKind.Session, "Session", 62, reset, null, true),
+                new LimitReading(LimitKind.WeeklyAll, "Weekly", 92, reset.AddDays(3), null, true),
+                new LimitReading(LimitKind.WeeklyModel, "Fable", 100, reset.AddDays(3), null, true),
+            ],
+            h.Time.GetUtcNow(),
+            UsageSource.GetUsage)));
+        await using var tracker = new UsageTracker(h.Services, store);
+        using var usage = new UsageViewModel(h.Services, tracker);
+        await TabTestHarness.Eventually(() => usage.Weekly.Count == 2, "the weekly meters");
+        var main = new MainWindowViewModel(h.Services) { CurrentPage = h.Shell, Usage = usage };
+        var window = new MainWindow { DataContext = main, Width = 1200, Height = 800 };
+        window.Show();
+        UiText.Settle(window);
+        var compact = window.GetVisualDescendants().OfType<StackPanel>().Single(p => p.Name == "CompactMeters");
+        var sparkline = window.GetVisualDescendants().OfType<UsageChart>().Single(c => c.Name == "Sparkline");
+        var meters = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageMeters");
+        var chevron = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageDetailsToggle");
+        var cup = window.GetVisualDescendants().OfType<ToggleButton>().Single(b => b.Name == "KeepAwakeToggle");
+        Point At(Control c) => c.TranslatePoint(default, window)!.Value;
+
+        Assert.True(compact.IsEffectivelyVisible);
+        Assert.False(sparkline.IsEffectivelyVisible);
+        Assert.Equal(["S", "62%", "W", "92%", "F", "100%"], compact.GetVisualDescendants().OfType<TextBlock>().Where(t => t.IsEffectivelyVisible).Select(t => t.Text));
+        // The session's name is bold in the text's color, as the full header's Session; the others are muted.
+        var names = compact.GetVisualDescendants().OfType<TextBlock>().Where(t => t.Classes.Contains("shortname")).ToList();
+        Assert.Equal([Avalonia.Media.FontWeight.SemiBold, Avalonia.Media.FontWeight.Normal, Avalonia.Media.FontWeight.Normal], names.Select(t => t.FontWeight));
+        Assert.NotEqual(names[1].Foreground, names[0].Foreground);
+        Assert.Equal(names[1].Foreground, names[2].Foreground);
+        var bars = compact.GetVisualDescendants().OfType<ProgressBar>().ToList();
+        Assert.Equal(3, bars.Count);
+        Assert.Single(bars.Select(b => At(b).Y).Distinct());
+        var gap = At(chevron).X - (At(meters).X + meters.Bounds.Width);
+        Assert.InRange(gap, 0, 4);
+        Assert.True(At(chevron).X + chevron.Bounds.Width < At(cup).X, "The chevron should be at the left, before the header's buttons");
+
+        // Turned off, the full meters are back, with the chevron still after them.
+        h.Services.Settings.Usage.CompactHeader = false;
+        h.Services.SaveSettings();
+        UiText.Settle(window);
+        Assert.False(compact.IsEffectivelyVisible);
+        Assert.True(sparkline.IsEffectivelyVisible);
+        Assert.InRange(At(chevron).X - (At(meters).X + meters.Bounds.Width), 0, 4);
     }
 
     [AvaloniaFact]

@@ -173,6 +173,12 @@ public sealed class UsageSettings
     /// <summary>The burn rate is measured over this many recent minutes.</summary>
     public int BurnRateWindowMinutes { get; set; } = 30;
 
+    /// <summary>
+    /// The header's meters on one line, each a short name, a thin bar and the percent (DESIGN.md §6, "Compact header").
+    /// Off by default.
+    /// </summary>
+    public bool CompactHeader { get; set; }
+
     /// <summary>Show model-specific weekly limits (for example Fable).</summary>
     public bool ShowModelMeters { get; set; } = true;
 
