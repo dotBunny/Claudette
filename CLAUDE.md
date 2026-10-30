@@ -21,6 +21,8 @@ A .NET desktop app that wraps Claude Code in a native GUI: one tab per Claude Co
 
 The backlog is the open GitHub issues on `dotBunny/Claudette` assigned to `reapazor`. The `issues` skill (`.claude/skills/issues/SKILL.md`) lists them, plans one and builds it once the user says go. A pull request that resolves one says `Fixes #N`; don't comment on the issue itself. Merging a pull request from someone outside dotBunny adds them to About's **Contributors** (`AboutPage.ContributorList`) if they aren't there yet, and keeps their commits theirs: update their branch with a merge rather than rebasing it.
 
+The `review-pr` skill (`.claude/skills/review-pr/SKILL.md`) reviews a pull request in a `review/pr-<N>` branch of its own: what it changes and what's behind an option, its pros and cons, anything malicious or unsafe (read before it's built), and its cost in performance and tokens. It fixes what it finds there for the user to try, and once they approve, the branch goes back to the contributor's, so the pull request is merged on GitHub with its author's credit.
+
 `gh` isn't installed on the development machine, though the `issues` and `ci-failures` skills mention it. Read issues, pull requests and workflow runs through GitHub's REST API instead (`curl -s https://api.github.com/repos/dotBunny/Claudette/issues/<N>`), which needs no sign-in for this public repository. A run's logs and artifacts do need one, so ask the user for them.
 
 ## Stack
