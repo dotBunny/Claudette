@@ -66,6 +66,34 @@ public class ImageOpeningTests
         viewer.Dispose();
     }
 
+    /// <summary>
+    /// <b>Copy path</b>: an image from a file copies the file's full path, with any <c>..</c> in it resolved, and says
+    /// "Copied" for a moment; an image from anything else has none to copy.
+    /// </summary>
+    [Fact]
+    public async Task Copy_path_copies_the_image_files_full_path()
+    {
+        await using var h = new TabTestHarness();
+        var path = Write(Path.Combine(h.WorkFolder, "docs", "menu.png"), TestImages.Png);
+        var image = new MessageImage("image/png", TestImages.Png);
+        using var viewer = new ImageViewerViewModel(
+            new ToolImage(image, "Read", "menu.png", "menu.png", Path.Combine(h.WorkFolder, "docs", "..", "docs", "menu.png"), null), h.Services);
+
+        Assert.True(viewer.CanCopyPath);
+        await viewer.CopyPathCommand.ExecuteAsync(null);
+
+        Assert.Equal(Path.GetFullPath(path), h.Platform.Clipboard);
+        Assert.True(viewer.IsPathCopied);
+        Assert.False(viewer.IsCopied);
+        h.Time.Advance(TabViewModel.CopiedFor);
+        Assert.False(viewer.IsPathCopied);
+
+        using var screenshot = new ImageViewerViewModel(new ToolImage(image, "mcp__playwright__browser_take_screenshot", "Image", "image.png", null, null), h.Services);
+        Assert.False(screenshot.CanCopyPath);
+        using var web = new ImageViewerViewModel(new ToolImage(image, "example.com", "menu.png", "menu.png", null, null, new Uri(Url)), h.Services);
+        Assert.False(web.CanCopyPath);
+    }
+
     [Fact]
     public async Task With_the_OS_app_chosen_an_image_file_opens_there_as_before()
     {

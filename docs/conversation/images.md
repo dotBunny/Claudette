@@ -23,6 +23,7 @@ Click an image to open it in a window of its own beside the conversation, titled
 
 Under the title are the tool, the type and size (*Read · PNG 245 KB*), and, when Claude Code shrank the image before sending it, *scaled down from 3000 × 1000 to send*, since what you see is what Claude saw.
 
+- **Copy path**, for an image from a file, puts the file's full path on the clipboard, to paste into a terminal or another app, and says *Copied* for a moment. An image that isn't from a file, such as a screenshot from a tool or a web image, doesn't have it.
 - **Copy image** puts it on the clipboard and says *Copied* for a moment.
 - **Save as…** saves it under its name, with its type's extension. Claude Code may have sent a large PNG on as a JPEG, which then saves as `.jpg`. A save that fails says why under the title.
 - **Open**, for an image file Claude read, opens the file in the app your OS uses for it. A web image has **Open in browser** instead.

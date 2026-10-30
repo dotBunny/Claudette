@@ -36,6 +36,13 @@
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
           <Button Content="{Binding PlayText}" Command="{Binding PlayPauseCommand}" IsVisible="{Binding IsAnimated}"
                   ToolTip.Tip="Play or pause the animation" />
+          <!-- For an image from a file: its full path, for a terminal or another app -->
+          <Button Command="{Binding CopyPathCommand}" IsVisible="{Binding CanCopyPath}" ToolTip.Tip="Copy the image file's full path to the clipboard">
+            <Panel>
+              <TextBlock Text="Copy path" IsVisible="{Binding !IsPathCopied}" />
+              <TextBlock Classes="muted" Text="Copied" IsVisible="{Binding IsPathCopied}" />
+            </Panel>
+          </Button>
           <Button Command="{Binding CopyCommand}" ToolTip.Tip="Copy the image to the clipboard">
             <Panel>
               <TextBlock Text="Copy image" IsVisible="{Binding !IsCopied}" />

@@ -10,7 +10,7 @@ namespace Claudette.App.ViewModels;
 /// <summary>
 /// An image full size in a window of its own (DESIGN.md §18, "Images from Claude's tools", "Opening images"): from a
 /// tool's result, a reply, or an image file or web image clicked. It has <b>Copy image</b>, <b>Save as…</b> and, for a
-/// file, <b>Open</b> (<b>Open in browser</b> for a web image). An animated GIF or WebP plays, with <b>Pause</b> and
+/// file, <b>Copy path</b> and <b>Open</b> (<b>Open in browser</b> for a web image). An animated GIF or WebP plays, with <b>Pause</b> and
 /// <b>Play</b>; with motion reduced it opens on its first frame. It opens fitting the window, and zooms in and out in
 /// steps.
 /// </summary>
@@ -18,6 +18,7 @@ public sealed partial class ImageViewerViewModel : ViewModelBase, IDisposable
 {
     private readonly AppServices _services;
     private readonly UiTimeout _copied;
+    private readonly UiTimeout _pathCopied;
     private readonly UiTimeout _nextFrame;
 
     /// <summary>How many times it has played through since <b>Play</b>.</summary>
@@ -28,6 +29,7 @@ public sealed partial class ImageViewerViewModel : ViewModelBase, IDisposable
         Image = image;
         _services = services;
         _copied = new UiTimeout(services.Time, services.Dispatcher);
+        _pathCopied = new UiTimeout(services.Time, services.Dispatcher);
         _nextFrame = new UiTimeout(services.Time, services.Dispatcher);
         Animation = ImageAnimation.From(image.Image.MediaType, image.Image.Data);
         Details = string.Join(" · ", new[]
@@ -85,6 +87,13 @@ public sealed partial class ImageViewerViewModel : ViewModelBase, IDisposable
     /// <summary><b>Copy image</b> says "Copied" for a moment.</summary>
     [ObservableProperty]
     public partial bool IsCopied { get; private set; }
+
+    /// <summary>It's from a file, whose path <b>Copy path</b> copies.</summary>
+    public bool CanCopyPath => Image.FilePath is not null;
+
+    /// <summary><b>Copy path</b> says "Copied" for a moment.</summary>
+    [ObservableProperty]
+    public partial bool IsPathCopied { get; private set; }
 
     /// <summary>Why the last save didn't work; null when it did, or before one.</summary>
     [ObservableProperty]
@@ -159,6 +168,19 @@ public sealed partial class ImageViewerViewModel : ViewModelBase, IDisposable
         await _services.Platform.SetClipboardImageAsync(data);
         IsCopied = true;
         _copied.Restart(TabViewModel.CopiedFor, () => IsCopied = false);
+    }
+
+    /// <summary><b>Copy path</b>: the file's full path, with any <c>..</c> in it resolved.</summary>
+    [RelayCommand]
+    private async Task CopyPathAsync()
+    {
+        if (Image.FilePath is not { } path)
+        {
+            return;
+        }
+        await _services.Platform.SetClipboardTextAsync(Path.IsPathFullyQualified(path) ? Path.GetFullPath(path) : path);
+        IsPathCopied = true;
+        _pathCopied.Restart(TabViewModel.CopiedFor, () => IsPathCopied = false);
     }
 
     /// <summary><b>Save as…</b>: the image as it came, so an animated one stays animated.</summary>
@@ -252,6 +274,7 @@ public sealed partial class ImageViewerViewModel : ViewModelBase, IDisposable
     public void Dispose()
     {
         _copied.Dispose();
+        _pathCopied.Dispose();
         _nextFrame.Dispose();
         Animation?.Dispose();
     }
