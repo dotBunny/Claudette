@@ -47,6 +47,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- Pointing at a tab's row no longer narrows its second line when the tab has no context ring yet: the close button takes its room from the name alone.
 - The **⋯** buttons in a Files tab, over the explorer and at the end of the file tabs' row, sit in the middle of their row rather than near its top.
 - The usage limit bar's buttons, such as **Don't continue**, sit in the middle of the bar, rather than at its top while **Play a game while you wait** shows under its text.
 - In the Claude style's dark theme, the Files tab's explorer and its row of file tabs are a shade of their own, rather than the window's frame color, so they no longer blend into the window's edge, and the tab's rounded corners show.

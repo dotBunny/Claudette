@@ -656,6 +656,26 @@ public class MainWindowTests
     }
 
     [AvaloniaFact]
+    public async Task A_rows_close_button_takes_its_room_from_the_name_and_the_second_line_holds_still()
+    {
+        // No ring, so nothing else is at the row's end. The selected row shows its close button, as a row under the pointer
+        // does: it's at the end of the first line, and the second line still runs to the same edge, so it holds still.
+        await using var h = new TabTestHarness(s => s.Appearance.ShowContextOnTabs = false, dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+
+        var row = window.GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("tabrow") && ReferenceEquals(b.DataContext, tab));
+        var close = row.GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("closetab"));
+        var secondLine = (DockPanel)row.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == tab.RowDetail).Parent!;
+        Assert.True(close.IsEffectivelyVisible);
+
+        var closeEnd = close.TranslatePoint(new Point(close.Bounds.Width, 0), row)!.Value;
+        var lineEnd = secondLine.TranslatePoint(new Point(secondLine.Bounds.Width, 0), row)!.Value;
+        Assert.Equal(closeEnd.X, lineEnd.X, 0.5);
+        Assert.True(closeEnd.Y < lineEnd.Y, "The close button is on the first line.");
+    }
+
+    [AvaloniaFact]
     public async Task Copy_on_a_code_block_copies_its_code_and_says_Copied_for_a_moment()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
