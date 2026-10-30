@@ -803,7 +803,6 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         for (var i = 0; i < Groups.Count; i++)
         {
             var group = Groups[i];
-            group.IsFirstPinned = group.IsPinned && i == 0;
             group.IsLastPinned = group.IsPinned && i == pinned - 1;
             group.HasDividerAbove = pinned > 0 && i == pinned;
         }

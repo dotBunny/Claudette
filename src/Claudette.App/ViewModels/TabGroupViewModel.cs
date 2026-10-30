@@ -212,12 +212,9 @@ public sealed partial class TabGroupViewModel : ObservableObject
     public string PinMenuText => IsPinned ? "Unpin from the top" : "Pin to the top";
 
     /// <summary>
-    /// The first of the pinned groups, which starts their band at the top of the sidebar, and the last, which ends it
-    /// (DESIGN.md §4, "Pinning a group"). Set by the shell as the groups change.
+    /// The last of the pinned groups, which ends their band at the top of the sidebar (DESIGN.md §4, "Pinning a group").
+    /// Set by the shell as the groups change.
     /// </summary>
-    [ObservableProperty]
-    public partial bool IsFirstPinned { get; set; }
-
     [ObservableProperty]
     public partial bool IsLastPinned { get; set; }
 

@@ -196,29 +196,20 @@
       <Setter Property="Padding" Value="13,7,8,7" />
       <Setter Property="CornerRadius" Value="6" />
     </Style>
-    <!-- A group in the sidebar, in a band a little wider than its rows, so a pinned group's shade reaches past them; the
-         pinned groups' band is rounded at its ends, and the first group after it has the divider over it (DESIGN.md §4,
-         "Pinning a group") -->
+    <!-- A group in the sidebar, in a band as wide as the sidebar, so the pinned groups' shade fills it from edge to edge;
+         the first group after them has the divider over it, right under the shade (DESIGN.md §4, "Pinning a group") -->
     <Style Selector="Border.groupband">
-      <Setter Property="Margin" Value="-4,0" />
-      <Setter Property="Padding" Value="4,6,4,0" />
+      <Setter Property="Margin" Value="-6,0" />
+      <Setter Property="Padding" Value="6,6,6,0" />
       <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     </Style>
     <Style Selector="Border.groupband.pinned">
       <Setter Property="Background" Value="{DynamicResource PinnedGroupsBrush}" />
     </Style>
-    <Style Selector="Border.groupband.firstpinned">
-      <Setter Property="CornerRadius" Value="6,6,0,0" />
-    </Style>
     <Style Selector="Border.groupband.lastpinned">
-      <Setter Property="CornerRadius" Value="0,0,6,6" />
-      <Setter Property="Padding" Value="4,6,4,6" />
-    </Style>
-    <Style Selector="Border.groupband.firstpinned.lastpinned">
-      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="6,6,6,8" />
     </Style>
     <Style Selector="Border.groupband.afterpinned">
-      <Setter Property="Margin" Value="-4,8,-4,0" />
       <Setter Property="BorderThickness" Value="0,1,0,0" />
     </Style>
     <!-- An account's tag on a group's label and a tab's row (DESIGN.md §4, "Accounts"): its color, softened behind the
@@ -476,8 +467,8 @@
               <DataTemplate DataType="vm:TabGroupViewModel">
                 <!-- Pinned groups are a band of their own at the top, shaded, and a divider parts the rest from them (DESIGN.md §4,
                      "Pinning a group") -->
-                <Border Classes="groupband" Classes.pinned="{Binding IsPinned}" Classes.firstpinned="{Binding IsFirstPinned}"
-                        Classes.lastpinned="{Binding IsLastPinned}" Classes.afterpinned="{Binding HasDividerAbove}">
+                <Border Classes="groupband" Classes.pinned="{Binding IsPinned}" Classes.lastpinned="{Binding IsLastPinned}"
+                        Classes.afterpinned="{Binding HasDividerAbove}">
                   <StackPanel>
                     <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                       <!-- Group label: click to collapse; right-click for group actions -->
