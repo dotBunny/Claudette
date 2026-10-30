@@ -39,7 +39,7 @@ public class SettingResetUiTests
         var window = new SettingsWindow { DataContext = settings, Width = 900, Height = 700 };
         window.Show();
         UiText.Settle(window);
-        Assert.Equal(style == AppStyle.Claude, window.Classes.Contains("claude"));
+        Assert.Equal(style == AppStyle.Claude, window.GetVisualDescendants().OfType<AppearanceScope>().First().Classes.Contains("claude"));
         var parent = Row(window, "general.keepAwake");
         var nested = Row(window, "general.keepAwakeWhen");
         Assert.True(parent.IsChanged && nested.IsChanged);
@@ -122,7 +122,7 @@ public class SettingResetUiTests
         var model = new TabSettingsViewModel(h.Services, tab, () => { });
         model.SelectedMode = model.ModeChoices[1];
         var view = new TabSettingsView { DataContext = model };
-        var window = UiText.Show(new Border { Classes = { "compact", "claude" }, Child = view });
+        var window = UiText.Show(new AppearanceScope { Classes = { "compact", "claude" }, Children = { view } });
         var row = Row(window, "tab.permissionMode");
         Assert.True(row.IsChanged);
         var layout = Layout(row);

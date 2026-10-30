@@ -98,7 +98,7 @@ public partial class ProjectFileWindow : Window
     /// <summary>The Claude style's shapes, which are styles under its class, as the main window's are, and the zoom.</summary>
     private void UseAppearance(AppearanceSettings appearance)
     {
-        Classes.Set("claude", appearance.Style == AppStyle.Claude);
+        Appearance.Classes.Set("claude", appearance.Style == AppStyle.Claude);
         UseZoom(Zoom.Clamp(appearance.Zoom));
     }
 

@@ -1,5 +1,5 @@
 <!-- A tab's styles (DESIGN.md §3, §5): the conversation, the tool windows and the composer. TabView includes them, so
-     they apply inside each tab, and the "compact" and "claude" classes on the shell change them. -->
+     they apply inside each tab, and the "compact" and "claude" classes on the shell's AppearanceScope change them. -->
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ae="using:AvaloniaEdit"
@@ -35,21 +35,21 @@
     <Setter Property="Padding" Value="8,3" />
     <Setter Property="MaxWidth" Value="280" />
   </Style>
-  <Style Selector=".claude Border.mascotbubble">
+  <Style Selector="controls|AppearanceScope.claude Border.mascotbubble">
     <Setter Property="CornerRadius" Value="12" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="BoxShadow" Value="0 1 6 0 #22000000" />
   </Style>
-  <Style Selector=".fullwidth ItemsControl.conversationlist, .fullwidth StackPanel.column, .fullwidth StackPanel.composerarea">
+  <Style Selector="controls|AppearanceScope.fullwidth ItemsControl.conversationlist, controls|AppearanceScope.fullwidth StackPanel.column, controls|AppearanceScope.fullwidth StackPanel.composerarea">
     <Setter Property="MaxWidth" Value="Infinity" />
   </Style>
 
-  <!-- Settings → Appearance → Density (DESIGN.md §14): ShellView takes the "compact" class. The top leaves room for
-       the first message's chip, which sits above it. -->
+  <!-- Settings → Appearance → Density (DESIGN.md §14): the shell's AppearanceScope takes the "compact" class. The top
+       leaves room for the first message's chip, which sits above it. -->
   <Style Selector="ItemsControl.conversationlist">
     <Setter Property="Margin" Value="24,20,24,24" />
   </Style>
-  <Style Selector=".compact ItemsControl.conversationlist">
+  <Style Selector="controls|AppearanceScope.compact ItemsControl.conversationlist">
     <Setter Property="Margin" Value="20,20,20,14" />
   </Style>
   <!-- The conversation is virtualized (DESIGN.md §5): only the items in view have controls. The panel has no spacing
@@ -57,14 +57,14 @@
   <Style Selector="ItemsControl.conversationlist > ContentPresenter">
     <Setter Property="Margin" Value="0,0,0,8" />
   </Style>
-  <Style Selector=".compact ItemsControl.conversationlist > ContentPresenter">
+  <Style Selector="controls|AppearanceScope.compact ItemsControl.conversationlist > ContentPresenter">
     <Setter Property="Margin" Value="0,0,0,3" />
   </Style>
   <!-- A subagent group's items, the same: the panel has no spacing of its own. -->
   <Style Selector="ItemsControl.subagentitems > ContentPresenter">
     <Setter Property="Margin" Value="0,0,0,6" />
   </Style>
-  <Style Selector=".compact ItemsControl.subagentitems > ContentPresenter">
+  <Style Selector="controls|AppearanceScope.compact ItemsControl.subagentitems > ContentPresenter">
     <Setter Property="Margin" Value="0,0,0,3" />
   </Style>
   <!-- A subagent's work in place of the conversation (DESIGN.md §5, "Subagents"): a header over it, like the find bar,
@@ -76,7 +76,7 @@
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="Padding" Value="16,6" />
   </Style>
-  <Style Selector=".compact Border.agentheader">
+  <Style Selector="controls|AppearanceScope.compact Border.agentheader">
     <Setter Property="Padding" Value="16,3" />
   </Style>
   <Style Selector="Border.agenttype">
@@ -85,7 +85,7 @@
     <Setter Property="CornerRadius" Value="4" />
     <Setter Property="Padding" Value="6,1" />
   </Style>
-  <Style Selector=".claude Border.agenttype">
+  <Style Selector="controls|AppearanceScope.claude Border.agenttype">
     <Setter Property="CornerRadius" Value="8" />
   </Style>
   <Style Selector="Border.agentprompt">
@@ -95,17 +95,17 @@
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Padding" Value="10,6" />
   </Style>
-  <Style Selector=".claude Border.agentprompt">
+  <Style Selector="controls|AppearanceScope.claude Border.agentprompt">
     <Setter Property="CornerRadius" Value="10" />
   </Style>
   <Style Selector="controls|Card.agentreport">
     <Setter Property="MaxWidth" Value="900" />
     <Setter Property="Margin" Value="24,0,24,24" />
   </Style>
-  <Style Selector=".compact controls|Card.agentreport">
+  <Style Selector="controls|AppearanceScope.compact controls|Card.agentreport">
     <Setter Property="Margin" Value="20,0,20,14" />
   </Style>
-  <Style Selector=".fullwidth controls|Card.agentreport">
+  <Style Selector="controls|AppearanceScope.fullwidth controls|Card.agentreport">
     <Setter Property="MaxWidth" Value="Infinity" />
   </Style>
   <Style Selector="Border.agentbar">
@@ -114,7 +114,7 @@
     <Setter Property="BorderThickness" Value="0,1,0,0" />
     <Setter Property="Padding" Value="16,10" />
   </Style>
-  <Style Selector=".compact Border.agentbar">
+  <Style Selector="controls|AppearanceScope.compact Border.agentbar">
     <Setter Property="Padding" Value="16,6" />
   </Style>
 
@@ -313,36 +313,36 @@
     <Setter Property="Opacity" Value="1" />
     <Setter Property="IsHitTestVisible" Value="True" />
   </Style>
-  <Style Selector=".compact controls|Card">
+  <Style Selector="controls|AppearanceScope.compact controls|Card">
     <Setter Property="Padding" Value="10,4,10,5" />
     <Setter Property="CornerRadius" Value="6" />
   </Style>
-  <Style Selector=".compact controls|Card /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="controls|AppearanceScope.compact controls|Card /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Margin" Value="0,3,0,0" />
   </Style>
-  <Style Selector=".compact controls|Card.inline /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="controls|AppearanceScope.compact controls|Card.inline /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Margin" Value="8,0,0,0" />
   </Style>
-  <Style Selector=".compact controls|Card.inline">
+  <Style Selector="controls|AppearanceScope.compact controls|Card.inline">
     <Setter Property="Padding" Value="10,2,10,3" />
   </Style>
   <!-- Settings → Appearance → Style → Claude (DESIGN.md §3): rounder cards, as the Claude apps' are. -->
-  <Style Selector=".claude controls|Card">
+  <Style Selector="controls|AppearanceScope.claude controls|Card">
     <Setter Property="CornerRadius" Value="14" />
     <Setter Property="Padding" Value="14,9,14,10" />
   </Style>
-  <Style Selector=".claude.compact controls|Card">
+  <Style Selector="controls|AppearanceScope.claude.compact controls|Card">
     <Setter Property="CornerRadius" Value="10" />
     <Setter Property="Padding" Value="12,5,12,6" />
   </Style>
   <!-- Settings → Conversation → Quieter in-between steps (DESIGN.md §18, "Conversation cards"): a step on the way loses
        its tint and outline, keeping its stripe, until it's pointed at or has the focus. In the Standard style its text
        is a little softer too, still at least 4.5:1; the Claude style's muted text is already as soft as it can be. -->
-  <Style Selector=".quietsteps controls|Card.quiet:not(:pointerover):not(:focus-within) /template/ Border#PART_Card">
+  <Style Selector="controls|AppearanceScope.quietsteps controls|Card.quiet:not(:pointerover):not(:focus-within) /template/ Border#PART_Card">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
   </Style>
-  <Style Selector=":not(.claude).quietsteps controls|Card.quiet:not(:pointerover):not(:focus-within) /template/ Grid#PART_Body">
+  <Style Selector="controls|AppearanceScope:not(.claude).quietsteps controls|Card.quiet:not(:pointerover):not(:focus-within) /template/ Grid#PART_Body">
     <Setter Property="Opacity" Value="0.88" />
   </Style>
 
@@ -350,16 +350,16 @@
        your messages' cards start far in from the left, and Claude's thinking, tool calls and subagents a little in, while
        its replies stay at the left edge, all ending at the column's right edge, so whose turn a card is can be told by
        its place alone. Each is a setting of its own. -->
-  <Style Selector=".indentyou controls|Card.you">
+  <Style Selector="controls|AppearanceScope.indentyou controls|Card.you">
     <Setter Property="Margin" Value="96,0,0,0" />
   </Style>
-  <Style Selector=".indentyou.compact controls|Card.you">
+  <Style Selector="controls|AppearanceScope.indentyou.compact controls|Card.you">
     <Setter Property="Margin" Value="64,0,0,0" />
   </Style>
-  <Style Selector=".indentsteps controls|Card.thinking, .indentsteps controls|Card.tools, .indentsteps controls|Card.agent, .indentsteps controls|Card.steps">
+  <Style Selector="controls|AppearanceScope.indentsteps controls|Card.thinking, controls|AppearanceScope.indentsteps controls|Card.tools, controls|AppearanceScope.indentsteps controls|Card.agent, controls|AppearanceScope.indentsteps controls|Card.steps">
     <Setter Property="Margin" Value="24,0,0,0" />
   </Style>
-  <Style Selector=".indentsteps.compact controls|Card.thinking, .indentsteps.compact controls|Card.tools, .indentsteps.compact controls|Card.agent, .indentsteps.compact controls|Card.steps">
+  <Style Selector="controls|AppearanceScope.indentsteps.compact controls|Card.thinking, controls|AppearanceScope.indentsteps.compact controls|Card.tools, controls|AppearanceScope.indentsteps.compact controls|Card.agent, controls|AppearanceScope.indentsteps.compact controls|Card.steps">
     <Setter Property="Margin" Value="16,0,0,0" />
   </Style>
 
@@ -386,10 +386,10 @@
     <Setter Property="BorderBrush" Value="{DynamicResource AccentStatusBrush}" />
     <Setter Property="Background" Value="{DynamicResource SelectedRowBrush}" />
   </Style>
-  <Style Selector=".compact Button.tile">
+  <Style Selector="controls|AppearanceScope.compact Button.tile">
     <Setter Property="Padding" Value="6,3" />
   </Style>
-  <Style Selector=".claude Button.tile">
+  <Style Selector="controls|AppearanceScope.claude Button.tile">
     <Setter Property="CornerRadius" Value="10" />
   </Style>
   <!-- The open tile's detail, under the tiles. -->
@@ -399,12 +399,12 @@
     <Setter Property="Margin" Value="0,8,0,0" />
     <Setter Property="Padding" Value="0,8,0,0" />
   </Style>
-  <Style Selector=".compact Border.tiledetail">
+  <Style Selector="controls|AppearanceScope.compact Border.tiledetail">
     <Setter Property="Margin" Value="0,4,0,0" />
     <Setter Property="Padding" Value="0,4,0,0" />
   </Style>
   <!-- A thinking card's or a hook's row that opens it, and a subagent's. -->
-  <Style Selector=".compact controls|ConversationPanel.conversation Button.row">
+  <Style Selector="controls|AppearanceScope.compact controls|ConversationPanel.conversation Button.row">
     <Setter Property="Padding" Value="4,0" />
   </Style>
   <!-- A pane's header, with tabs side by side (DESIGN.md §18, "Split panes"): its group's color in a bar before its name,
@@ -433,7 +433,7 @@
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="Padding" Value="16,10,12,10" />
   </Style>
-  <Style Selector=".compact Border.runheader">
+  <Style Selector="controls|AppearanceScope.compact Border.runheader">
     <Setter Property="Padding" Value="16,6,12,6" />
   </Style>
   <Style Selector="TextBlock.runheaderglyph">
@@ -464,7 +464,7 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}" />
   </Style>
-  <Style Selector=".claude :is(Button).logchip, .claude ToggleButton.logtoggle">
+  <Style Selector="controls|AppearanceScope.claude :is(Button).logchip, controls|AppearanceScope.claude ToggleButton.logtoggle">
     <Setter Property="CornerRadius" Value="12" />
   </Style>
   <Style Selector=":is(Button).logchip TextBlock.count">
@@ -482,7 +482,7 @@
     <Setter Property="BorderThickness" Value="0,0,0,1" />
     <Setter Property="Padding" Value="16,6,12,6" />
   </Style>
-  <Style Selector=".compact Border.logfilter">
+  <Style Selector="controls|AppearanceScope.compact Border.logfilter">
     <Setter Property="Padding" Value="16,4,12,4" />
   </Style>
   <Style Selector="Border.logfilter TextBox.logsearch">
@@ -503,14 +503,14 @@
   <Style Selector="StackPanel.turnfooter">
     <Setter Property="Spacing" Value="8" />
   </Style>
-  <Style Selector=".compact StackPanel.turnfooter">
+  <Style Selector="controls|AppearanceScope.compact StackPanel.turnfooter">
     <Setter Property="Spacing" Value="3" />
   </Style>
   <Style Selector="StackPanel.composerarea">
     <Setter Property="Margin" Value="16,4,16,12" />
     <Setter Property="Spacing" Value="6" />
   </Style>
-  <Style Selector=".compact StackPanel.composerarea">
+  <Style Selector="controls|AppearanceScope.compact StackPanel.composerarea">
     <Setter Property="Margin" Value="12,2,12,6" />
     <Setter Property="Spacing" Value="3" />
   </Style>
@@ -518,7 +518,7 @@
     <Setter Property="MinHeight" Value="40" />
     <Setter Property="Padding" Value="2,6" />
   </Style>
-  <Style Selector=".compact TextBox#Composer">
+  <Style Selector="controls|AppearanceScope.compact TextBox#Composer">
     <Setter Property="MinHeight" Value="30" />
     <Setter Property="Padding" Value="2,3" />
   </Style>
@@ -544,10 +544,10 @@
     <Setter Property="Padding" Value="8,6" />
     <Setter Property="VerticalContentAlignment" Value="Top" />
   </Style>
-  <Style Selector=".compact TextBox.scratchpad">
+  <Style Selector="controls|AppearanceScope.compact TextBox.scratchpad">
     <Setter Property="Padding" Value="6,3" />
   </Style>
-  <Style Selector=".claude TextBox.scratchpad">
+  <Style Selector="controls|AppearanceScope.claude TextBox.scratchpad">
     <Setter Property="CornerRadius" Value="10" />
   </Style>
   <!-- Games with Claudette (DESIGN.md §18): the boards, the gallows, the letters and the minefield. The user's marks,
@@ -573,7 +573,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="CornerRadius" Value="6" />
   </Style>
-  <Style Selector=".claude Button.gamesquare">
+  <Style Selector="controls|AppearanceScope.claude Button.gamesquare">
     <Setter Property="CornerRadius" Value="12" />
   </Style>
   <Style Selector="Button.gamesquare.winning">
@@ -598,7 +598,7 @@
     <Setter Property="MinWidth" Value="0" />
     <Setter Property="CornerRadius" Value="6" />
   </Style>
-  <Style Selector=".claude Button.gamecolumn">
+  <Style Selector="controls|AppearanceScope.claude Button.gamecolumn">
     <Setter Property="CornerRadius" Value="14" />
   </Style>
   <Style Selector="Ellipse.gamepiece">
@@ -641,7 +641,7 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
   </Style>
-  <Style Selector=".claude Button.gameletter">
+  <Style Selector="controls|AppearanceScope.claude Button.gameletter">
     <Setter Property="CornerRadius" Value="8" />
   </Style>
   <Style Selector="Button.gameletter.found">
@@ -667,7 +667,7 @@
     <Setter Property="FontFamily" Value="{DynamicResource MonoFont}" />
     <Setter Property="FontWeight" Value="Bold" />
   </Style>
-  <Style Selector=".claude Button.minesquare">
+  <Style Selector="controls|AppearanceScope.claude Button.minesquare">
     <Setter Property="CornerRadius" Value="7" />
   </Style>
   <Style Selector="Button.minesquare.open /template/ ContentPresenter#PART_ContentPresenter">
@@ -730,10 +730,10 @@
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Padding" Value="8,6" />
   </Style>
-  <Style Selector=".compact Border.codeblock">
+  <Style Selector="controls|AppearanceScope.compact Border.codeblock">
     <Setter Property="Padding" Value="6,3" />
   </Style>
-  <Style Selector=".claude Border.codeblock">
+  <Style Selector="controls|AppearanceScope.claude Border.codeblock">
     <Setter Property="CornerRadius" Value="10" />
   </Style>
   <Style Selector="TextBlock.done">
@@ -759,11 +759,11 @@
     <Setter Property="BorderBrush" Value="{DynamicResource CautionBorderBrush}" />
     <Setter Property="Background" Value="{DynamicResource CautionBackgroundBrush}" />
   </Style>
-  <Style Selector=".compact Border.prompt">
+  <Style Selector="controls|AppearanceScope.compact Border.prompt">
     <Setter Property="Padding" Value="10,6" />
     <Setter Property="Margin" Value="0,1" />
   </Style>
-  <Style Selector=".claude Border.prompt">
+  <Style Selector="controls|AppearanceScope.claude Border.prompt">
     <Setter Property="CornerRadius" Value="14" />
   </Style>
 
@@ -775,7 +775,7 @@
     <Setter Property="BorderThickness" Value="0,1,0,0" />
     <Setter Property="Padding" Value="16,6" />
   </Style>
-  <Style Selector=".compact Border.threadstrip">
+  <Style Selector="controls|AppearanceScope.compact Border.threadstrip">
     <Setter Property="Padding" Value="16,3" />
   </Style>
   <Style Selector="Border.threadmessage">
@@ -786,7 +786,7 @@
     <Setter Property="Padding" Value="8,6" />
     <Setter Property="MaxHeight" Value="160" />
   </Style>
-  <Style Selector=".claude Border.threadmessage">
+  <Style Selector="controls|AppearanceScope.claude Border.threadmessage">
     <Setter Property="CornerRadius" Value="12" />
   </Style>
 
@@ -1057,16 +1057,16 @@
   <Style Selector="StackPanel.tasklist">
     <Setter Property="Spacing" Value="2" />
   </Style>
-  <Style Selector=".compact StackPanel.tasklist">
+  <Style Selector="controls|AppearanceScope.compact StackPanel.tasklist">
     <Setter Property="Spacing" Value="0" />
   </Style>
   <Style Selector="Button.taskrow">
     <Setter Property="Padding" Value="6,4" />
   </Style>
-  <Style Selector=".compact Button.taskrow">
+  <Style Selector="controls|AppearanceScope.compact Button.taskrow">
     <Setter Property="Padding" Value="6,2" />
   </Style>
-  <Style Selector=".claude Button.taskrow">
+  <Style Selector="controls|AppearanceScope.claude Button.taskrow">
     <Setter Property="CornerRadius" Value="8" />
   </Style>
   <!-- The / and @ autocomplete (DESIGN.md §5, "Composer") -->

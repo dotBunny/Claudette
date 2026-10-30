@@ -6,7 +6,7 @@
        them back for Standard. Surfaces, text, inline code and the accent change, and cautions (a waiting prompt, a
        usage alert) become warm tints of the accent instead of yellow. Errors, diffs and the charts' model lines keep
        App.axaml's colors. The accent is a fixed color, so these use it directly rather than SystemAccentColor. The
-       Claude style's shapes are in App.axaml and TabView.axaml, under the "claude" class. -->
+       Claude style's shapes are in App.axaml and TabView.axaml, under the "claude" class on an AppearanceScope. -->
   <ResourceDictionary.ThemeDictionaries>
     <!-- Light, on claude.ai's scale: white cards and composer (#FFFFFF), an ivory page (#FAF9F5), a warmer sidebar
          (#F5F4ED) and selection (#E8E6DC), near-black text (#141413) and warm grey muted text. -->

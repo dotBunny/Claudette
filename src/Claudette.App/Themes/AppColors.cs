@@ -12,7 +12,8 @@ namespace Claudette.App.Themes;
 /// Islands colors, and gives Fluent Rider's palette: its greys and blue. Claude puts <see cref="ClaudeColors"/> over those
 /// tokens, and gives Fluent a palette of the Claude apps' warm greys, ivory and orange. Fluent draws with the palette what
 /// it draws itself: window backgrounds, text, controls and the accent, whose lighter and darker shades it works out from
-/// it. Both work in light and dark. The Claude style's shapes are styles under the "claude" class, which ShellView takes.
+/// it. Both work in light and dark. The Claude style's shapes are styles under the "claude" class, which the shell's
+/// <see cref="Controls.AppearanceScope"/> takes.
 /// </summary>
 public sealed class AppColors(Application app)
 {

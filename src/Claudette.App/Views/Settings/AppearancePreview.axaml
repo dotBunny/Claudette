@@ -17,7 +17,7 @@
       <Setter Property="CornerRadius" Value="8" />
       <Setter Property="ClipToBounds" Value="True" />
     </Style>
-    <Style Selector=".claude Border.previewbox">
+    <Style Selector="controls|AppearanceScope.claude Border.previewbox">
       <Setter Property="CornerRadius" Value="12" />
     </Style>
     <!-- Inline code in the reply, as a reply's is drawn -->
@@ -35,27 +35,29 @@
       <LayoutTransformControl.LayoutTransform>
         <ScaleTransform ScaleX="{Binding ZoomScale}" ScaleY="{Binding ZoomScale}" />
       </LayoutTransformControl.LayoutTransform>
-      <StackPanel Margin="16,14" Spacing="8" Classes.compact="{Binding IsCompact}" Classes.quietsteps="{Binding QuietSteps}" Classes.indentyou="{Binding IndentYou}" Classes.indentsteps="{Binding IndentSteps}"
-                  TextElement.FontSize="{DynamicResource ConversationFontSize}" TextElement.FontFamily="{DynamicResource ConversationFont}">
-        <controls:Card Classes="you" Label="You" Icon="{StaticResource IconCardYou}" TimeText="9:41">
-          <TextBlock TextWrapping="Wrap" Text="Make the grapple let go more gently, so I keep my swing." />
-        </controls:Card>
-        <controls:Card Classes="thinking quiet" Label="Thinking" Icon="{StaticResource IconCardThinking}">
-          <TextBlock Classes="muted" TextWrapping="Wrap" Text="The pull stops dead on release. Easing it off would keep the swing." />
-        </controls:Card>
-        <controls:Card Classes="claude" Label="Claude" Icon="{StaticResource IconCardClaude}" TimeText="9:42">
-          <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource ReplyFont}">
-            <Run Text="Done. The pull now eases off over " /><Run Classes="code" Text="ReleaseTime" /><Run Text=" (0.2 s) once you let go, so you keep your momentum." />
-          </TextBlock>
-        </controls:Card>
-        <!-- The message box, with Claudette standing on its edge when she's shown -->
-        <Grid RowDefinitions="Auto,Auto" Margin="0,4,0,0">
-          <Panel x:Name="MascotHost" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,40,-1" IsVisible="{Binding ShowClaudette}" />
-          <Border Grid.Row="1" Classes="composer">
-            <TextBlock Classes="muted" Text="Message Claude…" Margin="0,6" />
-          </Border>
-        </Grid>
-      </StackPanel>
+      <controls:AppearanceScope Classes.compact="{Binding IsCompact}" Classes.quietsteps="{Binding QuietSteps}" Classes.indentyou="{Binding IndentYou}" Classes.indentsteps="{Binding IndentSteps}">
+        <StackPanel Margin="16,14" Spacing="8"
+                    TextElement.FontSize="{DynamicResource ConversationFontSize}" TextElement.FontFamily="{DynamicResource ConversationFont}">
+          <controls:Card Classes="you" Label="You" Icon="{StaticResource IconCardYou}" TimeText="9:41">
+            <TextBlock TextWrapping="Wrap" Text="Make the grapple let go more gently, so I keep my swing." />
+          </controls:Card>
+          <controls:Card Classes="thinking quiet" Label="Thinking" Icon="{StaticResource IconCardThinking}">
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="The pull stops dead on release. Easing it off would keep the swing." />
+          </controls:Card>
+          <controls:Card Classes="claude" Label="Claude" Icon="{StaticResource IconCardClaude}" TimeText="9:42">
+            <TextBlock TextWrapping="Wrap" FontFamily="{DynamicResource ReplyFont}">
+              <Run Text="Done. The pull now eases off over " /><Run Classes="code" Text="ReleaseTime" /><Run Text=" (0.2 s) once you let go, so you keep your momentum." />
+            </TextBlock>
+          </controls:Card>
+          <!-- The message box, with Claudette standing on its edge when she's shown -->
+          <Grid RowDefinitions="Auto,Auto" Margin="0,4,0,0">
+            <Panel x:Name="MascotHost" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,40,-1" IsVisible="{Binding ShowClaudette}" />
+            <Border Grid.Row="1" Classes="composer">
+              <TextBlock Classes="muted" Text="Message Claude…" Margin="0,6" />
+            </Border>
+          </Grid>
+        </StackPanel>
+      </controls:AppearanceScope>
     </LayoutTransformControl>
   </Border>
 </UserControl>
