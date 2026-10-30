@@ -106,7 +106,11 @@ public static class WindowShot
         SetWindowPos(hwnd, IntPtr.Zero, 0, 0, (int)(width * scale), (int)(height * scale), 0x0002 /* NOMOVE */ | 0x0004 /* NOZORDER */);
     }
 
-    /// <summary>A visible top-level window of the process other than <paramref name="main"/>, or zero.</summary>
+    /// <summary>
+    /// A visible top-level window of the process other than <paramref name="main"/>, or zero: a window, such as Settings,
+    /// or a menu, which is a window of its own, but not a tip of a line or two that a stray pointer brought up. Sizes are
+    /// in device-independent pixels, so a narrow menu, such as a folder group's, counts at any scale.
+    /// </summary>
     public static IntPtr OtherWindow(int processId, IntPtr main)
     {
         var found = IntPtr.Zero;
@@ -116,7 +120,9 @@ public static class WindowShot
             GetWindowThreadProcessId(hwnd, out pid);
             RECT rect;
             GetWindowRect(hwnd, out rect);
-            if (pid == processId && hwnd != main && IsWindowVisible(hwnd) && rect.Right - rect.Left > 400)
+            var scale = Scale(hwnd);
+            if (pid == processId && hwnd != main && IsWindowVisible(hwnd)
+                && (rect.Right - rect.Left) / scale >= 160 && (rect.Bottom - rect.Top) / scale >= 100)
             {
                 found = hwnd;
                 return false;
