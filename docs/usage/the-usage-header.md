@@ -25,6 +25,12 @@ Turn on **Compact usage header** (Settings → Usage) and the meters take one li
 
 The countdown, the trendline and the line under the session meter are left out. Clicking the meters still opens [the Usage window](the-usage-window.md), and the chevron after them still opens [the detailed header](the-detailed-header.md).
 
+## In a narrow window
+
+When the window is too narrow for every meter, the header leaves some out rather than cut them off: first the trendline, then the session's countdown, then the weekly meters. Last of all the session's bar gets shorter, so the session's meter, with its percent, always shows. The line under it is shortened to fit, with the whole of it in its tooltip. Widen the window and they come back. Hover over the session's meter for when it resets, or click the meters for [the Usage window](the-usage-window.md).
+
+The compact header leaves out its weekly meters first in the same way, keeping **S**.
+
 ## Colors and warning levels
 
 A meter turns amber at the warning level, 75% by default, and red at the alert level, 90% by default. The percent beside it takes the color too. The same two levels apply to every meter, and to the [alerts](alerts.md).

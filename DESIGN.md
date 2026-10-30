@@ -1042,13 +1042,14 @@ This is Claudette's main feature: knowing how fast you're using your plan's limi
   - Each shows % used and its reset day and time in a tooltip.
   - They stack one above the other, the limit across all models on top, with their bars lined up.
 - The meters and the line under them fit a header as tall as its buttons need, with a thin padding above and below; without meters, the header is as tall.
+- **Narrow windows.** Where the header hasn't the room for all the meters, it leaves out the trendline first, then the session's countdown, then the weekly meters, and last narrows the session's bar from 160 pixels to 40, so the session's meter, its name, bar and percent, always shows rather than being cut off. The line under it trims to the session's line rather than widen it, its whole text in its tooltip. Each part comes back as soon as there's room for it. How it's built: `Controls/UsageMetersPanel` measures every part, those it leaves out too, so it always knows what fits, and lays out what it leaves out past its edge, where it clips it.
 
 ### Compact header
 
 - Settings → Usage → **Compact usage header** (off by default, synced) puts the meters on one line, at the left where they are: for each, a short name, a thin bar and the percent, such as *S 61%  W 41%  F 13%*.
   - The short name is the meter's first letter, S for the session and W for the weekly limit across all models, or as many letters as tell it from the meters before it (Sonnet beside the session is *So*). The session's is bold, as **Session** is on the full meters, and the others muted.
   - The countdown, the trendline and the line under the meter are left out. Each meter's tooltip has its full name and its reset, a screen reader reads its full name, and a click opens the Usage panel, as on the full meters.
-- The chevron for the detailed header follows the meters, as it does the full ones.
+- The chevron for the detailed header follows the meters, as it does the full ones. In a narrow window the weekly meters are left out before the session's.
 
 ### Burn trendline
 
@@ -1068,7 +1069,7 @@ This is Claudette's main feature: knowing how fast you're using your plan's limi
 
 The header can be drawn taller, with charts, for keeping an eye on usage without opening the Usage panel.
 
-- **Turning it on.** A chevron just after the meters expands it, and collapses it again. Where the window is too narrow for the meters, they give way and are cut off, so the chevron stays beside them. Settings → Usage → **Detailed usage header** is the same switch.
+- **Turning it on.** A chevron just after the meters expands it, and collapses it again. Where the window is too narrow for every meter, the header leaves some out ([Narrow windows](#header-meters)), and the chevron stays beside the rest. Settings → Usage → **Detailed usage header** is the same switch.
   - The choice is remembered on this machine and doesn't sync, like the sidebar's collapsed state.
   - Collapsed, the header is exactly as described above.
 - **Layout.** The one-line header stays on top. Under it, about 150 px high: the session chart, the weekly chart, the numbers and the busiest tabs, left to right.

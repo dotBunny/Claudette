@@ -368,16 +368,19 @@ public class MainWindowTests
         using var usage = new UsageViewModel(h.Services, tracker);
         await TabTestHarness.Eventually(() => usage.Weekly.Count == 2, "the weekly meters");
         var main = new MainWindowViewModel(h.Services) { CurrentPage = h.Shell, Usage = usage };
-        var window = new MainWindow { DataContext = main, Width = 1200, Height = 800 };
+        // Wide enough for every part, with the test platform's text drawn about twice as wide as a screen's.
+        var window = new MainWindow { DataContext = main, Width = 2400, Height = 800 };
         window.Show();
         UiText.Settle(window);
         var meters = window.GetVisualDescendants().OfType<ItemsControl>().Single(c => c.Name == "WeeklyMeters");
         var (weekly, fable) = (meters.GetVisualDescendants().OfType<ProgressBar>().First(), meters.GetVisualDescendants().OfType<ProgressBar>().Last());
         var sparkline = window.GetVisualDescendants().OfType<UsageChart>().Single(c => c.Name == "Sparkline");
-        var header = sparkline.FindAncestorOfType<Grid>()!;
-        var session = header.Children.OfType<StackPanel>().Single(s => Grid.GetRow(s) == 0);
-        var projection = header.Children.OfType<StackPanel>().Single(s => Grid.GetRow(s) == 1);
+        var header = sparkline.FindAncestorOfType<UsageMetersPanel>()!;
+        var session = header.Children.Single(c => c.Name == "SessionName");
+        var projection = header.Children.Single(c => c.Name == "Projection");
         Point At(Control c) => c.TranslatePoint(default, window)!.Value;
+
+        Assert.All(header.Children, c => Assert.False(UsageMetersPanel.GetIsLeftOut(c), $"{c.Name} should show"));
 
         Assert.Equal(["Weekly", "Fable"], usage.Weekly.Select(m => m.Label));
         Assert.Equal(At(weekly).X, At(fable).X);
@@ -389,6 +392,98 @@ public class MainWindowTests
         var right = meters.GetVisualDescendants().OfType<TextBlock>().Max(t => t.TranslatePoint(new Point(t.Bounds.Width, 0), window)!.Value.X);
         var chevron = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageDetailsToggle");
         Assert.True(right <= At(chevron).X, $"The meters end at {right}, past the chevron at {At(chevron).X}");
+    }
+
+    /// <summary>
+    /// As the window narrows, the header leaves out the trendline, then the session's countdown, then the weekly meters,
+    /// and last narrows the session's bar, rather than cutting the meters off: the session's meter always shows, whole,
+    /// before the chevron (DESIGN.md §6, "Header meters"). The compact header leaves out its weekly meters.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task A_narrowing_window_leaves_out_the_meters_parts_one_by_one_and_keeps_the_sessions()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var store = new UsageStore(Path.Combine(h.Root, "usage.db"), h.Time);
+        var reset = h.Time.GetUtcNow().AddHours(2);
+        Assert.True(store.AddSample(new UsageSnapshot(
+            [
+                new LimitReading(LimitKind.Session, "Session", 62, reset, null, true),
+                new LimitReading(LimitKind.WeeklyAll, "Weekly", 41, reset.AddDays(3), null, true),
+                new LimitReading(LimitKind.WeeklyModel, "Fable", 13, reset.AddDays(3), null, true),
+            ],
+            h.Time.GetUtcNow(),
+            UsageSource.GetUsage)));
+        await using var tracker = new UsageTracker(h.Services, store);
+        using var usage = new UsageViewModel(h.Services, tracker);
+        await TabTestHarness.Eventually(() => usage.Weekly.Count == 2, "the weekly meters");
+        var main = new MainWindowViewModel(h.Services) { CurrentPage = h.Shell, Usage = usage };
+        var window = new MainWindow { DataContext = main, Width = 2400, Height = 800 };
+        window.Show();
+        UiText.Settle(window);
+        var panel = window.GetVisualDescendants().OfType<UsageMetersPanel>().Single(p => p.Name == "FullMeters");
+        Control Part(string name) => panel.Children.Single(c => c.Name == name);
+        var (session, countdown, trend, weekly) = (Part("SessionBar"), Part("SessionReset"), Part("Sparkline"), Part("WeeklyMeters"));
+        var chevron = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageDetailsToggle");
+        double Right(Control c) => c.TranslatePoint(new Point(c.Bounds.Width, 0), window)!.Value.X;
+        string Shown() => string.Join(",", panel.Children.Where(c => !UsageMetersPanel.GetIsLeftOut(c)).Select(c => c.Name));
+
+        var bar = (ProgressBar)session;
+        var seen = new List<string> { Shown() };
+        void Check(string at)
+        {
+            UiText.Settle(window);
+            if (Shown() != seen[^1])
+            {
+                seen.Add(Shown());
+            }
+            Assert.False(UsageMetersPanel.GetIsLeftOut(session));
+            Assert.True(Right(panel) <= chevron.TranslatePoint(default, window)!.Value.X + 0.5, $"At {at}, the meters run past the chevron");
+        }
+
+        // Narrowing a step at a time, each part goes in its turn, and the meters stay clear of the chevron; past the
+        // narrowest the window can be, zooming in takes the room away the same way, until the session's bar gives some up.
+        for (var width = 2400; width >= 520; width -= 20)
+        {
+            window.Width = width;
+            Check($"{width} px");
+        }
+        for (var zoom = 110; !(Shown() == "SessionName,SessionBar,SessionPercent,Projection" && bar.Bounds.Width < 159) && zoom <= 400; zoom += 10)
+        {
+            window.UseZoom(zoom);
+            Check($"{zoom}%");
+        }
+        Assert.Equal(
+            [
+                "SessionName,SessionBar,SessionPercent,SessionReset,Projection,Sparkline,WeeklyMeters",
+                "SessionName,SessionBar,SessionPercent,SessionReset,Projection,WeeklyMeters",
+                "SessionName,SessionBar,SessionPercent,Projection,WeeklyMeters",
+                "SessionName,SessionBar,SessionPercent,Projection",
+            ], seen);
+        Assert.InRange(bar.Bounds.Width, 40, 159);
+        Assert.True(UsageMetersPanel.GetIsLeftOut(countdown) && UsageMetersPanel.GetIsLeftOut(trend) && UsageMetersPanel.GetIsLeftOut(weekly));
+
+        // Widened again, everything is back.
+        window.UseZoom(100);
+        window.Width = 2400;
+        UiText.Settle(window);
+        Assert.Equal(seen[0], Shown());
+        Assert.Equal(160, bar.Bounds.Width);
+
+        // Compact, the weekly meters go before the session's.
+        h.Services.Settings.Usage.CompactHeader = true;
+        h.Services.SaveSettings();
+        window.Width = 520;
+        UiText.Settle(window);
+        var compact = window.GetVisualDescendants().OfType<UsageMetersPanel>().Single(p => p.Name == "CompactMeters");
+        var (compactSession, compactWeekly) = (compact.Children.Single(c => c.Name == "CompactSession"), compact.Children.Single(c => c.Name == "CompactWeekly"));
+        for (var zoom = 110; !UsageMetersPanel.GetIsLeftOut(compactWeekly) && zoom <= 400; zoom += 10)
+        {
+            window.UseZoom(zoom);
+            UiText.Settle(window);
+        }
+        Assert.True(UsageMetersPanel.GetIsLeftOut(compactWeekly));
+        Assert.False(UsageMetersPanel.GetIsLeftOut(compactSession));
+        window.Close();
     }
 
     /// <summary>
@@ -417,7 +512,7 @@ public class MainWindowTests
         var window = new MainWindow { DataContext = main, Width = 1200, Height = 800 };
         window.Show();
         UiText.Settle(window);
-        var compact = window.GetVisualDescendants().OfType<StackPanel>().Single(p => p.Name == "CompactMeters");
+        var compact = window.GetVisualDescendants().OfType<UsageMetersPanel>().Single(p => p.Name == "CompactMeters");
         var sparkline = window.GetVisualDescendants().OfType<UsageChart>().Single(c => c.Name == "Sparkline");
         var meters = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageMeters");
         var chevron = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "UsageDetailsToggle");
