@@ -3,7 +3,8 @@
         xmlns:ae="using:AvaloniaEdit"
         xmlns:aeEditing="using:AvaloniaEdit.Editing"
         xmlns:aeFolding="using:AvaloniaEdit.Folding"
-        xmlns:editor="using:Claudette.App.Views.Editor">
+        xmlns:editor="using:Claudette.App.Views.Editor"
+        xmlns:controls="using:Claudette.App.Controls">
   <!-- The Project Files tab's look (DESIGN.md §18, "Project files"): the explorer, the file tabs, the editor, the chip,
        the banners and the peek. Under the "claude" class, the Claude style's rounder shapes. -->
 
@@ -34,10 +35,10 @@
     <Setter Property="CornerRadius" Value="4" />
     <Setter Property="Margin" Value="4,0" />
   </Style>
-  <Style Selector=".compact ListBox.explorerlist ListBoxItem">
+  <Style Selector="controls|AppearanceScope.compact ListBox.explorerlist ListBoxItem">
     <Setter Property="Padding" Value="8,1,6,1" />
   </Style>
-  <Style Selector=".claude ListBox.explorerlist ListBoxItem">
+  <Style Selector="controls|AppearanceScope.claude ListBox.explorerlist ListBoxItem">
     <Setter Property="CornerRadius" Value="8" />
   </Style>
   <!-- What git ignores, dimmed. -->
@@ -194,7 +195,7 @@
   </Style>
   <!-- In the Claude style, the explorer's shade: in its dark theme, SubtleBrush is the window frame's color, so the row
        would merge with the frame and hide the island's rounded top corner -->
-  <Style Selector=".claude Border.filetabs">
+  <Style Selector="controls|AppearanceScope.claude Border.filetabs">
     <Setter Property="Background" Value="{DynamicResource ExplorerBrush}" />
   </Style>
   <Style Selector="Button.filetab">
@@ -250,7 +251,7 @@
     <Setter Property="Fill" Value="{DynamicResource MutedTextBrush}" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
-  <Style Selector=".claude Button.filetab">
+  <Style Selector="controls|AppearanceScope.claude Button.filetab">
     <Setter Property="CornerRadius" Value="8,8,0,0" />
   </Style>
   <!-- A file in a window of its own: a small window after its name, on its own 12×12 grid -->
@@ -344,7 +345,7 @@
   <Style Selector="Border.markdownpage">
     <Setter Property="Padding" Value="24,14,24,28" />
   </Style>
-  <Style Selector=".compact Border.markdownpage">
+  <Style Selector="controls|AppearanceScope.compact Border.markdownpage">
     <Setter Property="Padding" Value="16,8,16,20" />
   </Style>
   <!-- Whole file and Reviewed, each in an outline of its own like the modes' -->
@@ -392,7 +393,7 @@
   <Style Selector="Border.chip.faded">
     <Setter Property="Opacity" Value="0.25" />
   </Style>
-  <Style Selector=".reducemotion Border.chip">
+  <Style Selector=":is(Window).reducemotion Border.chip">
     <Setter Property="Transitions" Value="{x:Null}" />
   </Style>
   <Style Selector="Border.chip TextBlock">

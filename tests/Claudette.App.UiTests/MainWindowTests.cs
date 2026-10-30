@@ -947,7 +947,7 @@ public class MainWindowTests
         h.Services.SaveSettings();
         UiText.Settle(window);
 
-        Assert.Contains("compact", window.GetVisualDescendants().OfType<ShellView>().Single().Classes);
+        Assert.Contains("compact", window.GetVisualDescendants().OfType<AppearanceScope>().Single().Classes);
         Assert.Equal(new Thickness(6, 2, 4, 2), row.Padding);
         Assert.Equal(comfortable.Row - 6, row.Bounds.Height, precision: 3);
         Assert.Equal(new Thickness(0, 0, 0, 3), Gap());
@@ -983,7 +983,7 @@ public class MainWindowTests
         h.Services.SaveSettings();
         UiText.Settle(window);
 
-        Assert.Contains("fullwidth", window.GetVisualDescendants().OfType<ShellView>().Single().Classes);
+        Assert.Contains("fullwidth", window.GetVisualDescendants().OfType<AppearanceScope>().Single().Classes);
         Assert.Equal(scroll.Viewport.Width - conversation.Margin.Left - conversation.Margin.Right, conversation.Bounds.Width, precision: 3);
         Assert.True(composer.Bounds.Width > 948, $"The composer is {composer.Bounds.Width} px wide, as before.");
 

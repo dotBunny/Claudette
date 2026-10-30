@@ -56,6 +56,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Screen readers name a group's label in the sidebar by the group's name.
 - Pointing at a tab's row no longer narrows its second line when the tab has no context ring yet: the close button takes its room from the name alone.
 - The **⋯** buttons in a Files tab, over the explorer and at the end of the file tabs' row, sit in the middle of their row rather than near its top.
+- Claudette takes much less memory over a long day: what's left over after Claude reads screenshots and large files is given back, and each tab takes less to show its conversation.
+- In the Standard style, code blocks and images in Claude's replies have Standard's corners, rather than the Claude style's rounder ones.
 - The usage limit bar's buttons, such as **Don't continue**, sit in the middle of the bar, rather than at its top while **Play a game while you wait** shows under its text.
 - In the Claude style's dark theme, the Files tab's explorer and its row of file tabs are a shade of their own, rather than the window's frame color, so they no longer blend into the window's edge, and the tab's rounded corners show.
 - The find box in a file's editor, and in a log, could stay open with its **×** and arrows doing nothing, when it was opened from the Files tab's menu or the keyboard was elsewhere, as after **Use theirs**. Its buttons now always work.

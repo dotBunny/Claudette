@@ -11,39 +11,40 @@
         Width="720" Height="720" MinWidth="520" MinHeight="420"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Background="{DynamicResource FrameBrush}"
-        Classes.claude="{Binding IsClaudeStyle}">
+        Background="{DynamicResource FrameBrush}">
   <!-- About Claudette (DESIGN.md §14, "About"): a window of its own, over the one it was opened from, until it's closed.
        Which Claudette this is, where it is on the web and its license, the trademarks it names, and the licenses of what
        it's built with, as Settings' page drew them once (Views/Settings/AboutPageView). Esc closes it. -->
-  <DockPanel>
-    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): its title -->
-    <controls:TitleBar DockPanel.Dock="Top" />
-    <!-- At its foot, under a line and always in view: Try the demo (DESIGN.md §11, "Demo mode"), Claudette on made-up
-         projects with a stand-in for Claude, in a window of its own -->
-    <Border Name="AboutFoot" DockPanel.Dock="Bottom" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="40,12"
-            IsVisible="{Binding Demo.IsOffered}">
-      <StackPanel Spacing="6">
-        <StackPanel Orientation="Horizontal" Spacing="12">
-          <Button Name="TryDemo" Content="{Binding Demo.ButtonText}" Command="{Binding Demo.TryCommand}" ToolTip.Tip="{x:Static demo:DemoStarter.Tip}" />
-          <TextBlock Classes="muted small" Text="See Claudette on made-up projects, without an account." VerticalAlignment="Center" TextWrapping="Wrap" />
-        </StackPanel>
-        <TextBlock Classes="muted small" Classes.error="{Binding Demo.IsProblem}" Text="{Binding Demo.Note}" TextWrapping="Wrap"
-                   IsVisible="{Binding Demo.HasNote}" />
-      </StackPanel>
-    </Border>
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-      <StackPanel MaxWidth="720" Margin="40,28,40,40" Spacing="28">
-        <StackPanel Orientation="Horizontal" Spacing="14">
-          <Image Source="/Assets/claudette.ico" Width="40" Height="40" VerticalAlignment="Center"
-                 RenderOptions.BitmapInterpolationMode="HighQuality" AutomationProperties.Name="Claudette" />
-          <StackPanel VerticalAlignment="Center" Spacing="2">
-            <TextBlock Text="Claudette" FontSize="22" FontWeight="SemiBold" />
-            <TextBlock Classes="muted" Text="{Binding Description}" TextWrapping="Wrap" />
+  <controls:AppearanceScope Classes.claude="{Binding IsClaudeStyle}">
+    <DockPanel>
+      <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): its title -->
+      <controls:TitleBar DockPanel.Dock="Top" />
+      <!-- At its foot, under a line and always in view: Try the demo (DESIGN.md §11, "Demo mode"), Claudette on made-up
+           projects with a stand-in for Claude, in a window of its own -->
+      <Border Name="AboutFoot" DockPanel.Dock="Bottom" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="40,12"
+              IsVisible="{Binding Demo.IsOffered}">
+        <StackPanel Spacing="6">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Name="TryDemo" Content="{Binding Demo.ButtonText}" Command="{Binding Demo.TryCommand}" ToolTip.Tip="{x:Static demo:DemoStarter.Tip}" />
+            <TextBlock Classes="muted small" Text="See Claudette on made-up projects, without an account." VerticalAlignment="Center" TextWrapping="Wrap" />
           </StackPanel>
+          <TextBlock Classes="muted small" Classes.error="{Binding Demo.IsProblem}" Text="{Binding Demo.Note}" TextWrapping="Wrap"
+                     IsVisible="{Binding Demo.HasNote}" />
         </StackPanel>
-        <pages:AboutPageView />
-      </StackPanel>
-    </ScrollViewer>
-  </DockPanel>
+      </Border>
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="720" Margin="40,28,40,40" Spacing="28">
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <Image Source="/Assets/claudette.ico" Width="40" Height="40" VerticalAlignment="Center"
+                   RenderOptions.BitmapInterpolationMode="HighQuality" AutomationProperties.Name="Claudette" />
+            <StackPanel VerticalAlignment="Center" Spacing="2">
+              <TextBlock Text="Claudette" FontSize="22" FontWeight="SemiBold" />
+              <TextBlock Classes="muted" Text="{Binding Description}" TextWrapping="Wrap" />
+            </StackPanel>
+          </StackPanel>
+          <pages:AboutPageView />
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </controls:AppearanceScope>
 </Window>

@@ -23,7 +23,7 @@ Claudette does not replace Claude Code. It runs the real `claude` CLI as a child
 
 | Area | Choice | Notes |
 |---|---|---|
-| Runtime | .NET 10 (LTS) | Moving to .NET 11 is planned ([below](#moving-to-net-11)). |
+| Runtime | .NET 10 (LTS) | Moving to .NET 11 is planned ([below](#moving-to-net-11)). The garbage collector compacts the large object heap when it's fragmented (`System.GC.ConserveMemory` 5, in `Claudette.App.csproj`): it never moves its objects (85 KB and up) otherwise, and Claude Code's lines with a screenshot or a big file in them left 650 MB of holes, half the heap, after a day of six tabs. |
 | UI | Avalonia 12 | One codebase for Windows, macOS and Linux. |
 | Look & feel | Fluent theme on Windows, macOS-style theme on macOS | Follows the OS light/dark setting, in JetBrains Rider's Islands look or the Claude apps' ([Visual style](#visual-style)), with an opaque frame (no Mica backdrop, since 2026-10-28). The header is the window's title bar on Windows and macOS, as in Rider, with the OS's title bar on Linux or by choice ([Window frame](#window-frame)); traffic lights and the menu bar on macOS. The macOS-style theme isn't built yet; macOS uses the Fluent theme for now. |
 | Pattern | MVVM with CommunityToolkit.Mvvm | |
@@ -161,6 +161,65 @@ Planned, not started. Tried on a branch on 2026-10-11 against .NET 11 RC1 (SDK `
 - **dotBunny's Discord** is at `/discord/` on the site, a page that only forwards to the server's invite, so Claudette, the site, the README and GitHub's New issue page link there rather than to the invite. An invite can expire or be replaced, and a link in an installed Claudette can't change without a release; this way only `docs/discord.md` changes.
 - **To decide later**, since it's what the user sees: whether Claudette links to the guide in other places too, through `F1` or a link from each Settings page to its chapter; and whether the update dialog links to the version's section of the Changelog page, beside the release on GitHub.
 
+### Renaming to Joulene
+
+Planned, not started. Decided on 2026-10-30.
+
+- **Why.** Claudette's name is close to Claude's, and her icon is Clawd, Claude Code's mascot, with hair ([Packaging and signing](#packaging-and-signing)), so she could be taken for something of Anthropic's. Joulene plays on the joule and on using less ([§6](#6-token-burn-awareness)), with a nod to Dolly Parton's *Jolene*. Providers besides Claude Code are to come, so Joulene doesn't call itself an app for Claude Code.
+- **What people see.**
+  - Joulene wherever Claudette is named: the windows, menus, Settings, About, notifications, the installers, the website and the README. She's Joulene on the composer too ([§5](#claudette-on-the-composer)), and in the games ([§18](#games-with-claudette)).
+  - Where Joulene says what it is, it names no provider: *the desktop app that puts agents in a native window*. That's the site's description, the MSIX's and the Store's, About's line and the README's first line. The landing page's headline, in place of *Claude Code in a real desktop window*, is *Your agents in a real desktop window*, and the social card's follows it.
+  - Where the guide says how something works with Claude Code today (installing it, signing in, permissions, usage limits), it still names Claude Code, since that's what runs; those pages split by provider when a second one comes. The landing page, Downloads and the Store listing say what Joulene needs: *Works with Claude Code today, with more providers to come.*
+- **Her look**, as the icon and on the composer. Rose and platinum, by Claudette's rule for her colors: one color for her body (face, arms and dress), a darker shade of it (belt and boots), her hair with its edge and a shine, a single accent cell (her clip, where Claudette's tie is) and dark eyes. Brighter colors, and more of them, clashed. Her shape is nothing like Clawd's: a bouffant over an hourglass dress and two boots, not a slab on four legs. Her arms show beside the dress, as her antics need them to, and the right side of her hair, with her clip, falls two cells further than the left and flips out. She stays 12×12 cells, so the taskbar's 24, 36 and 48 px icons are still 2, 3 and 4 pixels a cell.
+
+  ```
+  ...hHHHHh...   B body      #CF7F96   H hair       #F0DFA6   K clip  #5B7FD6
+  ..hHSHHHHh..   b its shade #A85E74   h hair edge  #C4A961   E eyes  #141413
+  .hHHHHHHKHh.                         S shine      #FFF8E0
+  .HHHBBBBHHH.
+  .HHBEBBEBHH.
+  .HHBBBBBBHHh
+  .hHHBBBBHHHH
+  .BBBBBBBBBBH
+  .B.BBBBBB.Bh
+  .B.bbbbbb.B.
+  ..BBBBBBBB..
+  ...bb..bb...
+  ```
+
+  - Every pose, hat and prop in `build-icons.mjs` is drawn again for her: the 32 poses, the hats fitted to her hair, and the props held at arm height moved, since her arms are lower than Claudette's. The poses keep their names, so `MascotDirector` and `MascotAntics` change only where a prop's place does. She has a new pose, hands on her hips.
+  - The taskbar overlay's spark is Claude's, so it becomes a lightning bolt, and the hourglass's sand is her rose. The Dock's animations, the wordmark (with J, O and N, new letters), the README's animation (`MascotPictureTests`) and the UI snapshots are drawn again from her.
+- **The website.** The same pages, layout and format, with the new name and colors: blue, with rose from her. The variables keep landing.css's roles, the brand's renamed: `--blue` `#4A6FC4`, `--blue-deep` `#34539E`, `--periwinkle` `#8A93DA`, `--rose` `#CF7F96`, `--rose-deep` `#A85E74`, `--platinum` `#F0DFA6`. The light theme is cool white (`#F7F8FC`, text `#26304A`, links `#34539E`), the dark one blue-black (`#10141F`, text `#DCE1EC`, links `#93AEEB`), and the gradient runs blue, periwinkle, rose. The guide's chapter about her moves from `/claudette/` to `/joulene/`, its old pages left as redirects (`redirect_from`), and every picture is taken again.
+  - **The address** becomes `joulene.dotbunny.com`: a `joulene` CNAME to `dotbunny.github.io` in dotbunny.com's DNS, at Cloudflare, not proxied until GitHub has issued its certificate; then `docs/CNAME` and the Pages setting, with HTTPS enforced.
+  - **The old address keeps working**, since installed copies, the changelog's entries and the README's links point at it: its `claudette` record becomes a proxied `AAAA 100::` with a Cloudflare redirect rule sending each page, 301, to the same path at `joulene.dotbunny.com`. Nothing at GitHub claims it any more, so no one else's Pages site can. The rule stays as long as copies that link there are in use.
+- **What doesn't change**, so installed copies update in place and keep what they had:
+  - The MSIX identity `dotBunny.Claudette`, its Application Id `Claudette`, the AppUserModelID and the startup task's `ClaudetteAtLogin`. A package of another identity couldn't update an installed one, and the bridge release (below) starts the new version by its Application Id. Only the display names change, and the executable, to `Joulene.exe`.
+  - The bundle identifier `com.dotbunny.claudette`, which the update check, notification permission and the Keychain's access to its items follow. The bundle becomes `Joulene.app`.
+  - The publisher, the Artifact Signing certificate profile and the macOS team, which are dotBunny's, not the app's.
+  - What other machines and builds read: the usage-sharing file's `claudette` field ([§6](#6-token-burn-awareness)) and `.claudette-build.json` ([§9](#working-on-claudette)).
+- **What moves the first time Joulene starts.**
+  - The data and settings folders (`Claudette` or `claudette`, [§14](#14-settings)) are renamed, when the new ones don't exist yet, and the paths saved in them that point into the old folders are rewritten: the default session library and the local copies of sessions.
+  - Perforce passwords and accounts' API keys are looked up under the new name first, then the old (Credential Manager's `Claudette/…`, the Keychain's `Claudette` service, `secret-tool`'s `claudette`). One found under the old name is saved under the new and deleted. The bundle identifier stays, so the Keychain doesn't ask.
+  - Starting at login ([§9](#starting-at-login)): the Run key's value, the LaunchAgent and `claudette.desktop` take the new name and path.
+  - The settings named after her (`appearance.showClaudette`, `claudetteSize`, `claudetteLiveliness`, `claudetteTips` and `gamesWithClaudette`) are read from their old keys while the new ones are missing. Another machine on Claudette, syncing settings ([§14](#settings-sync-optional)), keeps its own for those five.
+  - `claudette.json` and `claudette.local.json` in people's projects are read when there's no `joulene.json` or `joulene.local.json`, for good; Joulene never renames them, as they're the project's files. Settings writes `joulene.json` for a project that has neither.
+  - Project actions get `JOULENE_WORKTREE` and `JOULENE_MAIN_CHECKOUT` beside `CLAUDETTE_WORKTREE` and `CLAUDETTE_MAIN_CHECKOUT`, and the login shell `JOULENE_RESOLVING_ENVIRONMENT` beside `CLAUDETTE_RESOLVING_ENVIRONMENT`, as people's scripts and profiles may read them. A release's notes say when the old ones go. `CLAUDETTE_HOME` and `CLAUDETTE_RUN_IN_PLACE` are read too; the variables only Claudette's own tools set are renamed.
+  - A thread's deliveries are recognized by the line *"Claudette delivered this message to the sub-thread"* as well as Joulene's, for good, as History reopens sessions written before ([§18](#threads)).
+- **The bridge release**, the last Claudette, at least two weeks before, so installed copies can follow:
+  - Its update check takes a release's `Joulene-<version>-<arch>` packages as well as `Claudette-…` ones ([Updating Claudette](#updating-claudette)).
+  - On macOS it takes `Joulene.app` from the disk image, and the helper installs it under its own name and then removes `Claudette.app`. Going back puts `Claudette.app` back.
+  - A copy that skips it still announces the new release, with a link to it. Installing by hand replaces it on Windows, as the identity is the same; on macOS, `Joulene.app` goes in Applications and `Claudette.app` in the Trash, as the guide's page on updating says.
+- **The code.** One scripted commit renames the projects and their folders, the namespaces, `Claudette.slnx`, the `avares://` addresses, `InternalsVisibleTo`, the snapshots named after them and `.idea/.idea.Claudette`, and restores the lock files. The changes above come after it, then the docs: this document, CLAUDE.md, GUIDE.md, the README, the skills, and an entry in CHANGELOG.md that says what carried over. The changelog's history keeps Claudette. It's done while no pull requests are open. A source build of Claudette doesn't notice Joulene's builds, since it looks for `Claudette.slnx`, so it's restarted by hand once.
+- **Outside the repository**, on the day, in this order:
+  1. **Partner Center:** "Joulene" reserved for the product first (a package's display name must be one of its reserved names), well before the day. Then a submission with the new package, and the listing's name, text, pictures, website and privacy policy. "Claudette" stays reserved.
+  2. **GitHub:** `dotBunny/Claudette` renamed to `dotBunny/Joulene`. GitHub redirects its pages, git and the API, and the update check follows the redirect. A repository named `dotBunny/Claudette` must never be made again, a fork included, as for `reapazor/Claudette`. Then the description, homepage, topics, social preview and `ISSUE_TEMPLATE/config.yml`'s links. The `release` environment and its secrets move with the repository.
+  3. **Azure:** a repository renamed after 2026-07-15 gets GitHub's immutable OIDC subject, with the owner's and repository's IDs (dotBunny `5067903`, the repository `1393693845`), so the federated credential for `repo:dotBunny/Claudette:environment:release` stops matching. **Run workflow** once: azure/login's AADSTS70021 error names the subject it was given. A federated credential for that subject goes on the Entra app registration, and the old one comes off once a signed run passes. The Artifact Signing account and certificate profile are unchanged.
+  4. **Apple:** nothing. The Developer ID is the team's, and the bundle identifier stays.
+  5. **The site's address**, as above.
+  6. **The tag**, its signed packages, and the release published.
+  7. **Telling people:** dotBunny's Discord, the release notes, and a line in the README, *formerly Claudette*, so searches for the old name find it.
+- **The version.** Joulene's first release is 1.0.0. The bridge release is the last 0.x.
+
 ## 3. Main Window
 
 ```
@@ -272,7 +331,7 @@ Settings → Appearance → **Style** picks one of two looks, in light and dark 
 - **The composer** is a big rounded box lifted a little off the page. Send and Stop are the same round buttons as in Standard, with Send in Claude's orange.
 - **Rounder corners** on the cards, code blocks and the sidebar's rows.
 
-How it's built: `App.axaml` holds Standard's tokens, Rider's colors (`FrameBrush` and `IslandBrush` among them, and `Border.island`'s style), and `Themes/ClaudeColors.axaml` the Claude values of Claudette's own tokens (the cards' among them); `Themes/AppColors` swaps them in and gives Fluent a matching palette, Rider's or the Claude apps' (the window background, text, controls, and the accent it derives its shades from). Fluent reads most palette colors only when its resources are first used, so applying a style, the first at launch too, loads a fresh Fluent theme with the palette already set. The fonts are resources App sets for the style: `UiFont` (every window and popup takes it), `ReplyFont`, `ConversationFont` and `MonoFont`; JetBrains Mono is in `Assets/Fonts`, and Inter comes with `Avalonia.Fonts.Inter`. The shapes are styles under the `claude` class, which the main view takes, as Density's are under `compact`. Code blocks take their syntax colors through `Views/CodeBlockTheme` rather than LiveMarkdown's own property, because LiveMarkdown re-highlights a block already shown by setting its code again, which empties a one-line block.
+How it's built: `App.axaml` holds Standard's tokens, Rider's colors (`FrameBrush` and `IslandBrush` among them, and `Border.island`'s style), and `Themes/ClaudeColors.axaml` the Claude values of Claudette's own tokens (the cards' among them); `Themes/AppColors` swaps them in and gives Fluent a matching palette, Rider's or the Claude apps' (the window background, text, controls, and the accent it derives its shades from). Fluent reads most palette colors only when its resources are first used, so applying a style, the first at launch too, loads a fresh Fluent theme with the palette already set. The fonts are resources App sets for the style: `UiFont` (every window and popup takes it), `ReplyFont`, `ConversationFont` and `MonoFont`; JetBrains Mono is in `Assets/Fonts`, and Inter comes with `Avalonia.Fonts.Inter`. The shapes are styles under the `claude` class, as Density's are under `compact`. The main view, the Settings, About and file windows, and Appearance's preview each have a `Controls/AppearanceScope` that takes these classes, and the styles name it first (`controls|AppearanceScope.claude Border.composer`). A selector that started with the bare class could match any ancestor, so Avalonia watched the classes of every ancestor of every control the style might apply to, which came to 1.5 million watchers and about 140 MB for six tabs; named by its type, only the scope is watched. Code blocks take their syntax colors through `Views/CodeBlockTheme` rather than LiveMarkdown's own property, because LiveMarkdown re-highlights a block already shown by setting its code again, which empties a one-line block.
 
 In both styles, text in a different font or size beside other text sits on its baseline: a changed file's status letter and counts beside its name ([§8](#8-file-changes--diff-view)), a tool row's summary and counts beside the tool's name, the autocomplete's hints and descriptions beside their titles. Lining them up by their tops or centres only looks right when the fonts agree, which they don't from one OS to the next or at another code font size (Settings → Appearance). `Controls/Baseline` puts one text block's first baseline on another's after each layout pass, on whole screen pixels, with a render transform, so the row's layout doesn't change.
 

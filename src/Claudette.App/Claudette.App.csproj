@@ -50,6 +50,13 @@
     <InternalsVisibleTo Include="Claudette.App.UiTests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Compact the large object heap when it's fragmented (DESIGN.md §2). Its objects, 85 KB and up, are never moved
+         otherwise, and Claude Code's lines with a screenshot or a big file in them leave holes between the images a
+         tab keeps: 650 MB of them, half the heap, after a day of six tabs. -->
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
+  </ItemGroup>
+
   <!-- The shipped packages' licenses, embedded as ThirdPartyNotices.xml for Settings → About (DESIGN.md §14). -->
   <Import Project="ThirdPartyNotices.targets" />
 </Project>

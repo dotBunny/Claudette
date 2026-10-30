@@ -3,7 +3,7 @@
         xmlns:controls="using:Claudette.App.Controls">
   <!-- The Settings window's and Tab settings…' look (DESIGN.md §14): sections of rows, each a setting's title, one line of
        what it does and its control at the right. Standard takes VS Code's settings editor as its reference: flat rows
-       under headings, a changed setting marked by a bar at its left. The Claude style ("claude", which both windows take)
+       under headings, a changed setting marked by a bar at its left. The Claude style ("claude", which both windows' AppearanceScope takes)
        puts a section's rows in a rounded box, as the Claude apps' settings do. -->
   <Styles.Resources>
     <!-- Fluent's switch keeps room for "On" and "Off" beside it; a row's switch has its title instead. -->
@@ -71,7 +71,7 @@
     <Setter Property="Foreground" Value="{DynamicResource AccentStatusBrush}" />
   </Style>
   <!-- The Claude style: the section's rows in a rounded box, the lines between them inset. -->
-  <Style Selector=".claude controls|SettingsSection /template/ Border#PART_Box">
+  <Style Selector="controls|AppearanceScope.claude controls|SettingsSection /template/ Border#PART_Box">
     <Setter Property="Background" Value="{DynamicResource CardBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
     <Setter Property="BorderThickness" Value="1" />
@@ -298,7 +298,7 @@
     <Setter Property="Padding" Value="6,0,6,1" />
     <Setter Property="Background" Value="Transparent" />
   </Style>
-  <Style Selector=".claude Border.settingchip">
+  <Style Selector="controls|AppearanceScope.claude Border.settingchip">
     <Setter Property="CornerRadius" Value="8" />
   </Style>
   <Style Selector="Border.settingchip > TextBlock">
@@ -314,7 +314,7 @@
     <Setter Property="CornerRadius" Value="6" />
     <Setter Property="Padding" Value="12,10" />
   </Style>
-  <Style Selector=".claude Border.settingsnote">
+  <Style Selector="controls|AppearanceScope.claude Border.settingsnote">
     <Setter Property="CornerRadius" Value="10" />
   </Style>
   <!-- A license or notices under its row in About: scrolling on its own past a screenful, so the page stays a list. -->
