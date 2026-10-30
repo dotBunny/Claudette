@@ -243,8 +243,6 @@ public sealed class RewindAndBranchTests
     public async Task Branch_from_here_opens_a_copy_up_to_the_message_with_it_in_the_composer()
     {
         await using var h = new TabTestHarness();
-        // The new tab runs alongside the first.
-        h.Factory.ProcessPerSession = true;
         var tab = await RestoreAsync(h);
         tab.State.Overrides.Model = "sonnet";
         tab.State.KeptSuffixes.Add("tests");
@@ -271,8 +269,6 @@ public sealed class RewindAndBranchTests
     public async Task Branch_from_the_first_message_starts_a_new_session()
     {
         await using var h = new TabTestHarness();
-        // The new tab runs alongside the first.
-        h.Factory.ProcessPerSession = true;
         var tab = await RestoreAsync(h);
 
         await tab.BranchFromHereCommand.ExecuteAsync(Prompt(tab, "first"));
@@ -288,8 +284,6 @@ public sealed class RewindAndBranchTests
     public async Task Duplicate_tab_carries_the_whole_session_on_as_a_copy()
     {
         await using var h = new TabTestHarness();
-        // The new tab runs alongside the first.
-        h.Factory.ProcessPerSession = true;
         var tab = await RestoreAsync(h);
 
         await h.Shell.DuplicateTabCommand.ExecuteAsync(tab);
@@ -307,7 +301,6 @@ public sealed class RewindAndBranchTests
     public async Task Duplicating_a_copy_before_its_first_turn_keeps_its_point()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var tab = await RestoreAsync(h);
         await tab.BranchFromHereCommand.ExecuteAsync(Prompt(tab, "second"));
         var branch = h.Shell.SelectedTab!;
@@ -325,8 +318,6 @@ public sealed class RewindAndBranchTests
     public async Task Duplicating_a_tab_without_a_session_opens_a_new_one_in_the_folder()
     {
         await using var h = new TabTestHarness();
-        // The new tab runs alongside the first.
-        h.Factory.ProcessPerSession = true;
         var tab = await h.OpenTabAsync();
 
         await h.Shell.DuplicateTabCommand.ExecuteAsync(tab);

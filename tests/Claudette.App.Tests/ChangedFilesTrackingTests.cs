@@ -129,7 +129,6 @@ public class ChangedFilesTrackingTests
     public async Task Another_tabs_later_edit_is_changed_since_not_this_tabs_change()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var alpha = await ThreadScript.OpenAsync(h, "Alpha");
         var beta = await ThreadScript.OpenAsync(h, "Beta");
         var path = Path.Combine(h.WorkFolder, "shared.cs");
@@ -215,7 +214,6 @@ public class ChangedFilesTrackingTests
     public async Task A_tab_off_screen_watches_nothing_and_catches_up_once_shown()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var alpha = await ThreadScript.OpenAsync(h, "Alpha");
         var beta = await ThreadScript.OpenAsync(h, "Beta");
         h.Shell.SelectedTab = alpha;

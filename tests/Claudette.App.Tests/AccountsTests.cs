@@ -54,7 +54,6 @@ public class AccountsTests
     {
         await using var h = new TabTestHarness();
         UseKeys(h);
-        h.Factory.ProcessPerSession = true;
         var work = await h.Services.Accounts.AddApiKeyAccountAsync("Work", "sk-ant-work");
         var first = await h.OpenTabAsync();
         var group = h.Shell.Groups.Single();
@@ -214,7 +213,6 @@ public class AccountsTests
     {
         await using var h = new TabTestHarness();
         UseKeys(h);
-        h.Factory.ProcessPerSession = true;
         var work = await h.Services.Accounts.AddApiKeyAccountAsync("Work", "sk-ant-work");
         var tab = await h.OpenTabAsync();
         tab.SwitchAccountCommand.Execute(work.Id);

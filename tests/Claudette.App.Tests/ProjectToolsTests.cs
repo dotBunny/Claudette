@@ -90,7 +90,6 @@ public class ProjectToolsTests
     public async Task A_groups_project_icon_is_for_the_tab_used_last_in_it()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var first = await h.OpenTabAsync();
         var second = await h.OpenTabAsync();
         var group = InlineDispatcher.Read(() => h.Shell.Groups.Single());

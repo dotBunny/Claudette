@@ -10,7 +10,6 @@ public class SplitPanesTests
     private static async Task<(TabTestHarness H, TabViewModel A, TabViewModel B, TabViewModel C)> ThreeTabsAsync()
     {
         var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var a = await ThreadScript.OpenAsync(h, "Alpha");
         var b = await ThreadScript.OpenAsync(h, "Beta");
         var c = await ThreadScript.OpenAsync(h, "Gamma");

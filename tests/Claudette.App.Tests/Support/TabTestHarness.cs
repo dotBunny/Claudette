@@ -45,28 +45,26 @@ internal sealed class ScriptedTransport : IClaudeTransport
     }
 
     /// <summary>
-    /// After the pretend process exited, stands in for the next one, so a tab can restart (after a sign-in, say).
-    /// Everything sent so far is kept.
+    /// The pretend process for the session starting now, which it has to itself, as each <c>claude</c> has its own: the
+    /// current one while no session has it, else a new one, so a second tab running alongside the first reads its own
+    /// output, and a tab starting again after its process exited (after a sign-in, say) gets a fresh one. What's emitted
+    /// from then on goes to it; <see cref="EmitTo(int, string)"/> reaches an earlier one. Stopping it ends only that
+    /// process, so a tab that finishes closing after the next one started (a test doesn't wait for all of it) can't end
+    /// the next one's. Everything sent so far is kept.
     /// </summary>
-    public void RestartIfExited()
+    public IClaudeTransport ForSession()
     {
-        if (_process.HasExited)
+        // Checked and claimed in one step: tabs restored together start at once, each on a thread of its own.
+        lock (_processes)
         {
-            _process = NewProcess();
+            if (_process.HasExited || _process.IsTaken)
+            {
+                _process = NewProcess();
+            }
+            _process.IsTaken = true;
+            return new SessionTransport(this, _process);
         }
     }
-
-    /// <summary>
-    /// A new pretend process for the next session, while the current one carries on with its own: a second tab
-    /// running alongside the first. What's emitted from now on goes to the new one.
-    /// </summary>
-    public void StartNextProcess() => _process = NewProcess();
-
-    /// <summary>
-    /// The current pretend process, as the session starting now sees it. Stopping it ends only that process, so a tab
-    /// that finishes closing after the next one started (a test doesn't wait for all of it) can't end the next one's.
-    /// </summary>
-    public IClaudeTransport ForSession() => new SessionTransport(this, _process);
 
     /// <summary>
     /// Answers to control requests by subtype; null leaves the request unanswered, an exception answers with an error.
@@ -161,7 +159,7 @@ internal sealed class ScriptedTransport : IClaudeTransport
 
     /// <summary>
     /// Emits on the pretend process started <paramref name="index"/>th (0 for the first), for tests with several tabs
-    /// running, with <see cref="ScriptedSessionFactory.ProcessPerSession"/>.
+    /// running: each session has a process of its own.
     /// </summary>
     public void EmitTo(int index, JsonObject message) => Process(index).Write(message.ToJsonString());
 
@@ -250,6 +248,9 @@ internal sealed class ScriptedTransport : IClaudeTransport
 
         public bool HasExited => Completion.Task.IsCompleted;
 
+        /// <summary>A session has it (<see cref="ForSession"/>): the next one to start gets a new process.</summary>
+        public bool IsTaken { get; set; }
+
         /// <summary>What the process has spent by model, which each result it writes reports in <c>modelUsage</c>.</summary>
         public Dictionary<string, (long Input, long Output, double Cost)> RunningUsage { get; } = [];
 
@@ -305,8 +306,6 @@ internal sealed class ScriptedSessionFactory(ScriptedTransport transport, TimePr
     /// <summary>While set, starts fail with this, as a <c>claude</c> that couldn't start would.</summary>
     public Exception? StartFailure { get; set; }
 
-    /// <summary>Each session started gets a pretend process of its own, for tests with more than one tab running.</summary>
-    public bool ProcessPerSession { get; set; }
 
     /// <summary>While set, a start waits for it once <c>claude</c> is running, as a slow handshake would.</summary>
     public TaskCompletionSource? StartGate { get; set; }
@@ -332,16 +331,9 @@ internal sealed class ScriptedSessionFactory(ScriptedTransport transport, TimePr
         }
         // The new session's pretend process is in place before the launch is recorded: a test that waits for the launch
         // and then emits writes to the process this session reads, not the one before.
-        if (ProcessPerSession && Launches.Count > 0)
-        {
-            transport.StartNextProcess();
-        }
-        else
-        {
-            transport.RestartIfExited();
-        }
+        var connection = transport.ForSession();
         Launched(options);
-        var session = new ClaudeSession(transport.ForSession(), time, showsElicitations: options.ShowsElicitations, restoredUsage: options.RestoredUsage);
+        var session = new ClaudeSession(connection, time, showsElicitations: options.ShowsElicitations, restoredUsage: options.RestoredUsage);
         lock (_sessions)
         {
             _sessions.Add(session);

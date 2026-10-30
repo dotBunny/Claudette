@@ -73,7 +73,6 @@ public class WorktreeCleanupServiceTests
         Assert.SkipWhen(!GitInstalled, "git isn't on PATH.");
         var launcher = new GitAndFakeLauncher();
         await using var h = new TabTestHarness(launcher: launcher);
-        h.Factory.ProcessPerSession = true;
         await WorktreeTabTests.InitRepositoryAsync(h);
         await File.WriteAllTextAsync(Shared(h), """{ "actions": [ { "name": "Install", "command": "npm ci", "runOnNewWorktree": true } ] }""", TestContext.Current.CancellationToken);
 
@@ -106,7 +105,6 @@ public class WorktreeCleanupServiceTests
         Directory.CreateDirectory(path);
         h.Transport.Exit(0);
         await TabTestHarness.Eventually(() => tab.Status == TabStatus.Exited, "the stop");
-        h.Transport.RestartIfExited();
         await tab.RestartCommand.ExecuteAsync(null);
         await TabTestHarness.Eventually(() => tab.Status == TabStatus.Idle && tab.IsSettled, "the start again");
         tab.ComposerText = "go";

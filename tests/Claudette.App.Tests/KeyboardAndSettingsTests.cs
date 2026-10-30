@@ -63,7 +63,6 @@ public class KeyboardAndSettingsTests
     public async Task The_send_key_chip_switches_Send_with_for_every_tab_and_the_open_Settings_window()
     {
         await using var h = new TabTestHarness();
-        h.Factory.ProcessPerSession = true;
         var first = await h.OpenTabAsync();
         var second = await h.OpenTabAsync();
         using var settings = new SettingsViewModel(h.Services, null);

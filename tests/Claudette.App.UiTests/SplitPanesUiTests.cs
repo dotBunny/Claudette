@@ -17,7 +17,6 @@ public sealed class SplitPanesUiTests
     public async Task Two_tabs_sit_side_by_side_with_headers_and_a_click_in_one_focuses_it()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
-        h.Factory.ProcessPerSession = true;
         var alpha = await ThreadScript.OpenAsync(h, "Alpha");
         var beta = await ThreadScript.OpenAsync(h, "Beta");
         h.Shell.SelectedTab = alpha;
@@ -69,7 +68,6 @@ public sealed class SplitPanesUiTests
     public async Task Dragging_the_line_between_two_panes_widens_one_and_narrows_the_other()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
-        h.Factory.ProcessPerSession = true;
         var alpha = await ThreadScript.OpenAsync(h, "Alpha");
         var beta = await ThreadScript.OpenAsync(h, "Beta");
         h.Shell.SelectedTab = alpha;
@@ -103,7 +101,6 @@ public sealed class SplitPanesUiTests
     public async Task A_tabs_row_dragged_onto_the_right_half_of_the_conversation_opens_beside_it()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
-        h.Factory.ProcessPerSession = true;
         var alpha = await ThreadScript.OpenAsync(h, "Alpha");
         var beta = await ThreadScript.OpenAsync(h, "Beta");
         h.Shell.SelectedTab = alpha;

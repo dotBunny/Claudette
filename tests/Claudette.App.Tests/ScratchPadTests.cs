@@ -77,7 +77,6 @@ public sealed class ScratchPadTests
     public async Task Tabs_in_a_project_share_its_pad_and_typing_saves_once_it_pauses()
     {
         await using var h = Harness();
-        h.Factory.ProcessPerSession = true;
         MakeRepository(h.WorkFolder);
         var first = await h.OpenTabAsync();
         await h.Shell.OpenFolderAsync(h.WorkFolder);
