@@ -19,10 +19,10 @@
     <DockPanel>
       <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): its title -->
       <controls:TitleBar DockPanel.Dock="Top" />
-      <!-- At its foot, under a line and always in view: Try the demo (DESIGN.md §11, "Demo mode"), Claudette on made-up
-           projects with a stand-in for Claude, in a window of its own -->
+      <!-- At its foot, under a line and always in view while Ctrl is held: Try the demo (DESIGN.md §11, "Demo mode"),
+           Claudette on made-up projects with a stand-in for Claude, in a window of its own. The code-behind shows it. -->
       <Border Name="AboutFoot" DockPanel.Dock="Bottom" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="40,12"
-              IsVisible="{Binding Demo.IsOffered}">
+              IsVisible="False">
         <StackPanel Spacing="6">
           <StackPanel Orientation="Horizontal" Spacing="12">
             <Button Name="TryDemo" Content="{Binding Demo.ButtonText}" Command="{Binding Demo.TryCommand}" ToolTip.Tip="{x:Static demo:DemoStarter.Tip}" />

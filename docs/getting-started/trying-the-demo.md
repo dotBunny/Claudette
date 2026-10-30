@@ -14,8 +14,7 @@ The demo is Claudette on made-up projects, with a stand-in for Claude, so you ca
 Choose **Try the demo**:
 
 - on the sign-in screen, beside **Sign in** ([Signing in](signing-in.md));
-- on the setup screen, when Claude Code isn't installed or can't be used ([The first launch](the-first-launch.md));
-- or at the foot of **About Claudette**, from **≡** in the header, at any time ([About Claudette](../settings/about.md)).
+- or on the setup screen, when Claude Code isn't installed or can't be used ([The first launch](the-first-launch.md)).
 
 The demo opens in a window of its own, titled *Claudette demo*. The window you started it from stays as it was: your tabs, or the sign-in screen.
 

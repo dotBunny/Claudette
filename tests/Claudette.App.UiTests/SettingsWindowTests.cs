@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -324,6 +325,31 @@ public class SettingsWindowTests
             await ((CommunityToolkit.Mvvm.Input.IAsyncRelayCommand)link.Command!).ExecuteAsync(null);
         }
         Assert.Equal(["https://github.com/Steklorez", "https://github.com/dotBunny/Claudette/pulls?q=is%3Apr+author%3ASteklorez"], h.Platform.OpenedUrls);
+        window.Close();
+    }
+
+    /// <summary>
+    /// Try the demo, at About's foot (DESIGN.md §11, "Demo mode"), shows only while Ctrl is held, whichever control has
+    /// the focus.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task About_shows_Try_the_demo_only_while_Ctrl_is_held()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var window = new AboutWindow { DataContext = new AboutPage(new SettingsContext(h.Services)), Width = 720, Height = 700 };
+        window.Show();
+        UiText.Settle(window);
+        var foot = window.FindControl<Border>("AboutFoot")!;
+        Assert.False(foot.IsVisible);
+
+        window.KeyPressQwerty(PhysicalKey.ControlLeft, RawInputModifiers.Control);
+        Assert.True(foot.IsVisible);
+        window.KeyPressQwerty(PhysicalKey.A, RawInputModifiers.Control);
+        window.KeyReleaseQwerty(PhysicalKey.A, RawInputModifiers.Control);
+        Assert.True(foot.IsVisible);
+
+        window.KeyReleaseQwerty(PhysicalKey.ControlLeft, RawInputModifiers.None);
+        Assert.False(foot.IsVisible);
         window.Close();
     }
 

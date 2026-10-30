@@ -49,7 +49,3 @@ The last section lists everything Claudette is built with that someone else made
 - **Notices**, on some rows, shows the third-party notices it carries: the licenses of what it's built from in turn.
 
 The list is made from the libraries the copy you have was built with, so it matches your version.
-
-## Try the demo
-
-At the window's foot, under a line, **Try the demo** opens Claudette on made-up projects, with a stand-in for Claude, in a window of its own: see [Trying the demo](../getting-started/trying-the-demo.md). The demo's own About has no such button.
