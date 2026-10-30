@@ -21,6 +21,8 @@ A .NET desktop app that wraps Claude Code in a native GUI: one tab per Claude Co
 
 The backlog is the open GitHub issues on `dotBunny/Claudette` assigned to `reapazor`. The `issues` skill (`.claude/skills/issues/SKILL.md`) lists them, plans one and builds it once the user says go. A pull request that resolves one says `Fixes #N`; don't comment on the issue itself. Merging a pull request from someone outside dotBunny adds them to About's **Contributors** (`AboutPage.ContributorList`) if they aren't there yet, and keeps their commits theirs: update their branch with a merge rather than rebasing it.
 
+`gh` isn't installed on the development machine, though the `issues` and `ci-failures` skills mention it. Read issues, pull requests and workflow runs through GitHub's REST API instead (`curl -s https://api.github.com/repos/dotBunny/Claudette/issues/<N>`), which needs no sign-in for this public repository. A run's logs and artifacts do need one, so ask the user for them.
+
 ## Stack
 
 - .NET 10, C# with nullable reference types on and warnings treated as errors, `.editorconfig`'s code style included (unused usings, members and parameters, readonly fields, field naming). Package versions live in `Directory.Packages.props`. Settings → About lists every package the app ships with its license (`src/Claudette.App/ThirdPartyNotices.targets`, in the build): a new one under a license with no text in `src/Claudette.App/Licenses/`, and without a license file of its own, fails the build until its text is added there.

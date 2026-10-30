@@ -2389,7 +2389,7 @@ The spike's Node scripts (a mock Messages API, a stream-json driver and the scen
 | Piece | Location |
 |---|---|
 | Fake transport and replay transport | `tests/Claudette.Core.Tests/Support/` |
-| Protocol fixtures | `tests/Claudette.Core.Tests/Fixtures/protocol/2.1.284/`: `01`–`06` and `signed-out` from the spikes, `07`–`11` from `ProtocolRecordingTests`, and `12-subagents` recorded from the mock's `SUBAGENTS`. A later version's folder (`2.1.285/`, `2.1.286/`, `2.1.300/`, `2.1.308/`) holds `07`–`11` recorded again when its compatibility report is handled; the parsing and Diagnostics tests read every version's |
+| Protocol fixtures | `tests/Claudette.Core.Tests/Fixtures/protocol/2.1.284/`: `01`–`06` and `signed-out` from the spikes, `07`–`11` from `ProtocolRecordingTests`, and `12-subagents` recorded from the mock's `SUBAGENTS`. A later version's folder (`2.1.285/`, `2.1.286/`, `2.1.300/`, `2.1.308/`, `2.1.312/`) holds `ProtocolRecordingTests`' scenarios recorded again when its compatibility report is handled (`07`–`11`, and from 2.1.308 `12` and `13` too); the parsing and Diagnostics tests read every version's |
 | Record mode | `tools/Claudette.Fixtures/` (`ProtocolFixtureWriter`: a protocol log to a cleaned fixture), used by `ProtocolRecordingTests` and `LiveTests` |
 | `fake-claude` | `tools/Claudette.FakeClaude/`. Scripted by the prompt (`ASK_PERMISSION`, `SLOW`, `CRASH`, `SPAWN`, `SILENT`, `HANG`, `AUTH_FAIL`, `LIMIT`, `RUN_BASH`, `SUBAGENTS`) and by environment variables, rather than scenario files; see the header of its `Program.cs`. Its sign-in (`auth login`, `auth logout`, the sign-in control requests) is kept in a file in `CLAUDE_CONFIG_DIR`, so a sign-in sticks. Its reply to a message with images names their media types. |
 | Mock Messages API | `tools/Claudette.MockApi/`. Runs in-process in tests, or on its own with `dotnet run`. |
@@ -2495,15 +2495,24 @@ The report for 2.1.308 (#57) matched 100 changes across eight releases, nearly a
 - The report's other two failures weren't Claude Code's: a Project Files test that passes on every run elsewhere, and the Linux process monitor's measure of a busy process's CPU, which a busy CI runner can upset.
 - Not used yet: the Agent SDK's `BUILTIN_TOOL_NAMES` and `LEGACY_TOOL_NAME_ALIASES` (alpha), and a per-tool permission policy for an SDK MCP server's tools.
 
+The report for 2.1.312 (#91) matched 154 changes across four releases, but most were the docs pages' links becoming absolute; without those, 55 matched, nearly all docs rewording and fixes. What it changed:
+
+- Claude Code's limit messages now call the session limit the "5-hour limit". Claudette finds a limit from `rate_limit_event`'s fields, not from the message, so nothing breaks, and its own notices keep the usage header's name, *session limit*, as claude.ai's usage page does.
+- In the recorded scenarios (`07`–`13`, in `2.1.312/`), `system/init` adds the capability `ask_user_question_unanswered_v1`, and `result` adds `model_usage_since_last_result` (each model's usage since the previous result, which the Agent SDK's types don't list), now known to Diagnostics. Below the top level, `modelUsage` adds the 5-minute and 1-hour cache writes, an interrupted reply's `message_stop` names the blocks it abandoned (`abandoned_blocks`), a subagent's `tool_use_result` adds `toolsUsed`, and a reply's `message_delta` stream event now comes before the `task_started` or tool result it used to follow. Claudette reads none of them, and the real-CLI tests pass against 2.1.312 and 2.1.301.
+- Unchanged for Claudette: model ids drop a `[1m]` suffix where it does nothing (Claudette compares ids without it); `stream-json` writes some control and format characters as `\uXXXX` escapes, which parse to the same values; and a restart's carried-on turn still leaves out the tool calls the restart cut off, which `CLAUDE_CODE_RESUME_SHOWS_CUT_OFF_CALLS` (2.1.309) would keep, marked as cut off.
+- Compacting asks the model for its summary in a `<summary>` block, and from 2.1.311 asks once more when the reply has none. The mock API answered every request it didn't know with "pong", so each compaction made two calls and the recorded compaction counted twice what it had. The mock now answers that request with a summary, as a model does (`<summary> block` in the surface file); Claudette's own counting was right either way.
+- The report's one failure wasn't Claude Code's: a missing-folder test started a close from the test's own thread, so its wait could read the tabs while the close was taking one away. It now starts the close as a click does. The tests of Claude Code's projects in the sidebar had the same race, restoring from the test's thread, so a wait could find a group before its past sessions; they now restore as the app does.
+- Not used yet: `ask_user_question_unanswered_v1` (an answer can say a question was skipped, answered in the chat or dismissed), `model_usage_since_last_result` (Claudette works a turn's usage out from the running `modelUsage` totals), `mcp_status`'s `liveReply`, and the `mcpMount` permission rule source.
+
 ### Tested versions
 
 - Claudette records two versions:
   - `ClaudeLocator.MinimumVersion` (`minimum` in `compat/surface.yaml`): the hard floor from [§12](#applying-it).
   - `ClaudeLocator.LastTestedVersion` (`lastTested`): updated each time a compatibility report is handled.
-- A version newer than the last tested one is allowed. Settings → Claude Code shows a quiet note, *"Newer than the last tested version (2.1.308)"*, and nothing more intrusive.
+- A version newer than the last tested one is allowed. Settings → Claude Code shows a quiet note, *"Newer than the last tested version (2.1.312)"*, and nothing more intrusive.
 - A version older than the last tested one, but not older than the minimum, is supported too, with a nudge to update and nothing that blocks:
-  - Settings → Claude Code adds *"Older than the last tested version (2.1.308); updating is recommended"*.
-  - When the update badge offers a newer version ([§12](#applying-it)), its dialog adds *"Claudette was last tested with 2.1.308."*
+  - Settings → Claude Code adds *"Older than the last tested version (2.1.312); updating is recommended"*.
+  - When the update badge offers a newer version ([§12](#applying-it)), its dialog adds *"Claudette was last tested with 2.1.312."*
   - Only the minimum is required. It goes up only when Claudette starts relying on something a newer version adds, not with each compatibility report.
 
 ### Staying tolerant at runtime

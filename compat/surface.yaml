@@ -14,7 +14,7 @@
 
 versions:
   minimum: 2.1.284     # ClaudeLocator.MinimumVersion, and docs/_config.yml for the user guide
-  lastTested: 2.1.308  # ClaudeLocator.LastTestedVersion and docs/_config.yml; bump when a compatibility report is handled
+  lastTested: 2.1.312  # ClaudeLocator.LastTestedVersion and docs/_config.yml; bump when a compatibility report is handled
 
 items:
   # --- Launch flags ------------------------------------------------------------------------------------
@@ -729,6 +729,12 @@ items:
     usedIn: tools/Claudette.MockApi/MockAnthropicApi.cs
     test: RealCliTests
     fallback: The reminder that lists the tools Claude Code holds back for ToolSearch, a name a line after this header. The mock reads it to know a tool it isn't offered can be loaded; if the wording changes, match the new wording, or the mock's EXIT_PLAN and SEND_MESSAGE fall through to "pong" and the plan and thread RealCli tests wait for a prompt that never comes.
+  - id: "<summary> block"
+    kind: behavior
+    status: undocumented
+    usedIn: tools/Claudette.MockApi/MockAnthropicApi.cs
+    test: ProtocolRecordingTests, ProcessUsageTests
+    fallback: Compacting asks the model for its summary in "a <summary> block" (or inside "<summary></summary> tags"), and from 2.1.311 asks once more when the reply has none. The mock answers that request with a <summary> block, as a model does. If the wording changes, match the new wording, or each compaction makes two calls and the recorded 10-compact counts the compaction twice.
   - id: "ExitPlanModeOutput"
     kind: field
     status: documented
