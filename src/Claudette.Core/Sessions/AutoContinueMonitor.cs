@@ -66,7 +66,10 @@ public sealed record LimitWait(DateTimeOffset ResetsAt, string? LimitType, DateT
     [JsonIgnore]
     public bool WillContinue => Hold == LimitWaitHold.None && !HasReset;
 
-    /// <summary>"session limit", "weekly limit" or "Opus limit", as Claude Code names them in its error.</summary>
+    /// <summary>
+    /// "session limit", "weekly limit" or "Opus limit", by the usage header's names for them. Claude Code's own error
+    /// calls the session limit the "5-hour limit" since 2.1.312; Claudette keeps its name, as claude.ai's usage page does.
+    /// </summary>
     [JsonIgnore]
     public string LimitName => NameOf(LimitType);
 

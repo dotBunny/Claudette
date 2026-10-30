@@ -41,6 +41,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Unreal Engine projects show Unreal Engine's logo**, with Epic's permission: on their page in Settings, where the whole logo is the page's title, and as the project's icon on its group's row in the sidebar, where they had a gear.
 - **Settings → Perforce shows Perforce's logo**, with Perforce's permission: its symbol beside its name in the sidebar, where it had a drum, and the whole logo as the page's title.
 - **The Games window chooses its game in its header.** The game's name beside the window's title, such as **Hangman ▾**, has a menu of the games, in place of the row of games at the top of the window.
+- Tested with Claude Code 2.1.312.
 
 ### Fixed
 
