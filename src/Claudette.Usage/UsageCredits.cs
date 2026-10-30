@@ -61,7 +61,7 @@ public sealed record CreditUse(string? LimitType, DateTimeOffset? Until, UsageCr
 {
     public const string Title = "Using usage credits";
 
-    /// <summary>The limit as Claude Code names it: "session limit", "weekly limit".</summary>
+    /// <summary>The limit by the usage header's name for it: "session limit", "weekly limit".</summary>
     public string LimitName => LimitWait.NameOf(LimitType);
 
     /// <summary>

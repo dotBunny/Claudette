@@ -73,7 +73,7 @@ gh_edit_view_mode: edit
 # together.
 claude_code:
   minimum: 2.1.284
-  tested: 2.1.308
+  tested: 2.1.312
 
 exclude:
   - Gemfile
