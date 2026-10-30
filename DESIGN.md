@@ -23,7 +23,7 @@ Claudette does not replace Claude Code. It runs the real `claude` CLI as a child
 
 | Area | Choice | Notes |
 |---|---|---|
-| Runtime | .NET 10 (LTS) | Moving to .NET 11 is planned ([below](#moving-to-net-11)). |
+| Runtime | .NET 10 (LTS) | Moving to .NET 11 is planned ([below](#moving-to-net-11)). The garbage collector compacts the large object heap when it's fragmented (`System.GC.ConserveMemory` 5, in `Claudette.App.csproj`): it never moves its objects (85 KB and up) otherwise, and Claude Code's lines with a screenshot or a big file in them left 650 MB of holes, half the heap, after a day of six tabs. |
 | UI | Avalonia 12 | One codebase for Windows, macOS and Linux. |
 | Look & feel | Fluent theme on Windows, macOS-style theme on macOS | Follows the OS light/dark setting, in JetBrains Rider's Islands look or the Claude apps' ([Visual style](#visual-style)), with an opaque frame (no Mica backdrop, since 2026-10-28). The header is the window's title bar on Windows and macOS, as in Rider, with the OS's title bar on Linux or by choice ([Window frame](#window-frame)); traffic lights and the menu bar on macOS. The macOS-style theme isn't built yet; macOS uses the Fluent theme for now. |
 | Pattern | MVVM with CommunityToolkit.Mvvm | |
