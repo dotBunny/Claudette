@@ -43,6 +43,10 @@ If your organization's settings limit the kind of account that may sign in, Clau
 
 If you signed in from a terminal, choose **I've already signed in**. Claudette asks Claude Code again. If Claude Code still says you're not signed in, Claudette says so.
 
+## Without an account
+
+**Try the demo** opens Claudette on made-up projects, with a stand-in for Claude, in a window of its own: see [Trying the demo](trying-the-demo.md).
+
 ## In the middle of a session
 
 If Claude Code loses its sign-in while Claudette is running, a banner runs across the top of every tab: *Claude Code needs you to sign in.* The tabs stay open. **Sign in** on the banner opens the same screen as a window over the main one, which you can close. If Claudette isn't in front, you also get one notification, whatever the number of tabs.

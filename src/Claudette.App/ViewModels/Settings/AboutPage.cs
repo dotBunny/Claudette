@@ -48,6 +48,9 @@ public sealed partial class AboutPage : SettingsPage
             "Claude Code's projects in the sidebar, with their past sessions; your messages set apart from Claude's; collapsing tool calls."),
     ];
 
+    /// <summary><b>Try the demo</b>, at the window's foot (DESIGN.md §11, "Demo mode").</summary>
+    public Demo.DemoStarter Demo => field ??= new Demo.DemoStarter(Services);
+
     public AboutPage(SettingsContext context) : base(context, "About Claudette")
     {
         Section("claudette", "Claudette",

@@ -618,7 +618,8 @@ internal sealed class TabTestHarness : IAsyncDisposable
     /// </param>
     /// <param name="loginShell">Stands in for the user's login shell (DESIGN.md §13); by default none is read.</param>
     public TabTestHarness(Action<AppSettings>? configure = null, FakeClaudeUpdater? updater = null, IProcessLauncher? launcher = null, IUiDispatcher? dispatcher = null,
-        Core.Updates.IAppInstaller? appInstaller = null, HttpMessageHandler? http = null, Core.Updates.AppVersion? appVersion = null, ILoginShell? loginShell = null)
+        Core.Updates.IAppInstaller? appInstaller = null, HttpMessageHandler? http = null, Core.Updates.AppVersion? appVersion = null, ILoginShell? loginShell = null,
+        Demo.DemoMode? demo = null)
     {
         Directory.CreateDirectory(Path.Combine(_root, "work"));
         Directory.CreateDirectory(ProjectsDirectory);
@@ -631,7 +632,7 @@ internal sealed class TabTestHarness : IAsyncDisposable
         Services = new AppServices(AppPaths.Under(_root), launcher is FakeP4 ? launcher : new NoRealP4Launcher(launcher ?? new ProcessLauncher()), Time, Platform, dispatcher ?? new InlineDispatcher(), processTrees: Trees, notifier: Notifier,
             appInstaller: appInstaller, httpHandler: http ?? new OfflineHandler(), appVersion: appVersion ?? TestVersion, loginShell: loginShell,
             projectToolPaths: otherPrograms, sleepBlocker: SleepBlocker, loginItems: LoginItems, systemMotion: SystemMotion,
-            trash: Trash);
+            trash: Trash, demo: demo);
         Services.Notifications.UseBadge(Notifier);
         // The machine running the tests doesn't decide whether the Claude app is available (its ANTHROPIC_BASE_URL, say).
         Services.RemoteControl.EnvironmentVariable = _ => null;

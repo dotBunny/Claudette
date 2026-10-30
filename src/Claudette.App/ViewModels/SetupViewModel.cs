@@ -21,14 +21,18 @@ public sealed record SetupInstall(string Command, Func<Action<string>, Task<Clau
 /// <b>Install Claude Code</b>, when it's missing (DESIGN.md §12, "Installing Claude Code"); after it works, Claudette looks
 /// for it again. Null when it isn't offered.
 /// </param>
+/// <param name="demo"><b>Try the demo</b>, which needs no Claude Code (DESIGN.md §11, "Demo mode"); null when it isn't offered.</param>
 public sealed partial class SetupViewModel(
     ClaudeLocateResult result,
     IPlatformServices platform,
     Func<string?, Task> checkAgain,
     Func<Action<string>, Task<ClaudeUpdateResult>>? update = null,
     Func<Task>? recheck = null,
-    SetupInstall? install = null) : ViewModelBase
+    SetupInstall? install = null,
+    Demo.DemoStarter? demo = null) : ViewModelBase
 {
+    public Demo.DemoStarter? Demo { get; } = demo;
+
     public const string InstallDocsUrl = "https://code.claude.com/docs/en/setup";
 
     private readonly StringBuilder _output = new();

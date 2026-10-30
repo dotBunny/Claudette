@@ -27,6 +27,7 @@ The buttons under the explanation:
 - **Check again** looks for `claude` again, after you've installed or fixed it.
 - **Choose claude…** opens a file picker for the `claude` program. Claudette remembers your choice in Settings → Claude Code → **Path to claude**.
 - **Install instructions** opens Claude Code's [setup page](https://code.claude.com/docs/en/setup).
+- **Try the demo** opens Claudette on made-up projects, with a stand-in for Claude, which needs no Claude Code: see [Trying the demo](trying-the-demo.md).
 
 Claudette needs Claude Code {{ site.claude_code.minimum }} or later. It was last tested with {{ site.claude_code.tested }}. A newer version is allowed, and an older one in between works too, with a quiet note in Settings. [Claude Code missing or too old](../troubleshooting/claude-code-missing-or-too-old.md) has the fixes for each case.
 

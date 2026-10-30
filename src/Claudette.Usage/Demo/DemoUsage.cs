@@ -1,15 +1,15 @@
 using System.Text.Json.Nodes;
+using Claudette.Core.Demo;
 using Claudette.Core.Settings;
-using Claudette.Usage;
 
-namespace Claudette.Demo;
+namespace Claudette.Usage.Demo;
 
 /// <summary>
 /// The demo's plan usage (DESIGN.md §6): a history in the usage database that ends now, and the <c>get_usage</c>
 /// answer fake-claude gives from <c>FAKE_CLAUDE_USAGE</c>, where the history ends, so the header's meters, sparkline,
 /// projection and detailed charts agree.
 /// </summary>
-internal static class DemoUsage
+public static class DemoUsage
 {
     /// <summary>Session use through the window so far, by minute: a slow start, a busy stretch, a lull, then steady work.</summary>
     private static readonly (double Minutes, double Percent)[] Curve = [(0, 0), (25, 4), (70, 29), (105, 32), (150, 47), (196, 61)];

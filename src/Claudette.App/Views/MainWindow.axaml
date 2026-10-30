@@ -518,6 +518,18 @@
           </Grid>
         </Border>
 
+        <!-- A demo (DESIGN.md §11, "Demo mode"): what it is, and the way out -->
+        <Border Name="DemoBanner" DockPanel.Dock="Top" Classes="statusbanner info" IsVisible="{Binding IsDemo}">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBlock TextWrapping="Wrap" VerticalAlignment="Center">
+              <Run FontWeight="SemiBold" Text="This is a demo," />
+              <Run Text="with made-up projects and a stand-in for Claude. Nothing in it reaches Claude or your account." />
+            </TextBlock>
+            <Button Grid.Column="1" Classes="flat" Content="Leave demo" Command="{Binding LeaveDemoCommand}" VerticalAlignment="Center"
+                    ToolTip.Tip="Close the demo; what it made goes with it" />
+          </Grid>
+        </Border>
+
         <!-- Claude has an incident, or maintenance (DESIGN.md §18, "Service status"), until dismissed or over -->
         <Border Name="ServiceStatusBanner" DockPanel.Dock="Top" Classes="statusbanner" Classes.info="{Binding ServiceStatus.IsInfoBanner}"
                 IsVisible="{Binding ServiceStatus.ShowBanner}">

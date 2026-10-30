@@ -1,10 +1,12 @@
 using System.Text.Json;
+using Claudette.App.Demo;
 using Claudette.Core;
 using Claudette.Core.Accessibility;
 using Claudette.Core.Auth;
 using Claudette.Core.Claude;
 using Claudette.Core.Composer;
 using Claudette.Core.Credentials;
+using Claudette.Core.Demo;
 using Claudette.App.Editor;
 using Claudette.Core.Diffs;
 using Claudette.Core.Files;
@@ -86,6 +88,7 @@ public sealed class AppServices : IAsyncDisposable
     /// The OS's trash, for deleting from a Files tab's explorer (DESIGN.md §18, "Project files", "Renaming and deleting").
     /// Null has none, so deleting asks to delete for good: tests.
     /// </param>
+    /// <param name="demo">This Claudette is a demo (DESIGN.md §11, "Demo mode"); null for any other.</param>
     public AppServices(
         AppPaths paths,
         IProcessLauncher launcher,
@@ -106,8 +109,10 @@ public sealed class AppServices : IAsyncDisposable
         ISleepBlocker? sleepBlocker = null,
         ILoginItems? loginItems = null,
         ISystemMotion? systemMotion = null,
-        ITrash? trash = null)
+        ITrash? trash = null,
+        DemoMode? demo = null)
     {
+        Demo = demo;
         AppInstaller = appInstaller ?? new NoAppInstaller();
         AppVersion = appVersion ?? BuiltVersion();
         LoginItems = loginItems ?? new NoLoginItems("Claudette can't start at login here.");
@@ -141,7 +146,7 @@ public sealed class AppServices : IAsyncDisposable
         KeepAwake = new KeepAwakeService(this, sleepBlocker ?? new NoSleepBlocker());
         RemoteControl = new RemoteControlService(this);
         var otherPrograms = projectToolPaths ?? ProjectToolPaths.ForCurrentUser();
-        Locator = new ClaudeLocator(launcher, timeProvider, UserEnvironment, RemoteControl.ClaudeVariables, new ClaudeDesktop(otherPrograms, ToolOSExtensions.Current));
+        Locator = new ClaudeLocator(launcher, timeProvider, UserEnvironment, ClaudeVariables, new ClaudeDesktop(otherPrograms, ToolOSExtensions.Current));
         // Settings → Git → Path to git, read as each run starts (DESIGN.md §14).
         Git = new GitWorkingTree(launcher, timeProvider, environment: UserEnvironment) { ConfiguredPath = () => Settings.Git.Path };
         MentionFolders = new MentionFolderReader(Git, timeProvider);
@@ -163,9 +168,9 @@ public sealed class AppServices : IAsyncDisposable
         LiveSessions = new LiveSessionsService(this, systemProcesses);
         EditorLogs = new EditorLogService(this);
         UpdaterFactory = path => new ClaudeUpdater(path, Paths.UtilityDirectory, _launcher, Time, UserEnvironment.Probe,
-            environmentOverrides: RemoteControl.ClaudeVariables, userEnvironment: UserEnvironment);
+            environmentOverrides: ClaudeVariables, userEnvironment: UserEnvironment);
         InstallerFactory = () => new ClaudeInstaller(ToolOSExtensions.Current, Paths.UtilityDirectory, _launcher, Time, UserEnvironment.Probe,
-            RemoteControl.ClaudeVariables, UserEnvironment);
+            ClaudeVariables, UserEnvironment);
         SettingsChanged += (_, _) =>
         {
             // Turning Use my login shell's environment on reads it now, if this run hasn't yet.
@@ -414,6 +419,28 @@ public sealed class AppServices : IAsyncDisposable
     /// <summary>Starts processes (DESIGN.md §15): <c>claude</c>, git, diff tools.</summary>
     public IProcessLauncher Launcher => _launcher;
 
+    /// <summary>This Claudette is a demo, on a folder of its own, with a stand-in for Claude Code (DESIGN.md §11, "Demo mode"); null for any other.</summary>
+    public DemoMode? Demo { get; }
+
+    /// <summary>
+    /// What every <c>claude</c> Claudette starts has in its environment: where the presence file is (DESIGN.md §18,
+    /// "Remote Control"), and in a demo the variable that has Claudette stand in for Claude Code (DESIGN.md §11, "Demo
+    /// mode"), which only <c>claude</c> gets.
+    /// </summary>
+    public IReadOnlyDictionary<string, string?> ClaudeVariables => Demo is null
+        ? RemoteControl.ClaudeVariables
+        : new Dictionary<string, string?>(RemoteControl.ClaudeVariables) { [StandInClaude.Variable] = "1" };
+
+    /// <summary>Where <b>Try the demo</b> writes its demos: the temporary folder; a test's own in tests.</summary>
+    public string DemoFolderRoot { get; set; } = Path.GetTempPath();
+
+    /// <summary>
+    /// <b>Try the demo</b> (DESIGN.md §11, "Demo mode"): a demo written into a folder of its own and a second Claudette
+    /// started on it, this one left as it was. Returns the demo's folder.
+    /// </summary>
+    public Task<string> StartDemoAsync() =>
+        DemoLaunch.StartAsync(this, Environment.ProcessPath ?? throw new InvalidOperationException("Claudette doesn't know where it is."), DemoFolderRoot);
+
     /// <summary>
     /// The environment of the user's processes, <c>claude</c>, git, <c>p4</c> and diff tools, with the login shell's
     /// merged in when it's used (DESIGN.md §13, "Login shell environment"). The app starts reading it at launch.
@@ -575,7 +602,7 @@ public sealed class AppServices : IAsyncDisposable
     {
         Install = install;
         Sessions = new ClaudeSessionFactory(install.Path, _launcher, Time, Loggers, Diagnostics, UserEnvironment);
-        Auth = new ClaudeAuth(install.Path, _launcher, Time, environment: RemoteControl.ClaudeVariables, userEnvironment: UserEnvironment);
+        Auth = new ClaudeAuth(install.Path, _launcher, Time, environment: ClaudeVariables, userEnvironment: UserEnvironment);
         ClaudeUpdates = new ClaudeUpdateService(this, CreateUpdater(install.Path), install.Version);
     }
 
@@ -693,7 +720,7 @@ public sealed class AppServices : IAsyncDisposable
                 await _utility.DisposeAsync().ConfigureAwait(false);
             }
             var factory = Sessions ?? throw new InvalidOperationException("Claude Code hasn't been found yet.");
-            _utility = await UtilitySession.StartAsync(factory, Paths.UtilityDirectory, cancellationToken, ProtocolLogPath("utility"), RemoteControl.ClaudeVariables).ConfigureAwait(false);
+            _utility = await UtilitySession.StartAsync(factory, Paths.UtilityDirectory, cancellationToken, ProtocolLogPath("utility"), ClaudeVariables).ConfigureAwait(false);
             return _utility;
         }
         finally

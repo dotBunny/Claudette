@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Claudette.App.ViewModels"
+             xmlns:demo="using:Claudette.App.Demo"
              x:Class="Claudette.App.Views.SetupView"
              x:DataType="vm:SetupViewModel">
   <Border Classes="card" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="640">
@@ -32,7 +33,12 @@
         <Button Content="Check again" Command="{Binding CheckAgainCommand}" IsVisible="{Binding !ChecksFirst}" />
         <Button Content="Choose claude…" Command="{Binding BrowseCommand}" />
         <Button Content="Install instructions" Command="{Binding OpenInstallDocsCommand}" />
+        <!-- Try the demo (DESIGN.md §11, "Demo mode"): Claudette on made-up projects, in a window of its own -->
+        <Button Name="TryDemo" Content="{Binding Demo.ButtonText, FallbackValue={x:Null}}" Command="{Binding Demo.TryCommand, FallbackValue={x:Null}}" IsVisible="{Binding Demo.IsOffered, FallbackValue=False}"
+                ToolTip.Tip="{x:Static demo:DemoStarter.Tip}" />
       </WrapPanel>
+      <TextBlock Classes="muted small" Classes.error="{Binding Demo.IsProblem, FallbackValue=False}" Text="{Binding Demo.Note, FallbackValue={x:Null}}" TextWrapping="Wrap"
+                 IsVisible="{Binding Demo.HasNote, FallbackValue=False}" />
       <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsRunning}" />
       <TextBlock Classes="muted" TextWrapping="Wrap" IsVisible="{Binding IsInstalling}"
                  Text="The installer prints nothing while it downloads Claude Code, which can take a few minutes." />

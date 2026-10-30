@@ -38,8 +38,12 @@ public sealed partial class SignInViewModel : ViewModelBase
         _services = services;
         _onSignedIn = onSignedIn;
         _close = close;
+        Demo = new Demo.DemoStarter(services);
         _logger = services.Loggers.CreateLogger<SignInViewModel>();
     }
+
+    /// <summary><b>Try the demo</b>, for someone without a Claude subscription (DESIGN.md §11, "Demo mode").</summary>
+    public Demo.DemoStarter Demo { get; }
 
     [ObservableProperty]
     public partial string Status { get; set; } = NeedsSignInText;

@@ -3,6 +3,7 @@ using Claudette.Core.Auth;
 using Claudette.Core.Development;
 using Claudette.Core.Installation;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Claudette.App.ViewModels;
 
@@ -81,6 +82,13 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
 
     /// <summary>The header just says Claudette: no plan usage to show, and no API key's spend.</summary>
     public bool ShowsTitle => !HasUsage && !ShowsSpend;
+
+    /// <summary>This is a demo (DESIGN.md §11, "Demo mode"): its banner shows, with <b>Leave demo</b>.</summary>
+    public bool IsDemo => Services.Demo is not null;
+
+    /// <summary><b>Leave demo</b>: closes it, as closing its window does, and its folder goes as it closes.</summary>
+    [RelayCommand]
+    private void LeaveDemo() => ExitRequested?.Invoke();
 
     /// <summary>
     /// Set by the window: it's too narrow for the session's meter beside everything else in the header, so the plan and
@@ -176,7 +184,7 @@ public sealed partial class MainWindowViewModel(AppServices services, string? in
             var install = result.Problem is ClaudeInstallProblem.NotFound or ClaudeInstallProblem.DesktopApp or ClaudeInstallProblem.UnsupportedLauncher
                 ? new SetupInstall(services.CreateInstaller().CommandText, InstallClaudeAsync)
                 : null;
-            CurrentPage = new SetupViewModel(result, services.Platform, CheckInstallAsync, update, () => CheckInstallAsync(path), install);
+            CurrentPage = new SetupViewModel(result, services.Platform, CheckInstallAsync, update, () => CheckInstallAsync(path), install, new Demo.DemoStarter(services));
             return;
         }
         if (path != services.Settings.ClaudeCode.ClaudePath)

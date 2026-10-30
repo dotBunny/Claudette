@@ -1,19 +1,20 @@
-using System.Diagnostics;
 using Claudette.Core.Diffs;
 using Claudette.Core.Sessions;
 using Claudette.Core.Settings;
 using Claudette.Core.Threads;
 
-namespace Claudette.Demo;
+namespace Claudette.Core.Demo;
 
 /// <summary>
-/// The demo's projects and tabs: three game projects in git repositories (Unreal in C++, Unity in C#, Godot), with
-/// Claude's changes in their working trees, and seven sessions over them, each with its transcript. The first tab,
+/// The demo's projects and tabs: three game projects (Unreal in C++, Unity in C#, Godot), and seven sessions over them,
+/// each with its transcript. How a project is made is the caller's: <c>tools/Claudette.Demo</c> makes git repositories with
+/// Claude's changes in their working trees, for the screenshots; the app's demo leaves the folders empty (DESIGN.md §11,
+/// "Demo mode"). The first tab,
 /// Grappling hook, is the one the main screenshot shows; Move to the Input System is a thread with two sub-threads, a
 /// plan, a task list part-way done and three subagents. Pool particle emitters and Stamina drains twice on clients run
 /// on the studio's API key.
 /// </summary>
-internal static class DemoContent
+public static class DemoContent
 {
     /// <summary>
     /// The demo's API-key account (DESIGN.md §4, "Accounts"): orbit-game's group uses it, and one starfall tab was moved
@@ -21,19 +22,23 @@ internal static class DemoContent
     /// </summary>
     public const string StudioAccount = "studio";
 
-    /// <summary>Writes the projects under <paramref name="projects"/> and the transcripts to <paramref name="transcripts"/>.</summary>
+    /// <summary>
+    /// Makes the projects under <paramref name="projects"/> with <paramref name="make"/>, which returns each one's folder,
+    /// and writes the transcripts to <paramref name="transcripts"/>, their turns earlier on the day of <paramref name="now"/>.
+    /// </summary>
     /// <returns>The tabs, the one to show first.</returns>
-    public static List<TabState> Write(string projects, string transcripts)
+    public static List<TabState> Write(string projects, string transcripts, DateTimeOffset now, Func<string, DemoProject, string> make)
     {
-        var starfall = Starfall(projects);
-        var tidepool = Tidepool(projects);
-        var orbit = Orbit(projects);
+        var today = new DateTimeOffset(now.Date, now.Offset);
+        var starfall = Starfall(projects, make);
+        var tidepool = Tidepool(projects, make);
+        var orbit = Orbit(projects, make);
 
-        var (grapple, firstWrite) = Grapple(starfall);
-        var stamina = Stamina(starfall);
-        var (inventory, inventoryChanges) = Inventory(tidepool);
-        var (input, sentAt) = InputSystem(tidepool);
-        var pool = Pool(orbit);
+        var (grapple, firstWrite) = Grapple(starfall, today);
+        var stamina = Stamina(starfall, today);
+        var (inventory, inventoryChanges) = Inventory(tidepool, today);
+        var (input, sentAt) = InputSystem(tidepool, today);
+        var pool = Pool(orbit, today);
         return
         [
             Tab("tab-grapple", starfall, grapple, "Grappling hook", reviewed: [(Path.Combine(starfall, "Source", "Starfall", "Abilities", "GrappleComponent.h"), firstWrite)]),
@@ -441,10 +446,10 @@ internal static class DemoContent
 
     private const string Engine = "C:/Program Files/Epic Games/UE_5.6/Engine";
 
-    private static string Starfall(string projects)
+    private static string Starfall(string projects, Func<string, DemoProject, string> make)
     {
         var player = "Source/Starfall/Player/";
-        return Project(projects, "starfall", "feature/grapple",
+        return make(projects, new DemoProject("starfall", "feature/grapple",
             new()
             {
                 ["Starfall.uproject"] = UProject,
@@ -462,15 +467,15 @@ internal static class DemoContent
                 ["Source/Starfall/Abilities/GrappleComponent.h"] = GrappleHeader,
                 ["Source/Starfall/Abilities/GrappleComponent.cpp"] = GrappleSource,
                 ["Source/Starfall/Tests/GrappleComponentTest.cpp"] = GrappleTest,
-            });
+            }));
     }
 
-    private static (DemoTranscript Transcript, string FirstWrite) Grapple(string root)
+    private static (DemoTranscript Transcript, string FirstWrite) Grapple(string root, DateTimeOffset today)
     {
         var source = Path.Combine(root, "Source", "Starfall");
         var abilities = Path.Combine(source, "Abilities");
         var character = Path.Combine(source, "Player", "StarfallCharacter.cpp");
-        var t = new DemoTranscript("5f6b2c1e-7d0a-4c55-9a51-2b8e6f0c4d11", root, "feature/grapple", Today(9, 12))
+        var t = new DemoTranscript("5f6b2c1e-7d0a-4c55-9a51-2b8e6f0c4d11", root, "feature/grapple", At(today, 9, 12))
             .Prompt("Add a grappling hook to the player. It should fire along the camera's aim, pull the character toward where it hits, and let go when you jump. Keep it in its own component, and add an automation test.")
             .Thinking("The character binds its input in AStarfallCharacter::SetupPlayerInputComponent. A UActorComponent for the grapple keeps the character class small; the pull can be a force each tick toward the anchor, so air control still works.")
             .Text("I'll start by finding where the character binds its abilities.")
@@ -525,9 +530,9 @@ internal static class DemoContent
         return (t, firstWrite);
     }
 
-    private static DemoTranscript Stamina(string root)
+    private static DemoTranscript Stamina(string root, DateTimeOffset today)
     {
-        var t = new DemoTranscript("8a1d4e77-3b2c-4f10-8e6d-91c0b7a5e222", root, "feature/grapple", Today(8, 40))
+        var t = new DemoTranscript("8a1d4e77-3b2c-4f10-8e6d-91c0b7a5e222", root, "feature/grapple", At(today, 8, 40))
             .Prompt("In multiplayer, stamina drains twice as fast on clients as on the host. Can you find out why?")
             .Text("Dashing calls `Spend` on both the client and the server, and the server's value then replicates back on top. I'll have only the server spend it.");
         t.Edit(Path.Combine(root, "Source", "Starfall", "Player", "StaminaComponent.cpp"), StaminaSource, SpendOld, SpendNew);
@@ -769,7 +774,7 @@ internal static class DemoContent
     private static readonly string[] InputModules =
         ["Assets/Scenes/Harbor.unity", "Assets/Scenes/Reef.unity", "Assets/Scenes/Title.unity", "Assets/Prefabs/UI/PauseMenu.prefab"];
 
-    private static string Tidepool(string projects) => Project(projects, "tidepool", "feature/input-system",
+    private static string Tidepool(string projects, Func<string, DemoProject, string> make) => make(projects, new DemoProject("tidepool", "feature/input-system",
         new()
         {
             ["ProjectSettings/ProjectVersion.txt"] = ProjectVersion,
@@ -784,13 +789,13 @@ internal static class DemoContent
             ["Assets/Scripts/Player/PlayerController.cs"] = PlayerController.Replace(ControllerOld, ControllerNew),
             ["Assets/Scripts/Inventory/InventorySave.cs"] = InventorySave.Replace(SaveOld, SaveNew),
             ["Assets/Tests/EditMode/InventorySaveTests.cs"] = InventorySaveTests,
-        });
+        }));
 
-    private static (DemoTranscript Transcript, (string Path, string Change)[] Reviewed) Inventory(string root)
+    private static (DemoTranscript Transcript, (string Path, string Change)[] Reviewed) Inventory(string root, DateTimeOffset today)
     {
         var save = Path.Combine(root, "Assets", "Scripts", "Inventory", "InventorySave.cs");
         var tests = Path.Combine(root, "Assets", "Tests", "EditMode", "InventorySaveTests.cs");
-        var t = new DemoTranscript("c47e9a02-51d8-4b6e-a3f2-0e9d8c7b6a33", root, "feature/input-system", Today(7, 55))
+        var t = new DemoTranscript("c47e9a02-51d8-4b6e-a3f2-0e9d8c7b6a33", root, "feature/input-system", At(today, 7, 55))
             .Prompt("Players say they sometimes lose their whole inventory when the game saves during a scene change. Can you find out why?")
             .Text("`InventorySave.Save` writes straight over `inventory.json`. When a scene change cuts it short, the file is left half-written and the next load can't parse it. I'll write to a temporary file and swap it in.");
         var edit = t.Edit(save, InventorySave, SaveOld, SaveNew);
@@ -800,10 +805,10 @@ internal static class DemoContent
     }
 
     /// <returns>The thread's transcript, and when it sent its sub-threads their work.</returns>
-    private static (DemoTranscript Transcript, DateTimeOffset SentAt) InputSystem(string root)
+    private static (DemoTranscript Transcript, DateTimeOffset SentAt) InputSystem(string root, DateTimeOffset today)
     {
         var scripts = Path.Combine(root, "Assets", "Scripts");
-        var t = new DemoTranscript("e2b5d8f1-9c3a-4d7e-b6a0-4f1e2d3c5b44", root, "feature/input-system", Today(7, 20))
+        var t = new DemoTranscript("e2b5d8f1-9c3a-4d7e-b6a0-4f1e2d3c5b44", root, "feature/input-system", At(today, 7, 20))
             .Prompt("Move the game from the old Input Manager to the Input System package, so gamepads work properly and players can rebind. Plan it first: I want to see what it touches before anything changes.")
             .Text("I'll look at three things in parallel: the scripts that read input, the UI's event systems, and the packages and settings.")
             .Agents(
@@ -891,13 +896,13 @@ internal static class DemoContent
 
     private const string SpawnNew = "var emitter := _pool.take()";
 
-    private static string Orbit(string projects) => Project(projects, "orbit-game", "main",
+    private static string Orbit(string projects, Func<string, DemoProject, string> make) => make(projects, new DemoProject("orbit-game", "main",
         new() { ["project.godot"] = "[application]\nconfig/name=\"Orbit\"\n", ["scripts/effects.gd"] = Effects },
-        new() { ["scripts/effects.gd"] = Effects.Replace(SpawnOld, SpawnNew) });
+        new() { ["scripts/effects.gd"] = Effects.Replace(SpawnOld, SpawnNew) }));
 
-    private static DemoTranscript Pool(string root)
+    private static DemoTranscript Pool(string root, DateTimeOffset today)
     {
-        var t = new DemoTranscript("a93c0f5e-2d1b-4e8a-9f7c-6b5a4d3e2f55", root, "main", Today(6, 5))
+        var t = new DemoTranscript("a93c0f5e-2d1b-4e8a-9f7c-6b5a4d3e2f55", root, "main", At(today, 6, 5))
             .Prompt("Explosions stutter when lots of them spawn at once. Pool the particle emitters.")
             .Text("Taking emitters from a pool instead of instancing one per burst.");
         t.Edit(Path.Combine(root, "scripts", "effects.gd"), Effects, SpawnOld, SpawnNew);
@@ -906,54 +911,20 @@ internal static class DemoContent
 
     // ---- Helpers ---------------------------------------------------------------------------------------------------
 
-    /// <summary>
-    /// A git repository with <paramref name="before"/> committed on main, then <paramref name="branch"/> checked out
-    /// with <paramref name="after"/> written over it and left uncommitted, as Claude left it.
-    /// </summary>
-    private static string Project(string projects, string name, string branch, Dictionary<string, string> before, Dictionary<string, string> after)
+    /// <summary>Earlier today, so the conversation's times read naturally.</summary>
+    private static DateTimeOffset At(DateTimeOffset today, int hour, int minute) => today.AddHours(hour).AddMinutes(minute);
+
+    /// <summary>A project's folder and nothing in it, as the app's demo has them (DESIGN.md §11, "Demo mode").</summary>
+    public static string EmptyFolder(string projects, DemoProject project)
     {
-        var root = Path.Combine(projects, name);
+        var root = Path.Combine(projects, project.Name);
         Directory.CreateDirectory(root);
-        Git(root, "init", "-q", "-b", "main");
-        WriteFiles(root, before);
-        Git(root, "add", "-A");
-        Git(root, "-c", "user.name=Demo", "-c", "user.email=demo@example.com", "commit", "-q", "-m", "Initial commit");
-        if (branch != "main")
-        {
-            Git(root, "checkout", "-q", "-b", branch);
-        }
-        WriteFiles(root, after);
         return root;
     }
-
-    private static void WriteFiles(string root, Dictionary<string, string> files)
-    {
-        foreach (var (name, text) in files)
-        {
-            var path = Path.Combine(root, name.Replace('/', Path.DirectorySeparatorChar));
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            File.WriteAllText(path, text.ReplaceLineEndings("\n"));
-        }
-    }
-
-    private static void Git(string folder, params string[] args)
-    {
-        var start = new ProcessStartInfo("git") { WorkingDirectory = folder, RedirectStandardOutput = true, RedirectStandardError = true };
-        // Line endings as written: the files' "before" in the transcripts has to match what's on disk.
-        foreach (var arg in (string[])["-c", "core.autocrlf=false", .. args])
-        {
-            start.ArgumentList.Add(arg);
-        }
-        using var git = Process.Start(start) ?? throw new InvalidOperationException("git didn't start.");
-        var error = git.StandardError.ReadToEnd();
-        git.StandardOutput.ReadToEnd();
-        git.WaitForExit();
-        if (git.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"git {string.Join(' ', args)} failed: {error.Trim()}");
-        }
-    }
-
-    /// <summary>Earlier today, so the conversation's times read naturally.</summary>
-    private static DateTimeOffset Today(int hour, int minute) => new DateTimeOffset(DateTime.Today, TimeZoneInfo.Local.GetUtcOffset(DateTime.Today)).AddHours(hour).AddMinutes(minute);
 }
+
+/// <summary>
+/// One of the demo's projects: its name, the branch Claude works on, its files as committed, and what Claude changed
+/// them to, which a maker writes over them uncommitted, or leaves out.
+/// </summary>
+public sealed record DemoProject(string Name, string Branch, Dictionary<string, string> Before, Dictionary<string, string> After);
