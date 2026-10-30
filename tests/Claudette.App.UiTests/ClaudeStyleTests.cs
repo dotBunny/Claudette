@@ -73,24 +73,27 @@ public class ClaudeStyleTests
         Assert.IsAssignableFrom<ISolidColorBrush>(window.FindResource(window.ActualThemeVariant, key)).Color;
 
     [AvaloniaFact]
-    public async Task Send_is_a_round_arrow_in_both_styles_and_the_Claude_style_rounds_the_cards_and_paints_yours_warm()
+    public async Task Send_is_a_round_arrow_in_both_styles_and_the_Claude_style_rounds_the_cards_and_code_and_paints_yours_warm()
     {
         await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
         var tab = await h.OpenTabAsync();
         tab.ComposerText = "Why does the parser drop the last line?";
         await tab.SendCommand.ExecuteAsync(null);
-        h.Transport.EmitTurn("It stops at the last newline.");
+        h.Transport.EmitTurn("It stops at the last newline:\n\n```\nwhile (reader.Peek() >= 0)\n```");
         // Not working until the send's Working is applied: the turn's footer is what says the reply is in.
         await TabTestHarness.Eventually(() => !tab.IsWorking && tab.Items.OfType<Conversation.TurnSummaryItem>().Any(), "the reply");
         var window = new MainWindow { DataContext = new MainWindowViewModel(h.Services) { CurrentPage = h.Shell }, Width = 1000, Height = 700 };
         window.Show();
-        await UiText.SettleUntilAsync(window, () => YourCard(window) is not null, "the message");
+        await UiText.SettleUntilAsync(window, () => YourCard(window) is not null && CodeFrame(window) is not null, "the message and the reply's code");
 
         // Standard: your card in the categorical palette's magenta, full width (DESIGN.md §18, "Conversation cards"),
         // and Send a round arrow in the accent, as in the Claude style (DESIGN.md §3).
         Assert.Equal(Token(window, "CardYouStripeBrush"), Stripe(YourCard(window)!));
         Assert.Equal(HorizontalAlignment.Stretch, YourCard(window)!.HorizontalAlignment);
         Assert.Equal(new CornerRadius(8), YourCard(window)!.CornerRadius);
+        // The code in Claude's reply keeps Standard's corners: its card's "claude" class says who wrote it, and the
+        // style's shapes look for the class on the AppearanceScope alone.
+        Assert.Equal(new CornerRadius(6), CodeFrame(window)!.CornerRadius);
         AssertRound(window);
 
         h.Services.Settings.Appearance.Style = AppStyle.Claude;
@@ -99,6 +102,7 @@ public class ClaudeStyleTests
 
         // Claude: rounder. Its warm grey comes with the colors (The_Claude_style_repaints_the_window_the_tokens_and_the_accent…).
         Assert.Equal(new CornerRadius(14), YourCard(window)!.CornerRadius);
+        Assert.Equal(new CornerRadius(12), CodeFrame(window)!.CornerRadius);
         AssertRound(window);
 
         // Stop too, while a turn runs.
@@ -141,5 +145,8 @@ public class ClaudeStyleTests
         window.GetVisualDescendants().OfType<Card>().FirstOrDefault(c => c.Classes.Contains("you"));
 
     private static Color Stripe(Card card) => Assert.IsAssignableFrom<ISolidColorBrush>(card.StripeBrush).Color;
+
+    private static Border? CodeFrame(Window window) =>
+        window.GetVisualDescendants().OfType<Border>().FirstOrDefault(b => b.Classes.Contains("codeframe"));
 
 }

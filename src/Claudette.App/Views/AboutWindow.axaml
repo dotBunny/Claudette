@@ -10,26 +10,27 @@
         Width="720" Height="720" MinWidth="520" MinHeight="420"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        Background="{DynamicResource FrameBrush}"
-        Classes.claude="{Binding IsClaudeStyle}">
+        Background="{DynamicResource FrameBrush}">
   <!-- About Claudette (DESIGN.md §14, "About"): a window of its own, over the one it was opened from, until it's closed.
        Which Claudette this is, where it is on the web and its license, the trademarks it names, and the licenses of what
        it's built with, as Settings' page drew them once (Views/Settings/AboutPageView). Esc closes it. -->
-  <DockPanel>
-    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): its title -->
-    <controls:TitleBar DockPanel.Dock="Top" />
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-      <StackPanel MaxWidth="720" Margin="40,28,40,40" Spacing="28">
-        <StackPanel Orientation="Horizontal" Spacing="14">
-          <Image Source="/Assets/claudette.ico" Width="40" Height="40" VerticalAlignment="Center"
-                 RenderOptions.BitmapInterpolationMode="HighQuality" AutomationProperties.Name="Claudette" />
-          <StackPanel VerticalAlignment="Center" Spacing="2">
-            <TextBlock Text="Claudette" FontSize="22" FontWeight="SemiBold" />
-            <TextBlock Classes="muted" Text="{Binding Description}" TextWrapping="Wrap" />
+  <controls:AppearanceScope Classes.claude="{Binding IsClaudeStyle}">
+    <DockPanel>
+      <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): its title -->
+      <controls:TitleBar DockPanel.Dock="Top" />
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="720" Margin="40,28,40,40" Spacing="28">
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <Image Source="/Assets/claudette.ico" Width="40" Height="40" VerticalAlignment="Center"
+                   RenderOptions.BitmapInterpolationMode="HighQuality" AutomationProperties.Name="Claudette" />
+            <StackPanel VerticalAlignment="Center" Spacing="2">
+              <TextBlock Text="Claudette" FontSize="22" FontWeight="SemiBold" />
+              <TextBlock Classes="muted" Text="{Binding Description}" TextWrapping="Wrap" />
+            </StackPanel>
           </StackPanel>
+          <pages:AboutPageView />
         </StackPanel>
-        <pages:AboutPageView />
-      </StackPanel>
-    </ScrollViewer>
-  </DockPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </controls:AppearanceScope>
 </Window>

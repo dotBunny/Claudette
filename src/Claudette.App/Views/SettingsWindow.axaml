@@ -10,8 +10,7 @@
         x:DataType="vm:SettingsViewModel"
         Title="Settings"
         Width="920" Height="720" MinWidth="680" MinHeight="460"
-        WindowStartupLocation="CenterOwner"
-        Classes.claude="{Binding IsClaudeStyle}">
+        WindowStartupLocation="CenterOwner">
   <Window.Styles>
     <Style Selector="TextBlock.pagetitle">
       <Setter Property="FontSize" Value="22" />
@@ -96,7 +95,7 @@
       <Setter Property="AutomationProperties.Name" Value="{Binding Title}" />
       <Setter Property="AutomationProperties.ItemStatus" Value="{Binding Tag}" />
     </Style>
-    <Style Selector=".claude ListBox.settingsnav ListBoxItem">
+    <Style Selector="controls|AppearanceScope.claude ListBox.settingsnav ListBoxItem">
       <Setter Property="CornerRadius" Value="10" />
     </Style>
     <!-- A search result is named by the setting it finds, as a screen reader reads it. -->
@@ -205,218 +204,220 @@
   </Window.Resources>
 
   <!-- DESIGN.md §14: a sidebar of pages in groups; changes apply immediately; the window isn't modal. -->
-  <DockPanel>
-    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): its title -->
-    <controls:TitleBar DockPanel.Dock="Top" />
-    <Grid ColumnDefinitions="220,*">
-      <Border Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,1,0">
-        <DockPanel>
-          <!-- DESIGN.md §14, "Search": settings by name, what they do, or other words for them -->
-          <TextBox x:Name="SearchBox" DockPanel.Dock="Top" Margin="10,10,10,4" Text="{Binding SearchText}" PlaceholderText="Search settings"
-                   AutomationProperties.Name="Search settings" />
-          <!-- DESIGN.md §14, "Version": which Claudette this is, copied with a click, and Help: the user guide, dotBunny's
-               Discord, and a bug report with the version filled in -->
-          <Border DockPanel.Dock="Bottom" Classes="sidebarfoot">
-          <Grid x:Name="SidebarFoot" ColumnDefinitions="*,Auto" Margin="8,4,8,8">
-            <Button Classes="flat" Command="{Binding CopyVersionCommand}" ToolTip.Tip="{Binding VersionTip}" HorizontalAlignment="Left"
-                    AutomationProperties.Name="Copy version details">
-              <TextBlock Classes="muted small" Text="{Binding VersionLabel}" TextTrimming="CharacterEllipsis" />
-            </Button>
-            <Button x:Name="HelpButton" Grid.Column="1" Classes="flat" Padding="6" ToolTip.Tip="Help: the user guide, Discord, reporting an issue, and About"
-                    AutomationProperties.Name="Help">
-              <Path Classes="navicon" Data="{DynamicResource IconHelp}" />
-              <Button.Flyout>
-                <MenuFlyout Placement="TopEdgeAlignedRight">
-                  <MenuItem Header="User Guide" Command="{Binding OpenGuideCommand}" ToolTip.Tip="Opens Claudette's user guide in your browser." />
-                  <MenuItem Header="Ask on Discord" Command="{Binding OpenDiscordCommand}"
-                            ToolTip.Tip="Opens dotBunny's Discord in your browser, where you can ask questions about Claudette." />
-                  <MenuItem Header="Report an issue" Command="{Binding ReportIssueCommand}"
-                            ToolTip.Tip="Opens a new issue on Claudette's GitHub with the versions filled in. Nothing is sent until you submit it." />
-                  <Separator />
-                  <MenuItem Header="About Claudette" Command="{Binding ShowAboutCommand}"
-                            ToolTip.Tip="Which Claudette this is, the trademarks it names, and the licenses of what it's built with." />
-                </MenuFlyout>
-              </Button.Flyout>
-            </Button>
-          </Grid>
-          </Border>
-          <!-- DESIGN.md §14, "The project's pages": the selected tab's project, in view however far the categories scroll,
-               under Selected project and its name after its group's color; the folder in the name's tooltip -->
-          <Border x:Name="ProjectGroup" DockPanel.Dock="Bottom" Classes="sidebarfoot">
-            <Border.IsVisible>
-              <MultiBinding Converter="{x:Static BoolConverters.And}">
-                <Binding Path="HasProject" />
-                <Binding Path="!IsSearching" />
-              </MultiBinding>
-            </Border.IsVisible>
-            <StackPanel>
-              <StackPanel Classes="projectheading">
-                <TextBlock Classes="navcaption" Text="Selected project" />
-                <StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding Project.Folder, FallbackValue={x:Null}}">
-                  <Ellipse Classes="groupdot" Fill="{Binding Project.Group.Brush, FallbackValue={x:Null}}"
-                           IsVisible="{Binding Project.Group, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}" />
-                  <TextBlock x:Name="ProjectHeading" Classes="navheading" Text="{Binding Project.Heading, FallbackValue=''}" />
-                </StackPanel>
-              </StackPanel>
-              <ListBox x:Name="ProjectList" Classes="settingsnav" ItemsSource="{Binding ProjectNavEntries}" SelectedItem="{Binding SelectedProjectNavEntry}"
-                       ItemTemplate="{StaticResource NavEntryTemplate}" KeyDown="OnSidebarKeyDown" AutomationProperties.Name="The selected tab's project's pages" />
-            </StackPanel>
-          </Border>
-          <Panel>
-            <ListBox x:Name="SidebarList" Classes="settingsnav categories" ItemsSource="{Binding NavEntries}" SelectedItem="{Binding SelectedNavEntry}"
-                     ItemTemplate="{StaticResource NavEntryTemplate}" KeyDown="OnSidebarKeyDown"
-                     IsVisible="{Binding !IsSearching}" AutomationProperties.Name="Settings pages">
-            </ListBox>
-            <ListBox x:Name="SearchResultsList" ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedSearchResult}" Background="Transparent" Padding="8,0"
-                     IsVisible="{Binding IsSearching}" AutomationProperties.Name="Search results">
-              <ListBox.ItemTemplate>
-                <DataTemplate DataType="vm:SettingsSearchResult">
-                  <StackPanel Spacing="1">
-                    <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
-                    <TextBlock Classes="muted small" Text="{Binding Where}" TextTrimming="CharacterEllipsis" />
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-            <TextBlock Classes="muted small" Text="No settings match." Margin="18,10" TextWrapping="Wrap" VerticalAlignment="Top">
-              <TextBlock.IsVisible>
+  <controls:AppearanceScope Classes.claude="{Binding IsClaudeStyle}">
+    <DockPanel>
+      <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): its title -->
+      <controls:TitleBar DockPanel.Dock="Top" />
+      <Grid ColumnDefinitions="220,*">
+        <Border Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,0,1,0">
+          <DockPanel>
+            <!-- DESIGN.md §14, "Search": settings by name, what they do, or other words for them -->
+            <TextBox x:Name="SearchBox" DockPanel.Dock="Top" Margin="10,10,10,4" Text="{Binding SearchText}" PlaceholderText="Search settings"
+                     AutomationProperties.Name="Search settings" />
+            <!-- DESIGN.md §14, "Version": which Claudette this is, copied with a click, and Help: the user guide, dotBunny's
+                 Discord, and a bug report with the version filled in -->
+            <Border DockPanel.Dock="Bottom" Classes="sidebarfoot">
+            <Grid x:Name="SidebarFoot" ColumnDefinitions="*,Auto" Margin="8,4,8,8">
+              <Button Classes="flat" Command="{Binding CopyVersionCommand}" ToolTip.Tip="{Binding VersionTip}" HorizontalAlignment="Left"
+                      AutomationProperties.Name="Copy version details">
+                <TextBlock Classes="muted small" Text="{Binding VersionLabel}" TextTrimming="CharacterEllipsis" />
+              </Button>
+              <Button x:Name="HelpButton" Grid.Column="1" Classes="flat" Padding="6" ToolTip.Tip="Help: the user guide, Discord, reporting an issue, and About"
+                      AutomationProperties.Name="Help">
+                <Path Classes="navicon" Data="{DynamicResource IconHelp}" />
+                <Button.Flyout>
+                  <MenuFlyout Placement="TopEdgeAlignedRight">
+                    <MenuItem Header="User Guide" Command="{Binding OpenGuideCommand}" ToolTip.Tip="Opens Claudette's user guide in your browser." />
+                    <MenuItem Header="Ask on Discord" Command="{Binding OpenDiscordCommand}"
+                              ToolTip.Tip="Opens dotBunny's Discord in your browser, where you can ask questions about Claudette." />
+                    <MenuItem Header="Report an issue" Command="{Binding ReportIssueCommand}"
+                              ToolTip.Tip="Opens a new issue on Claudette's GitHub with the versions filled in. Nothing is sent until you submit it." />
+                    <Separator />
+                    <MenuItem Header="About Claudette" Command="{Binding ShowAboutCommand}"
+                              ToolTip.Tip="Which Claudette this is, the trademarks it names, and the licenses of what it's built with." />
+                  </MenuFlyout>
+                </Button.Flyout>
+              </Button>
+            </Grid>
+            </Border>
+            <!-- DESIGN.md §14, "The project's pages": the selected tab's project, in view however far the categories scroll,
+                 under Selected project and its name after its group's color; the folder in the name's tooltip -->
+            <Border x:Name="ProjectGroup" DockPanel.Dock="Bottom" Classes="sidebarfoot">
+              <Border.IsVisible>
                 <MultiBinding Converter="{x:Static BoolConverters.And}">
-                  <Binding Path="IsSearching" />
-                  <Binding Path="!SearchResults.Count" />
+                  <Binding Path="HasProject" />
+                  <Binding Path="!IsSearching" />
                 </MultiBinding>
-              </TextBlock.IsVisible>
-            </TextBlock>
-          </Panel>
-        </DockPanel>
-      </Border>
+              </Border.IsVisible>
+              <StackPanel>
+                <StackPanel Classes="projectheading">
+                  <TextBlock Classes="navcaption" Text="Selected project" />
+                  <StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding Project.Folder, FallbackValue={x:Null}}">
+                    <Ellipse Classes="groupdot" Fill="{Binding Project.Group.Brush, FallbackValue={x:Null}}"
+                             IsVisible="{Binding Project.Group, Converter={x:Static ObjectConverters.IsNotNull}, FallbackValue=False}" />
+                    <TextBlock x:Name="ProjectHeading" Classes="navheading" Text="{Binding Project.Heading, FallbackValue=''}" />
+                  </StackPanel>
+                </StackPanel>
+                <ListBox x:Name="ProjectList" Classes="settingsnav" ItemsSource="{Binding ProjectNavEntries}" SelectedItem="{Binding SelectedProjectNavEntry}"
+                         ItemTemplate="{StaticResource NavEntryTemplate}" KeyDown="OnSidebarKeyDown" AutomationProperties.Name="The selected tab's project's pages" />
+              </StackPanel>
+            </Border>
+            <Panel>
+              <ListBox x:Name="SidebarList" Classes="settingsnav categories" ItemsSource="{Binding NavEntries}" SelectedItem="{Binding SelectedNavEntry}"
+                       ItemTemplate="{StaticResource NavEntryTemplate}" KeyDown="OnSidebarKeyDown"
+                       IsVisible="{Binding !IsSearching}" AutomationProperties.Name="Settings pages">
+              </ListBox>
+              <ListBox x:Name="SearchResultsList" ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedSearchResult}" Background="Transparent" Padding="8,0"
+                       IsVisible="{Binding IsSearching}" AutomationProperties.Name="Search results">
+                <ListBox.ItemTemplate>
+                  <DataTemplate DataType="vm:SettingsSearchResult">
+                    <StackPanel Spacing="1">
+                      <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
+                      <TextBlock Classes="muted small" Text="{Binding Where}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+              <TextBlock Classes="muted small" Text="No settings match." Margin="18,10" TextWrapping="Wrap" VerticalAlignment="Top">
+                <TextBlock.IsVisible>
+                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="IsSearching" />
+                    <Binding Path="!SearchResults.Count" />
+                  </MultiBinding>
+                </TextBlock.IsVisible>
+              </TextBlock>
+            </Panel>
+          </DockPanel>
+        </Border>
 
-      <ScrollViewer x:Name="PageScroller" Grid.Column="1">
-        <!-- The page shown: the selected category's, or one of the project's, under its title. Each is a view in Views/Settings.
-             It fills the space up to 720 pixels, so a setting's control stays near its name, and is centred in a wider window
-             (a stretched control that its MaxWidth stops short is centred). -->
-        <StackPanel MaxWidth="720" Margin="40,28,40,40">
-          <!-- Its title, or Perforce's logo for Settings → Perforce's, 128 pixels wide where Perforce's least is 110, Epic's
-               for Settings → Unreal Engine's, and Godot's for Settings → Godot's -->
-          <StackPanel Classes="pageheader"
-                      Classes.perforce="{Binding CurrentPage.IconKey, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:Logos.Perforce}, FallbackValue=False}"
-                      Classes.unreal="{Binding CurrentPage.IconKey, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:Logos.Unreal}, FallbackValue=False}"
-                      Classes.godot="{Binding CurrentPage.IconKey, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:Logos.Godot}, FallbackValue=False}">
-            <StackPanel Orientation="Horizontal">
-              <TextBlock Classes="pagetitle" Text="{Binding CurrentPage.Title, FallbackValue=''}" />
-              <Viewbox Classes="perforcelogo" Width="128" AutomationProperties.Name="{Binding CurrentPage.Title, FallbackValue=''}"
-                       AutomationProperties.AccessibilityView="Content">
-                <Canvas Width="638.98" Height="144.22">
-                  <Path Data="{StaticResource LogoPerforceSymbol}" Fill="{DynamicResource PerforceSymbolBrush}" />
-                  <Path Data="{StaticResource LogoPerforceWordmark}" Fill="{DynamicResource PerforceWordmarkBrush}" />
-                </Canvas>
-              </Viewbox>
-              <Viewbox Classes="unreallogo" Width="189" AutomationProperties.Name="{Binding CurrentPage.Title, FallbackValue=''}"
-                       AutomationProperties.AccessibilityView="Content">
-                <Canvas Width="3156.27" Height="434.56">
-                  <Path Data="{StaticResource LogoUnrealHorizontal}" Fill="{DynamicResource UnrealLogoBrush}" />
-                </Canvas>
-              </Viewbox>
-              <Viewbox Classes="godotlogo" Width="91" AutomationProperties.Name="{Binding CurrentPage.Title, FallbackValue=''}"
-                       AutomationProperties.AccessibilityView="Content">
-                <Canvas Width="885" Height="312.23">
-                  <Path Data="{StaticResource LogoGodotWordmark}" Fill="{DynamicResource GodotWordmarkBrush}" />
-                  <Path Data="{StaticResource LogoGodotJaw}" Fill="{StaticResource GodotWhiteBrush}" />
-                  <Path Data="{StaticResource LogoGodotHead}" Fill="{StaticResource GodotBlueBrush}" />
-                  <Path Data="{StaticResource LogoGodotEyes}" Fill="{StaticResource GodotWhiteBrush}" />
-                  <Path Data="{StaticResource LogoGodotPupils}" Fill="{StaticResource GodotPupilBrush}" />
-                </Canvas>
-              </Viewbox>
-              <!-- Everything on the page is this computer's: said once, here -->
-              <Border Classes="settingchip" VerticalAlignment="Center" IsVisible="{Binding CurrentPage.IsMachineOnly, FallbackValue=False}"
-                      ToolTip.Tip="Kept on this computer: settings sync leaves everything on this page as it is">
-                <TextBlock Text="This computer" />
-              </Border>
+        <ScrollViewer x:Name="PageScroller" Grid.Column="1">
+          <!-- The page shown: the selected category's, or one of the project's, under its title. Each is a view in Views/Settings.
+               It fills the space up to 720 pixels, so a setting's control stays near its name, and is centred in a wider window
+               (a stretched control that its MaxWidth stops short is centred). -->
+          <StackPanel MaxWidth="720" Margin="40,28,40,40">
+            <!-- Its title, or Perforce's logo for Settings → Perforce's, 128 pixels wide where Perforce's least is 110, Epic's
+                 for Settings → Unreal Engine's, and Godot's for Settings → Godot's -->
+            <StackPanel Classes="pageheader"
+                        Classes.perforce="{Binding CurrentPage.IconKey, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:Logos.Perforce}, FallbackValue=False}"
+                        Classes.unreal="{Binding CurrentPage.IconKey, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:Logos.Unreal}, FallbackValue=False}"
+                        Classes.godot="{Binding CurrentPage.IconKey, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:Logos.Godot}, FallbackValue=False}">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Classes="pagetitle" Text="{Binding CurrentPage.Title, FallbackValue=''}" />
+                <Viewbox Classes="perforcelogo" Width="128" AutomationProperties.Name="{Binding CurrentPage.Title, FallbackValue=''}"
+                         AutomationProperties.AccessibilityView="Content">
+                  <Canvas Width="638.98" Height="144.22">
+                    <Path Data="{StaticResource LogoPerforceSymbol}" Fill="{DynamicResource PerforceSymbolBrush}" />
+                    <Path Data="{StaticResource LogoPerforceWordmark}" Fill="{DynamicResource PerforceWordmarkBrush}" />
+                  </Canvas>
+                </Viewbox>
+                <Viewbox Classes="unreallogo" Width="189" AutomationProperties.Name="{Binding CurrentPage.Title, FallbackValue=''}"
+                         AutomationProperties.AccessibilityView="Content">
+                  <Canvas Width="3156.27" Height="434.56">
+                    <Path Data="{StaticResource LogoUnrealHorizontal}" Fill="{DynamicResource UnrealLogoBrush}" />
+                  </Canvas>
+                </Viewbox>
+                <Viewbox Classes="godotlogo" Width="91" AutomationProperties.Name="{Binding CurrentPage.Title, FallbackValue=''}"
+                         AutomationProperties.AccessibilityView="Content">
+                  <Canvas Width="885" Height="312.23">
+                    <Path Data="{StaticResource LogoGodotWordmark}" Fill="{DynamicResource GodotWordmarkBrush}" />
+                    <Path Data="{StaticResource LogoGodotJaw}" Fill="{StaticResource GodotWhiteBrush}" />
+                    <Path Data="{StaticResource LogoGodotHead}" Fill="{StaticResource GodotBlueBrush}" />
+                    <Path Data="{StaticResource LogoGodotEyes}" Fill="{StaticResource GodotWhiteBrush}" />
+                    <Path Data="{StaticResource LogoGodotPupils}" Fill="{StaticResource GodotPupilBrush}" />
+                  </Canvas>
+                </Viewbox>
+                <!-- Everything on the page is this computer's: said once, here -->
+                <Border Classes="settingchip" VerticalAlignment="Center" IsVisible="{Binding CurrentPage.IsMachineOnly, FallbackValue=False}"
+                        ToolTip.Tip="Kept on this computer: settings sync leaves everything on this page as it is">
+                  <TextBlock Text="This computer" />
+                </Border>
+              </StackPanel>
+              <TextBlock Classes="muted" Text="{Binding CurrentPage.Description, FallbackValue=''}" TextWrapping="Wrap"
+                         IsVisible="{Binding CurrentPage.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}" />
             </StackPanel>
-            <TextBlock Classes="muted" Text="{Binding CurrentPage.Description, FallbackValue=''}" TextWrapping="Wrap"
-                       IsVisible="{Binding CurrentPage.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}, FallbackValue=False}" />
+            <!-- Neither it nor the page views (ClipToBounds="False" on each) cut off the rows, which reach 8 pixels past the page
+                 for their changed bars and highlight. -->
+            <ContentControl x:Name="PageHost" Content="{Binding CurrentPage}" Margin="0,24,0,0" ClipToBounds="False">
+              <ContentControl.DataTemplates>
+                <DataTemplate DataType="settings:GeneralPage">
+                  <pages:GeneralPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:AppearancePage">
+                  <pages:AppearancePageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:ConversationPage">
+                  <pages:ConversationPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:NotificationsPage">
+                  <pages:NotificationsPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:KeyboardPage">
+                  <pages:KeyboardPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:ClaudeCodePage">
+                  <pages:ClaudeCodePageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:AccountsPage">
+                  <pages:AccountsPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:TabsPage">
+                  <pages:TabsPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:UsagePage">
+                  <pages:UsagePageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:SessionsPage">
+                  <pages:SessionsPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:FilesPage">
+                  <pages:FilesPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:AllToolsPage">
+                  <pages:AllToolsPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:ProjectTypePage">
+                  <pages:ProjectTypePageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:GitPage">
+                  <pages:GitPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:PerforcePage">
+                  <pages:PerforcePageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:AdvancedPage">
+                  <pages:AdvancedPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:ProjectLinksPage">
+                  <pages:ProjectLinksPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:ProjectActionsPage">
+                  <pages:ProjectActionsPageView />
+                </DataTemplate>
+                <DataTemplate DataType="settings:ProjectToolChoicesPage">
+                  <pages:ProjectToolChoicesPageView />
+                </DataTemplate>
+              </ContentControl.DataTemplates>
+            </ContentControl>
           </StackPanel>
-          <!-- Neither it nor the page views (ClipToBounds="False" on each) cut off the rows, which reach 8 pixels past the page
-               for their changed bars and highlight. -->
-          <ContentControl x:Name="PageHost" Content="{Binding CurrentPage}" Margin="0,24,0,0" ClipToBounds="False">
-            <ContentControl.DataTemplates>
-              <DataTemplate DataType="settings:GeneralPage">
-                <pages:GeneralPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:AppearancePage">
-                <pages:AppearancePageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:ConversationPage">
-                <pages:ConversationPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:NotificationsPage">
-                <pages:NotificationsPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:KeyboardPage">
-                <pages:KeyboardPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:ClaudeCodePage">
-                <pages:ClaudeCodePageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:AccountsPage">
-                <pages:AccountsPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:TabsPage">
-                <pages:TabsPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:UsagePage">
-                <pages:UsagePageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:SessionsPage">
-                <pages:SessionsPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:FilesPage">
-                <pages:FilesPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:AllToolsPage">
-                <pages:AllToolsPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:ProjectTypePage">
-                <pages:ProjectTypePageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:GitPage">
-                <pages:GitPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:PerforcePage">
-                <pages:PerforcePageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:AdvancedPage">
-                <pages:AdvancedPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:ProjectLinksPage">
-                <pages:ProjectLinksPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:ProjectActionsPage">
-                <pages:ProjectActionsPageView />
-              </DataTemplate>
-              <DataTemplate DataType="settings:ProjectToolChoicesPage">
-                <pages:ProjectToolChoicesPageView />
-              </DataTemplate>
-            </ContentControl.DataTemplates>
-          </ContentControl>
-        </StackPanel>
-      </ScrollViewer>
-
-      <!-- The project pages' small dialogs: a link, or an action (DESIGN.md §18). The action's is taller than the
-           window opens, so it scrolls. -->
-      <Border Grid.ColumnSpan="2" Classes="overlay" IsVisible="{Binding Project.HasEditor, FallbackValue=False}">
-        <ScrollViewer Name="EditorScroller" VerticalScrollBarVisibility="Auto">
-          <ContentControl Content="{Binding Project.Editor, FallbackValue={x:Null}}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,16">
-            <ContentControl.DataTemplates>
-              <DataTemplate DataType="vm:ProjectActionEditorViewModel">
-                <views:ProjectActionEditorView />
-              </DataTemplate>
-              <DataTemplate DataType="vm:ProjectLinkEditorViewModel">
-                <views:ProjectLinkEditorView />
-              </DataTemplate>
-            </ContentControl.DataTemplates>
-          </ContentControl>
         </ScrollViewer>
-      </Border>
-    </Grid>
-  </DockPanel>
+
+        <!-- The project pages' small dialogs: a link, or an action (DESIGN.md §18). The action's is taller than the
+             window opens, so it scrolls. -->
+        <Border Grid.ColumnSpan="2" Classes="overlay" IsVisible="{Binding Project.HasEditor, FallbackValue=False}">
+          <ScrollViewer Name="EditorScroller" VerticalScrollBarVisibility="Auto">
+            <ContentControl Content="{Binding Project.Editor, FallbackValue={x:Null}}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,16">
+              <ContentControl.DataTemplates>
+                <DataTemplate DataType="vm:ProjectActionEditorViewModel">
+                  <views:ProjectActionEditorView />
+                </DataTemplate>
+                <DataTemplate DataType="vm:ProjectLinkEditorViewModel">
+                  <views:ProjectLinkEditorView />
+                </DataTemplate>
+              </ContentControl.DataTemplates>
+            </ContentControl>
+          </ScrollViewer>
+        </Border>
+      </Grid>
+    </DockPanel>
+  </controls:AppearanceScope>
 </Window>

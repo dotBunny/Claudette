@@ -14,29 +14,31 @@
     <StyleInclude Source="avares://Claudette/Themes/ProjectFilesStyles.axaml" />
   </Window.Styles>
 
-  <DockPanel>
-    <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): the file's name, a dot while it
-         has unsaved edits, and its project's -->
-    <controls:TitleBar DockPanel.Dock="Top" ShowsTitle="False">
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Text="{Binding TabLabel}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-        <Ellipse Classes="unsaved" IsVisible="{Binding IsModified}" ToolTip.Tip="Unsaved edits" />
-        <TextBlock Classes="muted" Text="{Binding ProjectName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-      </StackPanel>
-    </controls:TitleBar>
-    <!-- Settings → Appearance → Zoom, as in the main window, under the title bar -->
-    <LayoutTransformControl x:Name="Zoomed">
-      <DockPanel>
-        <!-- Under it, the toolbar: where the file is, and Put back -->
-        <Border DockPanel.Dock="Top" Classes="windowbar">
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-            <TextBlock Classes="muted small" Text="{Binding RelativePath}" TextTrimming="PathSegmentEllipsis" VerticalAlignment="Center"
-                       ToolTip.Tip="{Binding Path}" />
-            <Button x:Name="PutBackButton" Grid.Column="1" Content="Put back" Command="{Binding PutBackCommand}" ToolTip.Tip="{Binding PutBackTip}" />
-          </Grid>
-        </Border>
-        <views:ProjectFileView x:Name="FileView" />
-      </DockPanel>
-    </LayoutTransformControl>
-  </DockPanel>
+  <controls:AppearanceScope x:Name="Appearance">
+    <DockPanel>
+      <!-- The window's title bar, while it draws its own (DESIGN.md §3, "Window frame"): the file's name, a dot while it
+           has unsaved edits, and its project's -->
+      <controls:TitleBar DockPanel.Dock="Top" ShowsTitle="False">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="{Binding TabLabel}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          <Ellipse Classes="unsaved" IsVisible="{Binding IsModified}" ToolTip.Tip="Unsaved edits" />
+          <TextBlock Classes="muted" Text="{Binding ProjectName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+      </controls:TitleBar>
+      <!-- Settings → Appearance → Zoom, as in the main window, under the title bar -->
+      <LayoutTransformControl x:Name="Zoomed">
+        <DockPanel>
+          <!-- Under it, the toolbar: where the file is, and Put back -->
+          <Border DockPanel.Dock="Top" Classes="windowbar">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <TextBlock Classes="muted small" Text="{Binding RelativePath}" TextTrimming="PathSegmentEllipsis" VerticalAlignment="Center"
+                         ToolTip.Tip="{Binding Path}" />
+              <Button x:Name="PutBackButton" Grid.Column="1" Content="Put back" Command="{Binding PutBackCommand}" ToolTip.Tip="{Binding PutBackTip}" />
+            </Grid>
+          </Border>
+          <views:ProjectFileView x:Name="FileView" />
+        </DockPanel>
+      </LayoutTransformControl>
+    </DockPanel>
+  </controls:AppearanceScope>
 </Window>
