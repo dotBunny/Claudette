@@ -1590,7 +1590,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
             var folder = Folder;
             var settingsFolder = State.WithoutProjectSettings ? null : folder;
             var starting = _startingMode = await Task.Run(() => _services.ReadStartingPermissionMode(settingsFolder));
-            var environment = new Dictionary<string, string?>(_services.RemoteControl.ClaudeVariables);
+            var environment = new Dictionary<string, string?>(_services.ClaudeVariables);
             if (_carryOnInterruptedTurn && resume is not null)
             {
                 // Only after Claudette's own restart, and only once: Claude Code re-runs the turn without the user.

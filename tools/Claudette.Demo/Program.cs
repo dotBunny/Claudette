@@ -25,11 +25,11 @@
 // Saved/Logs/<Name>.log and waits, for the guide's picture of an editor's log (StandInEditor.cs).
 //
 // tools/Claudette.Demo/screenshots.ps1 takes the README's screenshots with it, on Windows.
-using Claudette.Core;
-using Claudette.Core.Accounts;
+using Claudette.Core.Demo;
 using Claudette.Core.Development;
 using Claudette.Core.Settings;
 using Claudette.Demo;
+using Claudette.Usage.Demo;
 
 if (args is ["--stand-in-editor", var standInProject])
 {
@@ -96,66 +96,21 @@ catch (IOException ex)
     return 1;
 }
 
-var home = Path.Combine(folder, "home");
-var paths = AppPaths.Under(home);
-var config = Path.Combine(folder, "claude-config");
-var transcripts = Path.Combine(config, "projects", "demo");
-var usage = Path.Combine(folder, "usage.json");
-Directory.CreateDirectory(transcripts);
-Directory.CreateDirectory(paths.DataDirectory);
-Directory.CreateDirectory(paths.SettingsDirectory);
-
-var tabs = DemoContent.Write(projects, transcripts);
-var sessionMarks = DemoHistory.Write(projects, transcripts);
-DemoUsage.Write(paths.UsageDatabase, usage, DateTimeOffset.UtcNow, tabs);
-
-var settings = new AppSettings();
-settings.General.CheckForAppUpdates = false;
-settings.General.ShowServiceStatus = false;
-settings.ClaudeCode.ClaudePath = Path.Combine(AppContext.BaseDirectory, OperatingSystem.IsWindows() ? "fake-claude.exe" : "fake-claude");
-settings.ClaudeCode.CheckForUpdates = false;
-settings.ClaudeCode.UseLoginShellEnvironment = false;
-settings.Appearance.Theme = theme;
-settings.Appearance.Style = style;
-if (still)
+// The usage history ends now, so the header's projection reads best soon after.
+var now = DateTimeOffset.Now;
+var written = await DemoHome.WriteAsync(folder, projects, now, new DemoOptions
 {
-    // Screenshots catch her standing on the composer rather than part-way through falling off it.
-    settings.Appearance.Motion = MotionSetting.Reduce;
-}
-if (quiet)
-{
-    // Kept behind other windows, as the screenshot scripts keep it, Claudette would think the user away and tell them.
-    var notifications = settings.Notifications;
-    notifications.TurnFinished = notifications.NeedsInput = notifications.ProcessErrors = notifications.UsageAlerts = false;
-    notifications.SignIn = notifications.UpdateReady = notifications.ProjectActions = false;
-}
-settings.Sessions.RestoreUnpinnedTabs = true;
-await new JsonFileStore<AppSettings>(paths.SettingsFile).SaveAsync(settings);
-
-await new JsonFileStore<AppState>(paths.StateFile).SaveAsync(new AppState
-{
-    Tabs = tabs,
-    SelectedTabId = tabs[0].Id,
-    SidebarWidth = 300,
-    // Wide enough for the plan on the Tasks page, with Tasks beside Agents so both pages' tabs show.
-    SidePanelWidth = 420,
-    SidePanelPages = ["Files", "Agents", "Tasks", "Project", "Processes", "Mcp", "ScratchPad"],
-    TrustedFolders = [.. tabs.Select(t => t.Folder).Distinct()],
-    // The older projects, which the new tab picker lists as recent folders.
-    RecentFolders =
-    [
-        .. new[] { "shader-lab", "build-farm", "lighthouse-launcher", "pixel-tools" }
-            .Select((name, i) => new RecentFolder { Path = Path.Combine(projects, name), LastUsed = DateTimeOffset.UtcNow.AddDays(-2 - 3 * i) }),
-    ],
-    SessionMarks = sessionMarks,
-    // The studio's API key, which orbit-game's group uses (DESIGN.md §4, "Accounts"). Its key isn't stored: fake-claude
-    // never runs the key helper.
-    Accounts = [new ClaudeAccount { Id = DemoContent.StudioAccount, Name = "Studio", Color = "#A66BFF", DailySpendAlert = 20 }],
-    FolderAccounts = { [tabs.Single(t => t.Id == "tab-pool").Folder] = DemoContent.StudioAccount },
+    ClaudePath = Path.Combine(AppContext.BaseDirectory, OperatingSystem.IsWindows() ? "fake-claude.exe" : "fake-claude"),
+    Theme = theme,
+    Style = style,
+    Still = still,
+    Quiet = quiet,
     Window = new WindowPlacement(60, 40, 1480, 920, IsMaximized: false),
-    // Answered, so the sidebar doesn't offer Claude Code's projects over the pictures (DESIGN.md §4, "Claude Code's projects").
-    ClaudeProjectsOffered = true,
-});
+}, DemoRepositories.Make);
+var home = Path.GetDirectoryName(written.Paths.DataDirectory)!;
+var config = written.ClaudeConfig;
+var usage = Path.Combine(folder, "usage.json");
+DemoUsage.Write(written.Paths.UsageDatabase, usage, now.ToUniversalTime(), written.Tabs);
 
 Console.WriteLine($"""
     Demo content in {folder}, with its projects in {projects}.

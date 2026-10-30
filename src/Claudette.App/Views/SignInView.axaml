@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Claudette.App.ViewModels"
+             xmlns:demo="using:Claudette.App.Demo"
              x:Class="Claudette.App.Views.SignInView"
              x:DataType="vm:SignInViewModel">
   <!-- DESIGN.md §11, "Signing in": the launch screen, and the dialog the sign-in banner opens. -->
@@ -24,8 +25,13 @@
           </Button.Flyout>
         </Button>
         <Button Content="I've already signed in" Command="{Binding CheckAgainCommand}" />
+        <!-- Try the demo (DESIGN.md §11, "Demo mode"): Claudette on made-up projects, in a window of its own -->
+        <Button Name="TryDemo" Content="{Binding Demo.ButtonText}" Command="{Binding Demo.TryCommand}" IsVisible="{Binding Demo.IsOffered}"
+                ToolTip.Tip="{x:Static demo:DemoStarter.Tip}" />
         <Button Content="Close" Command="{Binding CloseCommand}" IsVisible="{Binding CanClose}" />
       </WrapPanel>
+      <TextBlock Classes="muted small" Classes.error="{Binding Demo.IsProblem}" Text="{Binding Demo.Note}" TextWrapping="Wrap"
+                 IsVisible="{Binding Demo.HasNote}" />
 
       <!-- Waiting for the browser -->
       <StackPanel Spacing="12" IsVisible="{Binding IsWaiting}">

@@ -23,6 +23,11 @@ internal sealed class Program
         {
             return ApiKeyHelperLaunch.Run(accountId);
         }
+        // The demo's claude, which Claudette stands in for (DESIGN.md §11, "Demo mode"): the same, before anything else.
+        if (Demo.StandInClaudeLaunch.IsStandIn)
+        {
+            return Demo.StandInClaudeLaunch.Run(args);
+        }
         if (OperatingSystem.IsWindows())
         {
             SetWindowsIdentity();
@@ -71,6 +76,11 @@ internal sealed class Program
         finally
         {
             instance.Dispose();
+            // A demo's folder goes with it (DESIGN.md §11, "Demo mode"): last, once its claim on it is let go.
+            if (Demo.DemoMode.FromEnvironment() is { } demo)
+            {
+                Demo.DemoLaunch.Remove(demo.Folder);
+            }
         }
     }
 

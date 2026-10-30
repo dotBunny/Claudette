@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json.Nodes;
 using Claudette.Core.Threads;
 
-namespace Claudette.Demo;
+namespace Claudette.Core.Demo;
 
 /// <summary>
 /// Writes a session's transcript as Claude Code 2.1.284 does (DESIGN.md §9): a line per prompt, per block of Claude's

@@ -91,7 +91,13 @@ public partial class App : Application
                 loginItems: LoginLaunch.CreateItems(launcher, TimeProvider.System),
                 systemMotion: SystemMotion.CreateForCurrentOS(launcher, TimeProvider.System),
                 trash: Trash.CreateForCurrentOS(launcher, TimeProvider.System),
-                loggerFactory: loggers);
+                loggerFactory: loggers,
+                demo: Demo.DemoMode.FromEnvironment());
+            if (_services.Demo is not null)
+            {
+                // Told apart from the user's own Claudette in the taskbar and the OS's window lists (DESIGN.md §11, "Demo mode").
+                window.Title = "Claudette demo";
+            }
             // In the background, so the window isn't held up; the first claude start waits for it (DESIGN.md §13).
             _services.UserEnvironment.Start();
             // Whether the windows draw their own title bars (DESIGN.md §3, "Window frame").
