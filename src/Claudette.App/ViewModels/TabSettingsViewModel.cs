@@ -78,6 +78,7 @@ public sealed partial class TabSettingsViewModel : ViewModelBase, ISettingsSourc
             new Choice(null, $"Default ({InSentence(SubagentUseChoice.Label(defaults.ClaudeCode.Subagents))})"),
             .. Enum.GetValues<SubagentUse>().Select(use => new Choice(use.ToString(), SubagentUseChoice.Label(use))),
         ];
+        StepsChoices = [new Choice(null, $"Default ({(defaults.Appearance.FoldChains ? "folded" : "all")})"), new Choice(On, "Folded"), new Choice(Off, "All")];
         ShowsUsageCredits = tab.HasUsageCreditsMenu;
 
         SelectedModel = ModelChoices.First(c => c.Value == overrides.Model);
@@ -87,6 +88,7 @@ public sealed partial class TabSettingsViewModel : ViewModelBase, ISettingsSourc
         SelectedAutoContinue = AutoContinueChoices.First(c => c.Value == OnOff(overrides.ContinueAfterLimitReset));
         SelectedUsageCredits = UsageCreditsChoices.First(c => c.Value == OnOff(overrides.UseUsageCredits));
         SelectedSubagents = SubagentChoices.First(c => c.Value == overrides.Subagents?.ToString());
+        SelectedSteps = StepsChoices.First(c => c.Value == OnOff(overrides.FoldChains));
 
         var checkIns = overrides.CheckIns ?? defaults.CheckIns;
         UseCustomCheckIns = overrides.CheckIns is not null;
@@ -123,6 +125,11 @@ public sealed partial class TabSettingsViewModel : ViewModelBase, ISettingsSourc
         [
             Override("tab.processMonitor", "Show the process monitor", () => SelectedMonitor.Value is null, () => SelectedMonitor = MonitorChoices[0],
                 "The processes this tab starts, with their CPU and memory."),
+        ]);
+        Section("conversation", "Conversation",
+        [
+            Override("tab.foldChains", "Steps", () => SelectedSteps.Value is null, () => SelectedSteps = StepsChoices[0],
+                "Folded, each chain of Claude's steps between two messages is one line, such as “7 steps · 18m 43s”. All shows every step."),
         ]);
         // The tab's own switches, not overrides: no defaults to go back to.
         Section("thisTab", "This tab",
@@ -178,6 +185,12 @@ public sealed partial class TabSettingsViewModel : ViewModelBase, ISettingsSourc
     [ObservableProperty]
     public partial Choice SelectedSubagents { get; set; }
 
+    /// <summary>Folding each chain of steps in this tab (DESIGN.md §18, "Conversation cards"), which its menu's Steps sets too.</summary>
+    public IReadOnlyList<Choice> StepsChoices { get; }
+
+    [ObservableProperty]
+    public partial Choice SelectedSteps { get; set; }
+
     [ObservableProperty]
     public partial Choice SelectedModel { get; set; }
 
@@ -218,6 +231,8 @@ public sealed partial class TabSettingsViewModel : ViewModelBase, ISettingsSourc
     partial void OnSelectedUsageCreditsChanged(Choice value) => OverridesChanged();
 
     partial void OnSelectedSubagentsChanged(Choice value) => OverridesChanged();
+
+    partial void OnSelectedStepsChanged(Choice value) => OverridesChanged();
 
     partial void OnUseCustomCheckInsChanged(bool value) => OverridesChanged();
 
@@ -292,6 +307,7 @@ public sealed partial class TabSettingsViewModel : ViewModelBase, ISettingsSourc
         ContinueAfterLimitReset = OnOff(SelectedAutoContinue.Value),
         UseUsageCredits = OnOff(SelectedUsageCredits.Value),
         Subagents = Enum.TryParse<SubagentUse>(SelectedSubagents.Value, out var subagents) ? subagents : null,
+        FoldChains = OnOff(SelectedSteps.Value),
         CheckIns = UseCustomCheckIns
             ? new CheckInSettings
             {

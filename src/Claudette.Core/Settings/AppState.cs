@@ -60,6 +60,9 @@ public sealed class AppState
     /// <summary>Folder groups the user collapsed.</summary>
     public List<string> CollapsedGroups { get; set; } = [];
 
+    /// <summary>Folder groups the user pinned: they sit first in the sidebar (DESIGN.md §4, "Grouped by folder").</summary>
+    public List<string> PinnedGroups { get; set; } = [];
+
     /// <summary>Folder groups whose past sessions the user unfolded (DESIGN.md §4, "Claude Code's projects").</summary>
     public List<string> ExpandedPastSessions { get; set; } = [];
 
@@ -495,8 +498,14 @@ public sealed class TabOverrides
     /// <summary>Whether Claude may use subagents in this tab (DESIGN.md §5, "Subagents"), or null for Settings → Claude Code.</summary>
     public SubagentUse? Subagents { get; set; }
 
+    /// <summary>
+    /// Fold each chain of steps in this tab (DESIGN.md §18, "Conversation cards"), or null for Settings → Conversation.
+    /// The tab's menu and the message box's <b>Steps</b> set it too.
+    /// </summary>
+    public bool? FoldChains { get; set; }
+
     public bool HasAny => Model is not null || Effort is not null || PermissionMode is not null || CheckIns is not null || ShowProcessMonitor is not null
-        || ContinueAfterLimitReset is not null || UseUsageCredits is not null || Subagents is not null;
+        || ContinueAfterLimitReset is not null || UseUsageCredits is not null || Subagents is not null || FoldChains is not null;
 }
 
 public sealed class RecentFolder

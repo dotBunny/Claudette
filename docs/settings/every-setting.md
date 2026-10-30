@@ -62,22 +62,23 @@ The page starts with a preview that shows your choices as you make them.
 
 ## Conversation
 
-| Setting | Section | Default | Syncs | Explained in |
-|---|---|---|---|---|
-| **Quieter in-between steps** | Steps and replies | On | Yes | [Reading the conversation](../conversation/reading-the-conversation.md) |
-| **Indent your messages** | Steps and replies | Off | Yes | [Reading the conversation](../conversation/reading-the-conversation.md#indent-your-messages) |
-| **Indent Claude's steps** | Steps and replies | Off | Yes | [Reading the conversation](../conversation/reading-the-conversation.md#indent-your-messages) |
-| **Show tool calls collapsed** | Steps and replies | Off | Yes | [Tool calls](../conversation/tool-calls.md#folding-the-calls) |
-| **Show thinking expanded** | Steps and replies | Off | Yes | [Thinking, notes and hooks](../conversation/thinking-notes-and-hooks.md) |
-| **Show subagents' work** | Steps and replies | Under the tab in the sidebar | Yes | [Subagents](../conversation/subagents.md#subagents-under-their-tab) |
-| **Show every hook run** | Steps and replies | Off | No | [Thinking, notes and hooks](../conversation/thinking-notes-and-hooks.md) |
-| **Show fun words** | While Claude works | On | Yes | [The working line and running tasks](../conversation/the-working-line-and-running-tasks.md) |
-| **Show what Claude is doing** | While Claude works | On | Yes | [The working line and running tasks](../conversation/the-working-line-and-running-tasks.md) |
-| **Messages sent while Claude works** | While Claude works | Send them into the turn (the other choice queues them) | No | [Sending and stopping](../composer/sending-and-stopping.md) |
-| **Show when the prompt cache expires** | Message box | On | Yes | [The prompt cache](../usage/the-prompt-cache.md) |
-| **Suggest my next prompt** | Message box | Off | No | [Prompt suggestions](../composer/prompt-suggestions.md) |
-| **Show context** | Tab rows | On | Yes | [Styles and themes](styles-and-themes.md#what-the-tab-rows-show) |
-| **Show task progress** | Tab rows | On | Yes | [Styles and themes](styles-and-themes.md#what-the-tab-rows-show) |
+| Setting | Section | Default | Syncs | Per tab | Explained in |
+|---|---|---|---|---|---|
+| **Quieter in-between steps** | Steps and replies | On | Yes | No | [Reading the conversation](../conversation/reading-the-conversation.md) |
+| **Indent your messages** | Steps and replies | Off | Yes | No | [Reading the conversation](../conversation/reading-the-conversation.md#indent-your-messages) |
+| **Indent Claude's steps** | Steps and replies | Off | Yes | No | [Reading the conversation](../conversation/reading-the-conversation.md#indent-your-messages) |
+| **Fold each chain of steps** | Steps and replies | Off | Yes | **Steps** | [Tool calls](../conversation/tool-calls.md#folding-a-chain-of-steps) |
+| **Show tool calls collapsed** | Steps and replies | Off | Yes | No | [Tool calls](../conversation/tool-calls.md#folding-the-calls) |
+| **Show thinking expanded** | Steps and replies | Off | Yes | No | [Thinking, notes and hooks](../conversation/thinking-notes-and-hooks.md) |
+| **Show subagents' work** | Steps and replies | Under the tab in the sidebar | Yes | No | [Subagents](../conversation/subagents.md#subagents-under-their-tab) |
+| **Show every hook run** | Steps and replies | Off | No | No | [Thinking, notes and hooks](../conversation/thinking-notes-and-hooks.md) |
+| **Show fun words** | While Claude works | On | Yes | No | [The working line and running tasks](../conversation/the-working-line-and-running-tasks.md) |
+| **Show what Claude is doing** | While Claude works | On | Yes | No | [The working line and running tasks](../conversation/the-working-line-and-running-tasks.md) |
+| **Messages sent while Claude works** | While Claude works | Send them into the turn (the other choice queues them) | No | No | [Sending and stopping](../composer/sending-and-stopping.md) |
+| **Show when the prompt cache expires** | Message box | On | Yes | No | [The prompt cache](../usage/the-prompt-cache.md) |
+| **Suggest my next prompt** | Message box | Off | No | No | [Prompt suggestions](../composer/prompt-suggestions.md) |
+| **Show context** | Tab rows | On | Yes | No | [Styles and themes](styles-and-themes.md#what-the-tab-rows-show) |
+| **Show task progress** | Tab rows | On | Yes | No | [Styles and themes](styles-and-themes.md#what-the-tab-rows-show) |
 
 ## Notifications
 

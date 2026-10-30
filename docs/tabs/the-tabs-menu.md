@@ -28,6 +28,7 @@ In the order the menu has them:
 | **Sync now** | Copies the session to the library straight away. Shown while the tab syncs. | [Syncing a tab](../history/syncing-a-tab.md) |
 | **Connect to the Claude app** | A check item: connects the tab to the Claude app whenever its session runs. Greyed out, with the reason as its tip, when the account can't use it. | [The Claude app](../away/the-claude-app.md) |
 | **Open in the Claude app** | Opens the tab's session in the Claude app. Shown while the tab is connected. | [The Claude app](../away/the-claude-app.md) |
+| **Steps ▸** | Folds each chain of Claude's steps in this tab into one line, or shows them all: **Default** (what Settings does), **Folded** or **All**. | [Tool calls](../conversation/tool-calls.md#one-tab-its-own-way) |
 | **Tab settings…** | The tab's own model, effort, mode and more. A dot beside it means the tab has its own settings. | [Tab settings](tab-settings.md) |
 | **Duplicate tab** | Opens a copy of the tab. | [Below](#duplicate-tab) |
 | **Open beside** | Shows the tab beside the one you're in. Shown for a tab that isn't on screen. | [Split panes](split-panes.md) |

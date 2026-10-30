@@ -152,23 +152,30 @@
           <Border Name="PART_Stripe" BorderBrush="{TemplateBinding StripeBrush}" BorderThickness="3,0,0,0" Margin="-1,-1,0,-1"
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="PART_Body" Margin="{TemplateBinding Padding}" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowDefinitions="Auto,Auto">
-              <!-- The chevron of a card whose content folds away (a Tool calls card's tiles). -->
-              <Button Name="PART_Toggle" Classes="flat" Padding="2" Margin="-4,-3,2,-3" VerticalAlignment="Center"
-                      Command="{TemplateBinding ToggleCommand}" IsVisible="{TemplateBinding IsCollapsible}"
-                      AutomationProperties.Name="Show or hide the calls" ToolTip.Tip="Show or hide the calls">
-                <Panel>
-                  <Path Classes="toolicon" Data="{DynamicResource IconChevronRight}" IsVisible="{TemplateBinding IsCollapsed}" />
-                  <Path Classes="toolicon" Data="{DynamicResource IconChevronDown}" IsVisible="{TemplateBinding IsCollapsed, Converter={x:Static BoolConverters.Not}}" />
-                </Panel>
-              </Button>
-              <Path Name="PART_Icon" Grid.Column="1" Classes="toolicon" Data="{TemplateBinding Icon}" Stroke="{TemplateBinding LabelBrush}" Margin="0,0,6,0"
+              <Path Name="PART_Icon" Classes="toolicon" Data="{TemplateBinding Icon}" Stroke="{TemplateBinding LabelBrush}" Margin="0,0,6,0"
                     IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
-              <TextBlock Name="PART_Label" Grid.Column="2" Classes="small" FontWeight="SemiBold" Foreground="{TemplateBinding LabelBrush}"
+              <TextBlock Name="PART_Label" Grid.Column="1" Classes="small" FontWeight="SemiBold" Foreground="{TemplateBinding LabelBrush}"
                          Text="{TemplateBinding Label}" VerticalAlignment="Center"
                          IsVisible="{TemplateBinding Label, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-              <TextBlock Name="PART_Detail" Grid.Column="3" Classes="muted small" Text="{TemplateBinding Detail}" TextTrimming="CharacterEllipsis"
-                         Margin="8,0,0,0" VerticalAlignment="Center" ToolTip.Tip="{TemplateBinding Detail}"
-                         IsVisible="{TemplateBinding Detail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              <!-- What shows on the line all the time, after the label: a reply's chain of steps (DESIGN.md §18) -->
+              <ContentPresenter Name="PART_Extra" Grid.Column="2" Content="{TemplateBinding Extra}" ContentTemplate="{TemplateBinding ExtraTemplate}"
+                                Margin="8,-4,0,-4" VerticalAlignment="Center"
+                                IsVisible="{TemplateBinding Extra, Converter={x:Static ObjectConverters.IsNotNull}}" />
+              <!-- The detail, and right after it the chevron of a card whose content folds away (a Tool calls card's tiles),
+                   as thinking's comes after its label. The detail gives way first when the line is short. -->
+              <DockPanel Grid.Column="3" HorizontalAlignment="Left">
+                <Button Name="PART_Toggle" DockPanel.Dock="Right" Classes="flat" Padding="2" Margin="4,-3,0,-3" VerticalAlignment="Center"
+                        Command="{TemplateBinding ToggleCommand}" IsVisible="{TemplateBinding IsCollapsible}"
+                        AutomationProperties.Name="Show or hide the calls" ToolTip.Tip="Show or hide the calls">
+                  <Panel>
+                    <Path Classes="toolicon" Data="{DynamicResource IconChevronRight}" IsVisible="{TemplateBinding IsCollapsed}" />
+                    <Path Classes="toolicon" Data="{DynamicResource IconChevronDown}" IsVisible="{TemplateBinding IsCollapsed, Converter={x:Static BoolConverters.Not}}" />
+                  </Panel>
+                </Button>
+                <TextBlock Name="PART_Detail" Classes="muted small" Text="{TemplateBinding Detail}" TextTrimming="CharacterEllipsis"
+                           Margin="8,0,0,0" VerticalAlignment="Center" ToolTip.Tip="{TemplateBinding Detail}"
+                           IsVisible="{TemplateBinding Detail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              </DockPanel>
               <ContentPresenter Name="PART_Actions" Grid.Column="4" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}"
                                 Margin="8,-4,0,-4" VerticalAlignment="Center"
                                 IsVisible="{TemplateBinding Actions, Converter={x:Static ObjectConverters.IsNotNull}}" />
@@ -252,6 +259,36 @@
     <Setter Property="Grid.Row" Value="0" />
     <Setter Property="Margin" Value="0" />
   </Style>
+  <!-- A folded chain's line (DESIGN.md §18) is clickable along its whole header. -->
+  <Style Selector="controls|Card.steps">
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <!-- The chain of steps a reply carries, on its header line (DESIGN.md §18): "7 steps · 18m 43s" and a chevron, in a
+       rounded outline, which opens the steps inside the card. -->
+  <Style Selector="Button.stepspill">
+    <Setter Property="Padding" Value="8,2,6,2" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <!-- The open steps inside a reply's card: a box of their own under the reply's text, which scrolls once it's long. On
+       the conversation's own surface, not the reply's tint, so the steps' muted text reads as it does outside the card,
+       however the card is lit by the pointer. -->
+  <Style Selector="Border.stepsbox">
+    <Setter Property="Background" Value="{DynamicResource IslandBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource DividerBrush}" />
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="Margin" Value="0,8,0,0" />
+  </Style>
+  <!-- A step's line in the open list of a folded chain: quiet, with its time at the right. -->
+  <Style Selector="Button.steprow">
+    <Setter Property="Padding" Value="4,5" />
+    <Setter Property="MinHeight" Value="0" />
+  </Style>
   <!-- Folded away (a Tool calls card's tiles): the header line alone, with no gap under it. -->
   <Style Selector="controls|Card:collapsed /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Margin" Value="0" />
@@ -308,10 +345,10 @@
   <Style Selector=".indentyou.compact controls|Card.you">
     <Setter Property="Margin" Value="64,0,0,0" />
   </Style>
-  <Style Selector=".indentsteps controls|Card.thinking, .indentsteps controls|Card.tools, .indentsteps controls|Card.agent">
+  <Style Selector=".indentsteps controls|Card.thinking, .indentsteps controls|Card.tools, .indentsteps controls|Card.agent, .indentsteps controls|Card.steps">
     <Setter Property="Margin" Value="24,0,0,0" />
   </Style>
-  <Style Selector=".indentsteps.compact controls|Card.thinking, .indentsteps.compact controls|Card.tools, .indentsteps.compact controls|Card.agent">
+  <Style Selector=".indentsteps.compact controls|Card.thinking, .indentsteps.compact controls|Card.tools, .indentsteps.compact controls|Card.agent, .indentsteps.compact controls|Card.steps">
     <Setter Property="Margin" Value="16,0,0,0" />
   </Style>
 

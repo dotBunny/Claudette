@@ -60,13 +60,14 @@ public sealed class ConversationBuilder
     public ConversationBuilder(ObservableCollection<ConversationItem> items, TodoList? todoList = null, Func<string?, string?>? modelName = null)
     {
         Items = items;
+        Runs = new StepRuns(items);
         _todoList = todoList;
         if (todoList is not null)
         {
             todoList.Clock = Now;
         }
         _modelName = modelName ?? (m => m);
-        _blocks = new StreamingBlocks(items, item => Stamp(item, Now()), () => ExpandThinking);
+        _blocks = new StreamingBlocks(items, item => Stamp(item, Now()), () => ExpandThinking, Now);
         _hookRuns = new HookRuns(run =>
         {
             _blocks.Close();
@@ -99,6 +100,32 @@ public sealed class ConversationBuilder
     }
 
     private bool _collapseToolCalls;
+
+    /// <summary>
+    /// Fold each run of steps into one line (Settings → Conversation → Fold each chain of steps). A subagent's builder
+    /// asks the builder that made it.
+    /// </summary>
+    public bool FoldChains
+    {
+        get => _parent?.FoldChains ?? _foldChains;
+        set
+        {
+            _foldChains = value;
+            Runs.Chain = value;
+        }
+    }
+
+    private bool _foldChains;
+
+    /// <summary>The steps' chains folded into lines.</summary>
+    public StepRuns Runs { get; }
+
+    /// <summary>The setting changed: every run folds into its line, or opens again.</summary>
+    public void ApplyFoldChains(bool fold)
+    {
+        FoldChains = fold;
+        Runs.Refresh();
+    }
 
     /// <summary>
     /// <b>Collapse all tool calls</b> or <b>Expand all tool calls</b> (DESIGN.md §18): every Tool calls card, subagents'
@@ -399,6 +426,13 @@ public sealed class ConversationBuilder
     }
 
     public void Apply(SessionEvent sessionEvent)
+    {
+        ApplyCore(sessionEvent);
+        // A step may have joined a run, or a message ended it: the run at the end folds as it should.
+        Runs.Update();
+    }
+
+    private void ApplyCore(SessionEvent sessionEvent)
     {
         if (ParentOf(sessionEvent) is { } parent)
         {

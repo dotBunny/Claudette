@@ -146,6 +146,164 @@ public sealed class ConversationCardsUiTests
     }
 
     [AvaloniaFact]
+    public async Task A_chain_of_steps_folds_into_one_line_and_then_into_the_replys_header_which_opens_it_inside_the_card()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        h.Services.Settings.Appearance.FoldChains = true;
+        h.Services.SaveSettings();
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"One."},{"type":"tool_use","id":"r1","name":"Read","input":{"file_path":"a.cs"}}]}}""");
+        h.Transport.Emit("""{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"r1","content":"x"}]}}""");
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"Two."},{"type":"tool_use","id":"r2","name":"Bash","input":{"command":"ls","description":"list the files"}}]}}""");
+        h.Transport.Emit("""{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"r2","content":"y"}]}}""");
+        // The list builds only the steps it needs to, and a folded one has no height, so the model is what to wait for.
+        await UiText.SettleUntilAsync(window, () => Named(window, "steps").Count == 1 && Named(window, "tools").Count >= 1
+            && FoldedSteps(tab) == 3, "the chain's line");
+
+        // Four steps (two thinking, two calls), the last still what Claude is on: one line, and the last step under it.
+        var marker = tab.Items.OfType<StepsMarkerItem>().Single();
+        Assert.Equal("Working · 3 earlier steps", marker.Title);
+        Assert.Equal(1, Named(window, "tools").Count(c => c.IsEffectivelyVisible));
+        Assert.True(Named(window, "steps")[0].IsCollapsed);
+
+        // A reply follows: the run is done, and the whole of it goes into the reply's header, how many steps it was; the
+        // line of its own takes no room.
+        h.Transport.EmitTurn("Done.");
+        await UiText.SettleUntilAsync(window, () => Replies(window).Count == 1 && FoldedSteps(tab) == 4 && marker.IsFolded, "the whole run in the reply");
+        var reply = tab.Items.OfType<AssistantTextItem>().Single();
+        Assert.Same(marker, reply.Steps);
+        Assert.Equal("4 steps", marker.Title);
+        Assert.Equal("2 tool calls · 2 thinking", marker.Summary);
+        Assert.Equal(0, Named(window, "steps").Count(c => c.IsEffectivelyVisible));
+        Assert.Equal(0, Named(window, "tools").Count(c => c.IsEffectivelyVisible));
+        Assert.Equal(0, Named(window, "thinking").Count(c => c.IsEffectivelyVisible));
+        Assert.Empty(marker.Rows);
+        var card = Replies(window)[0];
+        var pill = card.GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("stepspill"));
+        Assert.True(pill.IsEffectivelyVisible);
+        Assert.Equal("4 steps", AutomationProperties.GetName(pill));
+        var box = card.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "ReplySteps");
+        Assert.False(box.IsEffectivelyVisible);
+
+        // The pill opens a list of the steps inside the reply's card, a line each: what Claude thought and what it did.
+        pill.Command!.Execute(null);
+        UiText.Settle(window);
+        Assert.True(marker.IsOpen);
+        Assert.True(box.IsEffectivelyVisible);
+        Assert.True(box.TranslatePoint(default, card)!.Value.Y > card.GetVisualDescendants().OfType<LiveMarkdown.Avalonia.MarkdownRenderer>().Single().TranslatePoint(default, card)!.Value.Y,
+            "The steps open under the reply's text.");
+        Assert.Equal(["Thought", "Read a.cs", "Thought", "Ran list the files"], marker.Rows.Select(r => r.Title));
+        Assert.Equal(4, FoldedSteps(tab));
+
+        // A line opens further: the thinking's words, and the call's own detail.
+        var thought = marker.Rows[0];
+        Assert.False(thought.ShowsThought);
+        thought.ToggleCommand.Execute(null);
+        Assert.True(thought.ShowsThought);
+        Assert.Equal("One.", thought.ThoughtText);
+        var call = marker.Rows[1];
+        call.ToggleCommand.Execute(null);
+        Assert.True(call.ShowsTool);
+
+        // Folded again, the list goes and costs nothing.
+        marker.ToggleCommand.Execute(null);
+        UiText.Settle(window);
+        Assert.False(marker.IsOpen);
+        Assert.Empty(marker.Rows);
+
+        // Going to a step inside opens the list in the reply, and opens its row.
+        var target = tab.Items.OfType<ThinkingItem>().Last();
+        tab.ScrollTo(target);
+        Assert.True(marker.IsOpen);
+        Assert.True(marker.Rows.Single(r => ReferenceEquals(r.Source, target)).IsExpanded);
+
+        // Back to showing every step in this tab, from the message box's bar: no line, nothing folded, and Settings as they were.
+        var stepsButton = window.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "StepsButton" && b.IsEffectivelyVisible);
+        Assert.Equal("Steps: folded", tab.StepsButtonText);
+        stepsButton.Command!.Execute(null);
+        UiText.Settle(window);
+        Assert.True(h.Services.Settings.Appearance.FoldChains);
+        Assert.False(tab.State.Overrides.FoldChains);
+        Assert.Equal("Steps: all", tab.StepsButtonText);
+        Assert.Empty(Named(window, "steps"));
+        Assert.DoesNotContain(tab.Items, i => i is StepsMarkerItem);
+        Assert.Null(reply.Steps);
+        Assert.Equal(0, FoldedSteps(tab));
+        window.Close();
+    }
+
+    /// <summary>
+    /// Opening a reply's steps at the foot of a long conversation keeps the reply where it was clicked: the steps grow
+    /// down, and the list stops following new output rather than jumping to the end (DESIGN.md §18).
+    /// </summary>
+    [AvaloniaFact]
+    public async Task Opening_a_replys_steps_keeps_it_where_it_was_clicked()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        h.Services.Settings.Appearance.FoldChains = true;
+        h.Services.SaveSettings();
+        for (var i = 0; i < 6; i++)
+        {
+            h.Transport.EmitTurn(string.Join("\n\n", Enumerable.Repeat($"Earlier reply {i}.", 4)));
+        }
+        for (var i = 0; i < 12; i++)
+        {
+            h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"tool_use","id":"sN","name":"Read","input":{"file_path":"fN.cs"}}]}}""".Replace("N", $"{i}", StringComparison.Ordinal));
+            h.Transport.Emit("""{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"sN","content":"x"}]}}""".Replace("N", $"{i}", StringComparison.Ordinal));
+        }
+        h.Transport.EmitTurn("Done.");
+        await UiText.SettleUntilAsync(window, () => tab.Items.OfType<AssistantTextItem>().LastOrDefault()?.Steps is not null
+            && window.GetVisualDescendants().OfType<Button>().Any(b => b.Classes.Contains("stepspill") && b.IsEffectivelyVisible), "the last reply's steps");
+        var scroll = window.GetVisualDescendants().OfType<ScrollViewer>().First(s => s.Name == "ConversationScroll");
+        scroll.Offset = new Vector(0, scroll.Extent.Height);
+        UiText.Settle(window);
+        var pill = window.GetVisualDescendants().OfType<Button>().Last(b => b.Classes.Contains("stepspill") && b.IsEffectivelyVisible);
+        var before = pill.TranslatePoint(default, scroll)!.Value.Y;
+
+        Click(window, pill);
+        UiText.Settle(window);
+
+        Assert.True(tab.Items.OfType<AssistantTextItem>().Last().Steps!.IsOpen);
+        Assert.Equal(before, pill.TranslatePoint(default, scroll)!.Value.Y, 1);
+        window.Close();
+    }
+
+    private static void Click(Window window, Control target)
+    {
+        var center = target.TranslatePoint(new Point(target.Bounds.Width / 2, target.Bounds.Height / 2), window)!.Value;
+        window.MouseMove(center);
+        window.MouseDown(center, MouseButton.Left);
+        window.MouseUp(center, MouseButton.Left);
+        UiText.Settle(window);
+    }
+
+    [AvaloniaFact]
+    public async Task A_lone_thinking_row_before_a_reply_folds_into_the_replys_header()
+    {
+        await using var h = new TabTestHarness(dispatcher: new AvaloniaUiDispatcher());
+        var tab = await h.OpenTabAsync();
+        var window = UiText.Show(new ShellView { DataContext = h.Shell });
+        h.Services.Settings.Appearance.FoldChains = true;
+        h.Services.SaveSettings();
+        h.Transport.Emit("""{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"Hm."}]}}""");
+        h.Transport.EmitTurn("Hi.");
+        await UiText.SettleUntilAsync(window, () => Replies(window).Count == 1 && tab.Items.OfType<StepsMarkerItem>().Count() == 1, "the folded thinking");
+
+        var marker = tab.Items.OfType<StepsMarkerItem>().Single();
+        Assert.True(tab.Items.OfType<ThinkingItem>().Single().IsFolded);
+        Assert.Equal("1 step", marker.Title);
+        Assert.Same(marker, tab.Items.OfType<AssistantTextItem>().Single().Steps);
+        Assert.Equal(0, Named(window, "thinking").Count(c => c.IsEffectivelyVisible));
+        marker.ToggleCommand.Execute(null);
+        UiText.Settle(window);
+        Assert.Equal("Thought", marker.Rows.Single().Title);
+        window.Close();
+    }
+
+    [AvaloniaFact]
     public async Task Your_messages_and_Claudes_steps_each_start_further_in_with_their_own_setting()
     {
         // Both off by default; your messages' turned on here.
@@ -294,6 +452,10 @@ public sealed class ConversationCardsUiTests
 
     private static List<Card> YourCards(Window window) =>
         [.. window.GetVisualDescendants().OfType<Card>().Where(c => c.Classes.Contains("you"))];
+
+    /// <summary>The steps folded away, not counting the lines of the chains themselves.</summary>
+    private static int FoldedSteps(Claudette.App.ViewModels.TabViewModel tab) =>
+        tab.Items.Count(i => i is not StepsMarkerItem && i.IsFolded);
 
     private static Button Toggle(Card card) =>
         card.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "PART_Toggle");

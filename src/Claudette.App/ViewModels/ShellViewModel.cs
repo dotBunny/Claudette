@@ -33,6 +33,8 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         _onAuthenticationRequired = onAuthenticationRequired;
         _opener = new SessionOpener(services, this);
         Layout = new ShellLayout(services.State, services.SaveState);
+        // The pinned groups' band follows the groups as they come, go and move (DESIGN.md §4, "Pinning a group").
+        Groups.CollectionChanged += (_, _) => MarkPinnedBand();
         ToolWindows = new ToolDockViewModel(services.State, services.SaveState);
         WatchToolWindows();
         // Panes fold away as the window narrows, and come back as it widens (DESIGN.md §18, "Split panes").
@@ -478,8 +480,11 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         {
             Name = GroupNames.Saved(state, folder),
         };
+        group.IsPinned = state.PinnedGroups.Any(p => FolderHistory.SamePath(p, folder));
         SetUpGroupAccount(group);
         Groups.Add(group);
+        // A pinned group goes up among the pinned ones, and the others keep their place.
+        OrderGroups();
         UpdateGroupLabels();
         OnPropertyChanged(nameof(HasTabs));
         return group;
@@ -764,6 +769,65 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
         SelectedTab = tabs[(index + offset + tabs.Count) % tabs.Count];
     }
 
+    /// <summary>
+    /// <b>Pin to the top</b> in a group's menu (DESIGN.md §4, "Pinning a group"): the group moves up among the pinned ones,
+    /// and <b>Unpin from the top</b> lets it go back down. Remembered for the folder.
+    /// </summary>
+    [RelayCommand]
+    private void TogglePinGroup(TabGroupViewModel? group)
+    {
+        if (group is null)
+        {
+            return;
+        }
+        group.IsPinned = !group.IsPinned;
+        var pinned = _services.State.PinnedGroups;
+        pinned.RemoveAll(p => FolderHistory.SamePath(p, group.Folder));
+        if (group.IsPinned)
+        {
+            pinned.Add(group.Folder);
+        }
+        OrderGroups();
+        // Already in its place, so nothing moved: the band changes all the same.
+        MarkPinnedBand();
+        SaveTabs();
+    }
+
+    /// <summary>
+    /// The pinned groups, which <see cref="OrderGroups"/> keeps first, are a band of their own at the top of the sidebar,
+    /// with a divider under it while other groups follow (DESIGN.md §4, "Pinning a group").
+    /// </summary>
+    private void MarkPinnedBand()
+    {
+        var pinned = Groups.Count(g => g.IsPinned);
+        for (var i = 0; i < Groups.Count; i++)
+        {
+            var group = Groups[i];
+            group.IsLastPinned = group.IsPinned && i == pinned - 1;
+            group.HasDividerAbove = pinned > 0 && i == pinned;
+        }
+    }
+
+    /// <summary>
+    /// Pinned groups first, in the order they were in; then the groups with something open, as they were; then Claude
+    /// Code's projects with nothing open, the most recently used first (DESIGN.md §4).
+    /// </summary>
+    private void OrderGroups()
+    {
+        var ordered = Groups.Where(g => g.IsPinned)
+            .Concat(Groups.Where(g => !g.IsPinned && !g.IsProjectOnly))
+            .Concat(Groups.Where(g => !g.IsPinned && g.IsProjectOnly).OrderByDescending(g => g.LastSessionActivity))
+            .ToList();
+        for (var i = 0; i < ordered.Count; i++)
+        {
+            var from = Groups.IndexOf(ordered[i]);
+            if (from != i)
+            {
+                Groups.Move(from, i);
+            }
+        }
+    }
+
     [RelayCommand]
     private void ToggleGroupCollapsed(TabGroupViewModel? group)
     {
@@ -890,7 +954,10 @@ public sealed partial class ShellViewModel : ViewModelBase, IAsyncDisposable
     public bool MoveGroupTo(TabGroupViewModel group, int index)
     {
         var from = Groups.IndexOf(group);
-        var to = Math.Clamp(index, 0, Groups.Count - 1);
+        // A pinned group stays among the pinned ones, and the others below them.
+        var pinned = Groups.Count(g => g.IsPinned);
+        var (first, last) = group.IsPinned ? (0, pinned - 1) : (pinned, Groups.Count - 1);
+        var to = Math.Clamp(index, first, Math.Max(first, last));
         if (from < 0 || to == from)
         {
             return false;

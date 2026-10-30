@@ -13,7 +13,18 @@ using LiveMarkdown.Avalonia;
 namespace Claudette.App.Conversation;
 
 /// <summary>One row in a tab's conversation (DESIGN.md §5).</summary>
-public abstract class ConversationItem : ObservableObject;
+public abstract class ConversationItem : ObservableObject
+{
+    /// <summary>
+    /// A step folded into its chain's line (Settings → Conversation → Fold each chain of steps, DESIGN.md §18): the list
+    /// gives it no height, as if it weren't there, though it stays in the conversation for find and export. Set by
+    /// <see cref="StepRuns"/>, which tells the list by replacing the chain's line.
+    /// </summary>
+    public bool IsFolded { get; internal set; }
+
+    /// <summary>What <see cref="IsFolded"/> was when the list last measured it, so it knows to measure it again.</summary>
+    internal bool FoldSeen { get; set; }
+}
 
 /// <summary>
 /// A user message or an assistant reply. It has a Copy button and shows when it was sent, on hover (DESIGN.md §5,
@@ -284,6 +295,18 @@ public sealed partial class AssistantTextItem : MessageItem
     [ObservableProperty]
     public partial bool IsIntermediate { get; set; }
 
+    /// <summary>
+    /// The chain of steps that led to this reply, folded into its header (Settings → Conversation → Fold each chain of
+    /// steps, DESIGN.md §18): <i>7 steps · 18m 43s</i>, which opens the steps inside the card. Null when no chain comes
+    /// just before it, the row of the task it's for carries it (<see cref="TaskStartItem.Steps"/>), or chains don't fold.
+    /// Set by <see cref="StepRuns"/>.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSteps))]
+    public partial StepsMarkerItem? Steps { get; internal set; }
+
+    public bool HasSteps => Steps is not null;
+
     public string Text => Markdown.ToString();
 
     /// <summary>The reply's Markdown, as Claude wrote it.</summary>
@@ -370,6 +393,14 @@ public sealed partial class ThinkingItem : ConversationItem
     public partial bool IsExpanded { get; set; }
 
     public bool HasText => _text.Length > 0;
+
+    /// <summary>When the thinking began and ended, by the conversation's clock; null when it isn't known.</summary>
+    public DateTimeOffset? StartedAt { get; internal set; }
+
+    public DateTimeOffset? EndedAt { get; internal set; }
+
+    /// <summary>How long Claude thought, when both times are known.</summary>
+    public TimeSpan? Duration => EndedAt - StartedAt is { } took && took >= TimeSpan.Zero ? took : null;
 
     public string Header => IsStreaming ? "Thinking…" : "Thinking";
 
@@ -1200,6 +1231,14 @@ public sealed partial class TaskStartItem : ConversationItem
     }
 
     public TodoItem Todo { get; }
+
+    /// <summary>
+    /// The chain of steps right after the row, the task's work, folded onto it (Settings → Conversation → Fold each chain
+    /// of steps, DESIGN.md §18): <i>3 steps · 2m 10s</i>, which opens the steps under the row. Null when no chain follows
+    /// it, or chains don't fold. Set by <see cref="StepRuns"/>.
+    /// </summary>
+    [ObservableProperty]
+    public partial StepsMarkerItem? Steps { get; internal set; }
 
     /// <summary>When it started, by the tab's clock or its transcript entry; null when not known.</summary>
     public DateTimeOffset? StartedAt { get; }

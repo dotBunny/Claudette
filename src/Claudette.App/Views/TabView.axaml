@@ -225,6 +225,48 @@
         <TextBlock Classes="muted small" Text="Nothing more to show for this call." IsVisible="{Binding !CanExpand}" />
       </StackPanel>
     </DataTemplate>
+
+    <!-- A step in the list a folded chain opens into (DESIGN.md §18): a line, with its time at the right, that opens under
+         itself to what Claude thought or the call's input and output. -->
+    <DataTemplate x:Key="StepRow" x:DataType="conv:StepRowItem">
+      <StackPanel>
+        <Button Classes="flat steprow" Command="{Binding ToggleCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                IsHitTestVisible="{Binding HasDetail}">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Right" Classes="muted small" Text="{Binding TimeText}" VerticalAlignment="Center" Margin="12,0,4,0" />
+            <Panel DockPanel.Dock="Right" Margin="6,0,0,0" IsVisible="{Binding HasDetail}">
+              <Path Classes="toolicon" Data="{StaticResource IconChevronRight}" IsVisible="{Binding IsCollapsed}" />
+              <Path Classes="toolicon" Data="{StaticResource IconChevronDown}" IsVisible="{Binding IsExpanded}" />
+            </Panel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Path Classes="toolicon" Data="{StaticResource IconCardThinking}" Stroke="{DynamicResource MutedTextBrush}" IsVisible="{Binding IsThought}" />
+              <Path Classes="toolicon" Data="{Binding Tool.IconKey, Converter={x:Static conv:ToolIcons.Geometry}, FallbackValue={x:Null}}"
+                    IsVisible="{Binding IsTool}" />
+              <TextBlock Classes="muted" Text="{Binding Title}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            </StackPanel>
+          </DockPanel>
+        </Button>
+        <SelectableTextBlock Classes="muted" FontStyle="Italic" TextWrapping="Wrap" Margin="26,2,6,6" Text="{Binding ThoughtText}" IsVisible="{Binding ShowsThought}" />
+        <Border Classes="tiledetail" Margin="26,2,6,6" IsVisible="{Binding ShowsTool}">
+          <ContentControl Content="{Binding Tool}" ContentTemplate="{StaticResource ToolDetail}" />
+        </Border>
+      </StackPanel>
+    </DataTemplate>
+
+    <!-- The chain of steps a reply carries, on its header line (DESIGN.md §18): how many steps and how long, and a chevron;
+         a click opens them inside the reply's card. What they were is its tooltip. -->
+    <DataTemplate x:Key="StepsPill" x:DataType="conv:StepsMarkerItem">
+      <Button Classes="flat stepspill" Command="{Binding ToggleCommand}" VerticalAlignment="Center"
+              ToolTip.Tip="{Binding Summary}" AutomationProperties.Name="{Binding Title}">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Classes="small muted" Text="{Binding Title}" VerticalAlignment="Center" />
+          <Panel VerticalAlignment="Center">
+            <Path Classes="toolicon" Data="{StaticResource IconChevronRight}" IsVisible="{Binding IsFoldedAway}" />
+            <Path Classes="toolicon" Data="{StaticResource IconChevronDown}" IsVisible="{Binding IsOpen}" />
+          </Panel>
+        </StackPanel>
+      </Button>
+    </DataTemplate>
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -288,9 +330,19 @@
     <!-- Claude's reply: a Claude card, quieter once Claude carried on working after it (DESIGN.md §18, "Conversation cards"). -->
     <DataTemplate DataType="conv:AssistantTextItem">
       <controls:Card Classes="claude" Classes.quiet="{Binding IsIntermediate}" Label="Claude" Icon="{StaticResource IconCardClaude}"
-                     TimeText="{Binding TimeText}" TimeTip="{Binding TimeTip}" Actions="{Binding}" ActionsTemplate="{StaticResource ReplyTools}">
-        <md:MarkdownRenderer UpdateProducer="{Binding Parsed, FallbackValue={x:Static conv:KeptMarkdown.None}}"
-                             LinkCommand="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).OpenLinkCommand}" />
+                     TimeText="{Binding TimeText}" TimeTip="{Binding TimeTip}" Actions="{Binding}" ActionsTemplate="{StaticResource ReplyTools}"
+                     Extra="{Binding Steps}" ExtraTemplate="{StaticResource StepsPill}">
+        <StackPanel>
+          <md:MarkdownRenderer UpdateProducer="{Binding Parsed, FallbackValue={x:Static conv:KeptMarkdown.None}}"
+                               LinkCommand="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).OpenLinkCommand}" />
+          <!-- The steps that led to the reply, opened from its header, under its text: a box of their own that scrolls once it's long, each
+               line opening further (DESIGN.md §18). -->
+          <Border Name="ReplySteps" Classes="stepsbox" IsVisible="{Binding Steps.IsOpen, FallbackValue=False}">
+            <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <ItemsControl ItemsSource="{Binding Steps.Rows, FallbackValue={x:Null}}" ItemTemplate="{StaticResource StepRow}" Margin="{Binding $parent[ScrollViewer].ScrollBarMaximum.Y, Converter={x:Static vm:Converters.ScrollBarGutter}}" />
+            </ScrollViewer>
+          </Border>
+        </StackPanel>
       </controls:Card>
     </DataTemplate>
 
@@ -378,6 +430,24 @@
           </ItemsControl>
         </StackPanel>
       </StackPanel>
+      </controls:Card>
+    </DataTemplate>
+
+    <!-- A run of steps folded into one line (Settings → Conversation → Fold each chain of steps, DESIGN.md §18): how long
+         Claude worked and what the steps were; a click on the line opens a list of the steps, which scrolls once it's
+         long, with the run's last step under it while Claude is on it. -->
+    <DataTemplate DataType="conv:StepsMarkerItem">
+      <controls:Card Classes="steps quiet" Label="{Binding Title}" Icon="{StaticResource IconCardTools}" Detail="{Binding Summary}"
+                     IsCollapsible="True" IsCollapsed="{Binding IsFoldedAway}" ToggleCommand="{Binding ToggleCommand}">
+        <controls:Card.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="Show every step" Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).ShowEveryStepCommand}"
+                      ToolTip.Tip="Show every step in this tab, whatever Settings → Conversation says" />
+          </ContextMenu>
+        </controls:Card.ContextMenu>
+        <ScrollViewer MaxHeight="340" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding IsOpen}">
+          <ItemsControl ItemsSource="{Binding Rows}" ItemTemplate="{StaticResource StepRow}" Margin="{Binding $parent[ScrollViewer].ScrollBarMaximum.Y, Converter={x:Static vm:Converters.ScrollBarGutter}}" />
+        </ScrollViewer>
       </controls:Card>
     </DataTemplate>
 
@@ -700,20 +770,31 @@
       </controls:Card>
     </DataTemplate>
 
-    <!-- Where one of Claude's tasks started (DESIGN.md §5, "Tasks"): a rule with the task in it, which opens the Tasks page -->
+    <!-- Where one of Claude's tasks started (DESIGN.md §5, "Tasks"): a rule with the task in it, which opens the Tasks page.
+         With chains folding, the task's work right after it is on the row, "3 steps · 2m 10s", and opens under it (DESIGN.md §18). -->
     <DataTemplate DataType="conv:TaskStartItem">
-      <Button Classes="flat taskstart" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="0,2"
-              Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).OpenTasksPageCommand}"
-              ToolTip.Tip="Show on the Tasks page" AutomationProperties.Name="{Binding Todo.Title}">
-        <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
-          <TextBlock Classes="small" Classes.status="{Binding Todo.IsActive}" Classes.busy="{Binding Todo.IsActive}" Classes.muted="{Binding !Todo.IsActive}"
-                     Text="{Binding Todo.Glyph}" VerticalAlignment="Center" />
-          <TextBlock Grid.Column="1" Classes="small" FontWeight="SemiBold" Text="{Binding Todo.Title}" MaxWidth="560" TextTrimming="CharacterEllipsis"
-                     VerticalAlignment="Center" />
-          <Border Grid.Column="2" Height="1" Background="{DynamicResource DividerBrush}" VerticalAlignment="Center" />
-          <TextBlock Grid.Column="3" Classes="muted small" Text="{Binding TimeText}" VerticalAlignment="Center" />
-        </Grid>
-      </Button>
+      <StackPanel>
+        <Button Classes="flat taskstart" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="0,2"
+                Command="{Binding $parent[UserControl].((vm:TabViewModel)DataContext).OpenTasksPageCommand}"
+                ToolTip.Tip="Show on the Tasks page" AutomationProperties.Name="{Binding Todo.Title}">
+          <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+            <TextBlock Classes="small" Classes.status="{Binding Todo.IsActive}" Classes.busy="{Binding Todo.IsActive}" Classes.muted="{Binding !Todo.IsActive}"
+                       Text="{Binding Todo.Glyph}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Classes="small" FontWeight="SemiBold" Text="{Binding Todo.Title}" MaxWidth="560" TextTrimming="CharacterEllipsis"
+                       VerticalAlignment="Center" />
+            <ContentControl Grid.Column="2" Content="{Binding Steps}" ContentTemplate="{StaticResource StepsPill}" Margin="0,-3"
+                            IsVisible="{Binding Steps, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <Border Grid.Column="3" Height="1" Background="{DynamicResource DividerBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="4" Classes="muted small" Text="{Binding TimeText}" VerticalAlignment="Center" />
+          </Grid>
+        </Button>
+        <!-- The task's steps, opened from the row: a box of their own under it, as in a reply's card -->
+        <Border Name="TaskSteps" Classes="stepsbox" IsVisible="{Binding Steps.IsOpen, FallbackValue=False}">
+          <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Steps.Rows, FallbackValue={x:Null}}" ItemTemplate="{StaticResource StepRow}" Margin="{Binding $parent[ScrollViewer].ScrollBarMaximum.Y, Converter={x:Static vm:Converters.ScrollBarGutter}}" />
+          </ScrollViewer>
+        </Border>
+      </StackPanel>
     </DataTemplate>
 
     <!-- Where the task list stands as a turn that changed it ends, with Continue while tasks are left (DESIGN.md §5, "Tasks") -->

@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Claudette.App.Conversation;
 
 namespace Claudette.App.Controls;
 
@@ -156,6 +157,8 @@ public sealed class ConversationPanel : VirtualizingPanel
             {
                 var element = GetOrCreate(items, index);
                 _realized.Add(element);
+                // A step folded into its chain's line is built but not shown, so it measures nothing.
+                element.SetCurrentValue(IsVisibleProperty, items[index] is not ConversationItem { IsFolded: true });
                 element.Measure(availableSize);
                 SetHeight(index, element.DesiredSize.Height);
                 width = Math.Max(width, element.DesiredSize.Width);
@@ -295,11 +298,29 @@ public sealed class ConversationPanel : VirtualizingPanel
         {
             Array.Resize(ref _tops, Math.Max(count + 1, _tops.Length * 2));
         }
+        var items = Items;
         var y = 0.0;
         for (var i = 0; i < count; i++)
         {
             _tops[i] = y;
             var height = _heights[i];
+            if (i < items.Count && items[i] is ConversationItem item)
+            {
+                // A step folded into its chain's line takes no room; one just unfolded is measured again.
+                if (item.IsFolded != item.FoldSeen)
+                {
+                    item.FoldSeen = item.IsFolded;
+                    _widths[i] = double.NaN;
+                }
+                if (item.IsFolded)
+                {
+                    height = 0;
+                }
+                else if (height == 0)
+                {
+                    height = double.NaN;
+                }
+            }
             y += double.IsNaN(height) ? _estimate : height;
         }
         _tops[count] = y;
@@ -368,6 +389,7 @@ public sealed class ConversationPanel : VirtualizingPanel
         {
             var old = double.IsNaN(_heights[index]) ? _estimate : _heights[index];
             var element = GetOrCreate(items, index);
+            element.SetCurrentValue(IsVisibleProperty, items[index] is not ConversationItem { IsFolded: true });
             element.Measure(size);
             var height = element.DesiredSize.Height;
             SetHeight(index, height, estimate: false);

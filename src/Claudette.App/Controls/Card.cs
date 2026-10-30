@@ -1,7 +1,11 @@
 using Avalonia;
 using Avalonia.Controls;
 using System.Windows.Input;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Claudette.App.Controls;
 
@@ -28,6 +32,11 @@ public sealed class Card : ContentControl
 
     public static readonly StyledProperty<Avalonia.Controls.Templates.IDataTemplate?> ActionsTemplateProperty =
         AvaloniaProperty.Register<Card, Avalonia.Controls.Templates.IDataTemplate?>(nameof(ActionsTemplate));
+
+    public static readonly StyledProperty<object?> ExtraProperty = AvaloniaProperty.Register<Card, object?>(nameof(Extra));
+
+    public static readonly StyledProperty<Avalonia.Controls.Templates.IDataTemplate?> ExtraTemplateProperty =
+        AvaloniaProperty.Register<Card, Avalonia.Controls.Templates.IDataTemplate?>(nameof(ExtraTemplate));
 
     public static readonly StyledProperty<IBrush?> StripeBrushProperty = AvaloniaProperty.Register<Card, IBrush?>(nameof(StripeBrush));
 
@@ -104,6 +113,23 @@ public sealed class Card : ContentControl
         set => SetValue(ActionsTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Something on the header line right after the label that shows all the time, such as the <i>7 steps · 18m 43s</i>
+    /// of the chain of steps a reply carries (DESIGN.md §18).
+    /// </summary>
+    public object? Extra
+    {
+        get => GetValue(ExtraProperty);
+        set => SetValue(ExtraProperty, value);
+    }
+
+    /// <summary>How <see cref="Extra"/> shows, when it's an item rather than a control.</summary>
+    public Avalonia.Controls.Templates.IDataTemplate? ExtraTemplate
+    {
+        get => GetValue(ExtraTemplateProperty);
+        set => SetValue(ExtraTemplateProperty, value);
+    }
+
     /// <summary>The stripe down the left edge, and the label's color unless <see cref="LabelBrush"/> says otherwise.</summary>
     public IBrush? StripeBrush
     {
@@ -151,6 +177,33 @@ public sealed class Card : ContentControl
     {
         get => GetValue(ToggleCommandProperty);
         set => SetValue(ToggleCommandProperty, value);
+    }
+
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        // A click anywhere on the header line does what the chevron does, as the whole line of a folded chain is its button.
+        if (e.NameScope.Find<Control>("PART_Body") is { } body)
+        {
+            body.PointerPressed += OnHeaderPressed;
+        }
+    }
+
+    private void OnHeaderPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!IsCollapsible || ToggleCommand is not { } toggle || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || !toggle.CanExecute(null))
+        {
+            return;
+        }
+        // Not a click in the content under the header, nor on a button of the header's own.
+        if (e.Source is Visual source
+            && (source.FindAncestorOfType<ContentPresenter>(includeSelf: true) is { Name: "PART_ContentPresenter" }
+                || source.FindAncestorOfType<Button>(includeSelf: true) is not null))
+        {
+            return;
+        }
+        toggle.Execute(null);
+        e.Handled = true;
     }
 
     /// <summary>Nothing to put on a header line: the content starts at the top.</summary>

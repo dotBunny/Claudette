@@ -377,6 +377,46 @@ public class ConversationBuilderTests
     }
 
     [Fact]
+    public void With_chains_folding_a_tasks_row_carries_its_work_and_the_reply_after_it_doesnt()
+    {
+        var todos = new TodoList();
+        var builder = new ConversationBuilder(_items, todos) { FoldChains = true };
+        Apply(builder, """
+            {"type":"assistant","message":{"content":[{"type":"tool_use","id":"w1","name":"TodoWrite","input":{"todos":[
+              {"content":"Fix bug","activeForm":"Fixing the bug","status":"in_progress"}]}}]}}
+            """);
+        Apply(builder, """{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"Where?"},{"type":"tool_use","id":"r1","name":"Read","input":{"file_path":"a.cs"}}]}}""");
+        Apply(builder, """{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"r1","content":"x"}]}}""");
+
+        // Claude is still on the task: the row carries what came before, and the step it's on stays under it.
+        var start = _items.OfType<TaskStartItem>().Single();
+        var marker = Assert.IsType<StepsMarkerItem>(start.Steps);
+        Assert.Equal("Working · 1 earlier step", marker.Title);
+        Assert.True(marker.IsFolded);
+        Assert.True(_items.OfType<ThinkingItem>().Single().IsFolded);
+        Assert.False(_items.OfType<ToolGroupItem>().Single().IsFolded);
+
+        Apply(builder, """{"type":"assistant","message":{"content":[{"type":"text","text":"Fixed."}]}}""");
+
+        // Done: the whole of the task's work is on its row, and Claude's reply after it carries nothing.
+        Assert.Same(marker, start.Steps);
+        Assert.Equal("2 steps", marker.Title);
+        Assert.Equal("1 tool call · 1 thinking", marker.Summary);
+        Assert.True(_items.OfType<ToolGroupItem>().Single().IsFolded);
+        Assert.Null(_items.OfType<AssistantTextItem>().Single().Steps);
+
+        // Going to a step in it opens the list on the task's row.
+        Assert.Same(start, builder.Runs.Reveal(_items.OfType<ThinkingItem>().Single()));
+        Assert.True(marker.IsOpen);
+        Assert.Equal(["Thought", "Read a.cs"], marker.Rows.Select(r => r.Title));
+
+        // Chains no longer folding: nothing on the row, nothing folded.
+        builder.ApplyFoldChains(false);
+        Assert.Null(start.Steps);
+        Assert.DoesNotContain(_items, i => i is StepsMarkerItem || i.IsFolded);
+    }
+
+    [Fact]
     public void Task_tools_fill_the_pinned_list_too()
     {
         var todos = new TodoList();

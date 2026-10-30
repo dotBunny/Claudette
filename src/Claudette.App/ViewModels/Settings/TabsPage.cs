@@ -35,6 +35,7 @@ public static class TabOverrideKeys
     public const string UseUsageCredits = "useUsageCredits";
     public const string CheckIns = "checkIns";
     public const string ProcessMonitor = "processMonitor";
+    public const string FoldChains = "foldChains";
 
     /// <summary>Whether <paramref name="overrides"/> has its own value for the setting <paramref name="key"/> names.</summary>
     public static bool Has(TabOverrides overrides, string key) => key switch
@@ -47,6 +48,7 @@ public static class TabOverrideKeys
         UseUsageCredits => overrides.UseUsageCredits is not null,
         CheckIns => overrides.CheckIns is not null,
         ProcessMonitor => overrides.ShowProcessMonitor is not null,
+        FoldChains => overrides.FoldChains is not null,
         _ => false,
     };
 }

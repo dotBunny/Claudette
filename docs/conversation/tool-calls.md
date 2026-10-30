@@ -26,9 +26,33 @@ A call under ten seconds shows its duration with a decimal, such as *0.4s*. The 
 A question or a plan gives its tile up to its own card ([Questions](../permissions/questions.md), [Approving a plan](../permissions/approving-a-plan.md)). A subagent is a card of its own ([Subagents](subagents.md)).
 
 ## Folding the calls
-A long run of calls takes a lot of room. The chevron before a Tool calls card's icon folds the card to its header line, such as *Tool calls · 4 calls · 1 failed*, and a second click brings the tiles back. A call that is running or has failed still shows in the header's words.
+A long run of calls takes a lot of room. Click a Tool calls card's header line, or the chevron after its count, and the card folds to that line, such as *Tool calls · 4 calls · 1 failed ›*; a second click brings the tiles back. A call that is running or has failed still shows in the header's words.
 
 It works as thinking does. Settings → Conversation → **Show tool calls collapsed** starts new cards folded. Right-click a Tool calls card for **Collapse all tool calls** and **Expand all tool calls**: they fold or open every card in the tab, and start the ones still to come the same way, without changing Settings. The tab remembers which you chose. Opening a call from elsewhere, as find does, opens its card.
+
+## Folding a chain of steps
+Claude's thinking and tool calls between two messages can still take a lot of room, even with each Tool calls card folded. Settings → Conversation → **Fold each chain of steps** (off by default) folds the whole run of steps, the thinking, Tool calls cards and subagents between two messages, into one: how many steps and how long Claude worked, such as *7 steps · 18m 43s*.
+
+- **On a task's row.** Steps right after the row where one of Claude's tasks started are that task's work, so the row carries them: *1 step · 2s* after the task's name. Click it and the steps open under the row; click the rest of the row for the Tasks page, as ever. While Claude is still on the task, the step it's on stays under the row.
+- **In Claude's reply.** When Claude's reply comes right after the steps, and they aren't a task's, *7 steps · 18m 43s* sits on the reply's header line, after *Claude*; point at it to see what the steps were (*9 tool calls · 3 thinking*). Click it and the steps open inside the reply's card, under its text. The reply stays where it was on screen while you read, rather than the conversation jumping to its end.
+- **A line of its own** otherwise, such as while Claude is still working, with what the steps were beside it. Click anywhere on it, or its chevron.
+- **The list** is the steps, a line each: *Thought for 7s*, *Ran check for UE4SS.pdb*, *Created analyze_dump.py*, *Edited disasm.py*, with how long a call took at the right of its line. A long list scrolls, with a scroll bar of its own.
+- **Open a step** with its chevron. A thinking line opens to what Claude thought, and a call to its detail, as a tile of a Tool calls card opens: the input and the output, and **Open** for the file it worked on.
+- **Fold them again** with another click, and the list is gone.
+- **While Claude is working**, the line says *Working · 6 earlier steps*, and the last step stays under it: the one Claude is on. Once Claude has moved on, the whole run is in the line.
+- A single step, such as a lone *Thinking* row before a reply, folds the same way once Claude has moved on from it. If a step's time isn't known, or the run took under a second, the line counts the steps instead of saying how long they took.
+
+Find and **Export conversation…** still reach a folded step, and going to one opens the list at its line.
+
+### One tab its own way
+
+The setting is what every tab does, and a tab can fold its steps or show them all for itself:
+
+- **Steps** in the tab's right-click menu: **Default**, which says what Settings does, such as *Default (folded)*, **Folded** or **All**. **Steps** in its [Tab settings…](../tabs/tab-settings.md) is the same choice.
+- **Steps: folded** in the message box's bar, while the setting is on: click it for **Steps: all** in this tab, and again to fold them.
+- **Show every step** in a folded line's right-click menu shows every step in its tab.
+
+A tab with its own choice keeps it when the setting changes, and Settings says *1 tab has its own* by **Fold each chain of steps**.
 
 ## Opening a call
 
@@ -59,7 +83,7 @@ An output over 20,000 characters shows its start, with **Show all (n KB)** to sh
 
 ## Settings
 
-**Show tool calls collapsed** (Settings → Conversation, off by default) starts new Tool calls cards folded to their header line.
+**Show tool calls collapsed** (Settings → Conversation, off by default) starts new Tool calls cards folded to their header line. **Fold each chain of steps** (off by default) folds a run of steps between two messages into one, as [Folding a chain of steps](#folding-a-chain-of-steps) says.
 
 Tool calls are one of the in-between steps that **Quieter in-between steps** (Settings → Conversation, on by default) draws without a tint and outline until you point at them. See [Reading the conversation](reading-the-conversation.md#quieter-in-between-steps).
 

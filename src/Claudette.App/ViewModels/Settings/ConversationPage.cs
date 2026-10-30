@@ -30,8 +30,12 @@ public sealed class ConversationPage : SettingsPage
                 keywords: ["cards", "thinking", "tools", "subagents", "margin", "offset", "indent"]),
             Setting("appearance.collapseToolCalls", "Show tool calls collapsed", s => s.Appearance.CollapseToolCalls, (s, v) => s.Appearance.CollapseToolCalls = v,
                 "Each Tool calls card starts as its header line, rather than with its tiles open.",
-                "The chevron before a card's icon opens it. Right-click a card for Collapse all tool calls or Expand all tool calls, which changes every card in that tab and the ones to come, as thinking's menu does.",
+                "A click on a card's header line, or the chevron after its count, opens it. Right-click a card for Collapse all tool calls or Expand all tool calls, which changes every card in that tab and the ones to come, as thinking's menu does.",
                 ["tools", "tiles", "fold", "expand", "collapse"]),
+            Setting("appearance.foldChains", "Fold each chain of steps", s => s.Appearance.FoldChains, (s, v) => s.Appearance.FoldChains = v,
+                "Claude's thinking and tool calls between two messages fold into one, such as “7 steps · 18m 43s” on Claude's reply, which opens them inside the card.",
+                "A click on the line opens a list of the steps, a line each, which scrolls once it's long; each line opens to what Claude thought or what the call did. While Claude works, the last step stays under the line. Each tab can fold its steps or show them all for itself, from Steps in its menu or the message box's bar.",
+                ["chain", "steps", "thinking", "tools", "fold", "compact", "collapse"], TabOverrideKeys.FoldChains),
             Setting("appearance.expandThinking", "Show thinking expanded", s => s.Appearance.ExpandThinking, (s, v) => s.Appearance.ExpandThinking = v,
                 "Claude's thinking opens by itself, rather than as a line to click.", keywords: ["reasoning"]),
             Setting("appearance.showSubagents", "Show subagents' work", s => s.Appearance.ShowSubagents, (s, v) => s.Appearance.ShowSubagents = v,
@@ -100,6 +104,16 @@ public sealed class ConversationPage : SettingsPage
     {
         get => Settings.Appearance.IndentClaudesSteps;
         set => Set(value, v => Settings.Appearance.IndentClaudesSteps = v);
+    }
+
+    /// <summary>
+    /// Each run of steps between two messages folds into one line (DESIGN.md §18, "Conversation cards"): the default,
+    /// which a tab can change for itself.
+    /// </summary>
+    public bool FoldChains
+    {
+        get => Settings.Appearance.FoldChains;
+        set => Set(value, v => Settings.Appearance.FoldChains = v);
     }
 
     /// <summary>Tool calls cards start folded to their header line (DESIGN.md §18, "Conversation cards").</summary>

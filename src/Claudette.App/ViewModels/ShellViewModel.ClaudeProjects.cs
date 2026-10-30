@@ -213,19 +213,8 @@ public sealed partial class ShellViewModel
         return string.Join(" · ", parts);
     }
 
-    /// <summary>The groups with nothing open go after the rest, the most recently used first; the rest keep their order.</summary>
-    private void OrderProjectGroups()
-    {
-        var ordered = Groups.Where(g => !g.IsProjectOnly).Concat(Groups.Where(g => g.IsProjectOnly).OrderByDescending(g => g.LastSessionActivity)).ToList();
-        for (var i = 0; i < ordered.Count; i++)
-        {
-            var from = Groups.IndexOf(ordered[i]);
-            if (from != i)
-            {
-                Groups.Move(from, i);
-            }
-        }
-    }
+    /// <summary>Pinned groups first, then the rest; the groups with nothing open go last, the most recently used first.</summary>
+    private void OrderProjectGroups() => OrderGroups();
 
     // ---- The offer ---------------------------------------------------------------------------------------------
 

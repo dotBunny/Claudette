@@ -10,7 +10,8 @@ namespace Claudette.App.Conversation;
 /// </summary>
 /// <param name="stamp">Gives a new reply row the time it was sent.</param>
 /// <param name="expandThinking">Whether a new thinking row starts expanded.</param>
-internal sealed class StreamingBlocks(ObservableCollection<ConversationItem> items, Action<MessageItem> stamp, Func<bool> expandThinking)
+/// <param name="now">The conversation's clock, which says when thinking began and ended.</param>
+internal sealed class StreamingBlocks(ObservableCollection<ConversationItem> items, Action<MessageItem> stamp, Func<bool> expandThinking, Func<DateTimeOffset?> now)
 {
     private AssistantTextItem? _text;
     private ThinkingItem? _thinking;
@@ -66,7 +67,7 @@ internal sealed class StreamingBlocks(ObservableCollection<ConversationItem> ite
         CloseText();
         if (_thinking is null)
         {
-            _thinking = new ThinkingItem { IsExpanded = expandThinking() };
+            _thinking = new ThinkingItem { IsExpanded = expandThinking(), StartedAt = now() };
             items.Add(_thinking);
         }
         _thinking.Append(text);
@@ -86,6 +87,7 @@ internal sealed class StreamingBlocks(ObservableCollection<ConversationItem> ite
         if (_thinking is not null)
         {
             _thinking.IsStreaming = false;
+            _thinking.EndedAt = now();
             _thinking = null;
         }
     }

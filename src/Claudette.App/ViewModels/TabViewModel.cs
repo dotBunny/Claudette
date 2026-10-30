@@ -125,6 +125,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         {
             ExpandThinking = state.ExpandThinking ?? services.Settings.Appearance.ExpandThinking,
             CollapseToolCalls = state.CollapseToolCalls ?? services.Settings.Appearance.CollapseToolCalls,
+            FoldChains = state.Overrides.FoldChains ?? services.Settings.Appearance.FoldChains,
             ShowUnsupportedMessages = services.Settings.Advanced.LogProtocol,
             ShowAllHookRuns = services.Settings.ClaudeCode.ShowAllHookRuns,
             OpenUrl = services.Platform.OpenUrlAsync,
@@ -187,6 +188,11 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
     /// </summary>
     public void ScrollTo(ConversationItem item)
     {
+        // A step folded into its chain's line opens the chain's list, and the line is where to go.
+        if (_conversation.Runs.Reveal(Items.TopLevelOf(item)) is { } line)
+        {
+            item = line;
+        }
         // A card in a subagent's work, with its work under the tab in the sidebar: that's where it shows.
         ShowListHolding(item);
         if (ScrollToRequested is { } scroll)
@@ -932,6 +938,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         OnPropertyChanged(nameof(SuffixMenu));
         _conversation.ExpandThinking = State.ExpandThinking ?? _services.Settings.Appearance.ExpandThinking;
         _conversation.CollapseToolCalls = State.CollapseToolCalls ?? _services.Settings.Appearance.CollapseToolCalls;
+        OnFoldChainsChanged();
         _conversation.ShowAllHookRuns = _services.Settings.ClaudeCode.ShowAllHookRuns;
         _conversation.ShowUnsupportedMessages = _services.Settings.Advanced.LogProtocol;
         Context.OnSettingsChanged();
@@ -984,6 +991,81 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         _conversation.CollapseAllToolCalls(collapsed);
         State.CollapseToolCalls = collapsed;
         _services.SaveState();
+    }
+
+    /// <summary>
+    /// The tab folds each chain of steps (DESIGN.md §18, "Conversation cards"): its own choice, else Settings →
+    /// Conversation → Fold each chain of steps.
+    /// </summary>
+    public bool FoldsChains => State.Overrides.FoldChains ?? _services.Settings.Appearance.FoldChains;
+
+    /// <summary>
+    /// The message box's <b>Steps</b> is in its bar only while Settings → Conversation folds chains, so it isn't in the way
+    /// of anyone who hasn't turned folding on. A tab that folds its own way has <b>Steps</b> in its menu.
+    /// </summary>
+    public bool ShowsStepsButton => _services.Settings.Appearance.FoldChains;
+
+    /// <summary>The message box's bar: "Steps: folded" or "Steps: all".</summary>
+    public string StepsButtonText => FoldsChains ? "Steps: folded" : "Steps: all";
+
+    /// <summary>The tab menu's <b>Steps</b>: the first choice, which follows Settings, says what Settings says.</summary>
+    public string StepsDefaultText => _services.Settings.Appearance.FoldChains ? "Default (folded)" : "Default (all)";
+
+    /// <summary>The tab menu's <b>Steps</b>: which of its three choices is ticked.</summary>
+    public bool StepsByDefault => State.Overrides.FoldChains is null;
+
+    public bool StepsFolded => State.Overrides.FoldChains == true;
+
+    public bool StepsAll => State.Overrides.FoldChains == false;
+
+    /// <summary>
+    /// The message box's <b>Steps</b>: folds this tab's chains of steps, or shows every step, kept only while it differs
+    /// from Settings → Conversation.
+    /// </summary>
+    [RelayCommand]
+    private void ToggleFoldChains() => SetFoldChains(!FoldsChains);
+
+    /// <summary>A chain's line menu: every step in this tab shows again.</summary>
+    [RelayCommand]
+    private void ShowEveryStep() => SetFoldChains(false);
+
+    /// <summary>The tab menu's <b>Steps</b> → <b>Default</b>: the tab folds as Settings → Conversation says.</summary>
+    [RelayCommand]
+    private void UseDefaultSteps() => ChooseFoldChains(null);
+
+    /// <summary>The tab menu's <b>Steps</b> → <b>Folded</b>, whatever Settings → Conversation says.</summary>
+    [RelayCommand]
+    private void FoldSteps() => ChooseFoldChains(true);
+
+    /// <summary>The tab menu's <b>Steps</b> → <b>All</b>, whatever Settings → Conversation says.</summary>
+    [RelayCommand]
+    private void ShowAllSteps() => ChooseFoldChains(false);
+
+    /// <summary>A switch between the two: the tab's own choice, kept only while it differs from Settings.</summary>
+    private void SetFoldChains(bool fold) => ChooseFoldChains(fold == _services.Settings.Appearance.FoldChains ? null : fold);
+
+    private void ChooseFoldChains(bool? fold)
+    {
+        State.Overrides.FoldChains = fold;
+        _services.SaveState();
+        OnPropertyChanged(nameof(HasOverrides));
+        OnFoldChainsChanged();
+    }
+
+    /// <summary>The tab's choice or Settings changed: every run in the conversation folds, or opens again, to match.</summary>
+    private void OnFoldChainsChanged()
+    {
+        if (_conversation.FoldChains != FoldsChains)
+        {
+            _conversation.ApplyFoldChains(FoldsChains);
+        }
+        OnPropertyChanged(nameof(FoldsChains));
+        OnPropertyChanged(nameof(ShowsStepsButton));
+        OnPropertyChanged(nameof(StepsButtonText));
+        OnPropertyChanged(nameof(StepsDefaultText));
+        OnPropertyChanged(nameof(StepsByDefault));
+        OnPropertyChanged(nameof(StepsFolded));
+        OnPropertyChanged(nameof(StepsAll));
     }
 
     private void SetAllThinking(bool expanded)
@@ -1915,6 +1997,8 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         finally
         {
             Agents.FinishReplay();
+            // The earlier conversation's chains of steps fold, if they're to.
+            _conversation.Runs.Refresh();
             // A call the transcript ends before the answer to won't be answered now.
             TodoList.CallsEnded();
             // Rows under the tab come back only for the last turn's subagents (DESIGN.md §5, "Subagents").
@@ -2349,6 +2433,7 @@ public sealed partial class TabViewModel : ViewModelBase, IShellTab, IAsyncDispo
         ProcessMonitor.UpdateSampler();
         _autoContinue.SettingsChanged();
         OnUsageCreditsChoiceChanged();
+        OnFoldChainsChanged();
         if (_session is null)
         {
             ShowStartingModel();

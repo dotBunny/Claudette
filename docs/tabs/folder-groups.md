@@ -50,6 +50,12 @@ Drag a tab to move it within its group. Its row is marked as a selected one is, 
 
 Dragging a tab out onto the conversation shows it beside the tab you're in instead: see [Split panes](split-panes.md).
 
+## Pinning a group
+
+With many projects, the ones you work in all the time can be hard to find. Right-click a group's label and choose **Pin to the top** to put the group first in the sidebar, or **Unpin from the top** to let it go. Pinned groups sit in a shaded band of their own at the top, with a line between them and the rest. They keep the order they were in among themselves, and stay ahead of the others. It works on [Claude Code's projects](#claude-codes-projects) too, so a project with nothing open in it can be at the top.
+
+Dragging a group by its label moves it among the pinned groups, or among the others, not from one to the other. The pins are remembered for each folder, on this computer.
+
 ## The group's menu
 
 Right-click a group's label, in the full sidebar or the rail:
@@ -61,6 +67,7 @@ Right-click a group's label, in the full sidebar or the rail:
 | **History for this folder** | Opens [History](../history/history.md) listing only this folder's sessions. |
 | **Open project files** | Opens the folder's Files tab. See [The Project files button](#the-project-files-button). |
 | **Collapse group** or **Expand group** | Collapses the group to its label, or expands it. |
+| **Pin to the top** or **Unpin from the top** | Pins the group to the top of the sidebar, or lets it go. See [Pinning a group](#pinning-a-group). |
 | **Rename…** | Names the group. See above. |
 | **Reset name** | Goes back to the folder's name. Shown while the group has a name. |
 | **Change color…** | Picks the group's color. See above. |

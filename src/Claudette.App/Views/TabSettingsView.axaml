@@ -11,7 +11,7 @@
       <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="24,20,24,8">
         <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="16" TextTrimming="CharacterEllipsis" />
         <TextBlock Classes="muted small" TextWrapping="Wrap"
-                   Text="These replace the defaults from Settings → Tabs for this tab only. Each change applies at once." />
+                   Text="These replace the defaults from Settings for this tab only. Each change applies at once." />
       </StackPanel>
       <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource DividerBrush}" BorderThickness="0,1,0,0" Padding="24,12">
         <Button Classes="accent" Content="Done" Command="{Binding DoneCommand}" HorizontalAlignment="Right" IsDefault="True" />
@@ -71,6 +71,13 @@
           <c:SettingsSection Key="monitor" ResetText="Use defaults" ResetTip="Puts this section back to what Settings → Tabs says">
             <c:SettingRow Key="tab.processMonitor">
               <ComboBox ItemsSource="{Binding MonitorChoices}" SelectedItem="{Binding SelectedMonitor}" />
+            </c:SettingRow>
+          </c:SettingsSection>
+
+          <!-- Folding each chain of steps (DESIGN.md §18, "Conversation cards"), which the tab's menu sets too -->
+          <c:SettingsSection Key="conversation" ResetText="Use defaults" ResetTip="Puts this section back to what Settings → Conversation says">
+            <c:SettingRow Key="tab.foldChains">
+              <ComboBox ItemsSource="{Binding StepsChoices}" SelectedItem="{Binding SelectedSteps}" />
             </c:SettingRow>
           </c:SettingsSection>
 
