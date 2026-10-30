@@ -4,10 +4,10 @@
   [meter 62%]
   "62%"
   "resets in 2h 14m"
+  "Not enough data yet."
   "Weekly"
   [meter 38%]
   "38%"
-  "Not enough data yet."
 [button] Expand the usage header
 [toggle] Keep this computer awake
 [button] Account: me@example.com

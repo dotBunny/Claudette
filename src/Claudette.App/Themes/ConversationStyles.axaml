@@ -152,6 +152,10 @@
           <Border Name="PART_Stripe" BorderBrush="{TemplateBinding StripeBrush}" BorderThickness="3,0,0,0" Margin="-1,-1,0,-1"
                   CornerRadius="{TemplateBinding CornerRadius}">
             <Grid Name="PART_Body" Margin="{TemplateBinding Padding}" ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowDefinitions="Auto,Auto">
+              <!-- A card that folds: its header line, end to end, which takes a click anywhere along it and lights under the
+                   pointer, as a thinking row does (Card.cs) -->
+              <Border Name="PART_HeaderLine" Grid.ColumnSpan="6" Background="Transparent" CornerRadius="4" Margin="-4,-2"
+                      IsVisible="{TemplateBinding IsCollapsible}" />
               <Path Name="PART_Icon" Classes="toolicon" Data="{TemplateBinding Icon}" Stroke="{TemplateBinding LabelBrush}" Margin="0,0,6,0"
                     IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
               <TextBlock Name="PART_Label" Grid.Column="1" Classes="small" FontWeight="SemiBold" Foreground="{TemplateBinding LabelBrush}"
@@ -189,6 +193,13 @@
         </Border>
       </ControlTemplate>
     </Setter>
+  </Style>
+  <Style Selector="controls|Card:headerover /template/ Border#PART_HeaderLine">
+    <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+  </Style>
+  <!-- Its chevron is part of the line, lit with it rather than on its own -->
+  <Style Selector="controls|Card /template/ Button#PART_Toggle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
   </Style>
   <Style Selector="controls|Card.you">
     <Setter Property="StripeBrush" Value="{DynamicResource CardYouStripeBrush}" />
