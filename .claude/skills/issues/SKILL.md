@@ -13,7 +13,10 @@ assigned.
 
 - **Cloud sessions** (no `gh`): use the GitHub tools. Search with `repo:dotBunny/Claudette is:issue is:open assignee:reapazor`,
   or list open issues and keep the ones whose assignees include `reapazor`.
-- **Locally**: `gh issue list --repo dotBunny/Claudette --assignee reapazor --state open --json number,title,labels,createdAt,url`.
+- **Locally**, where `gh` isn't installed, GitHub's REST API, which needs no sign-in for this public repository:
+  `curl -s "https://api.github.com/repos/dotBunny/Claudette/issues?assignee=reapazor&state=open&per_page=100"`. It
+  lists pull requests too: leave out the entries with a `pull_request` field. An issue is `.../issues/<N>`, and its
+  comments `.../issues/<N>/comments`.
 
 For each issue, check whether an open pull request already mentions it (`#N` in the body or title). That one is taken,
 unless it's this session's own PR.
@@ -52,7 +55,8 @@ Follow CLAUDE.md and DESIGN.md as for any change:
   - `dotnet test Claudette.slnx --filter "Category!=Live"`
 
 Also:
-- Work on the session's branch. When starting one yourself, use `issue-<N>-<short-slug>` from `main`.
+- Work on the session's branch. When starting one yourself, use `issue-<N>-<short-slug>` from `main`, and once it's in
+  `main`, delete it (CLAUDE.md, "Backlog").
 - Mention `#N` in the commit messages.
 - When the user asks for a pull request, its body says `Fixes #N` for each issue it resolves, so GitHub links them and
   closes them on merge.

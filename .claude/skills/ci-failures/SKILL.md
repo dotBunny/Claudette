@@ -12,7 +12,9 @@ a fixed delay (CLAUDE.md, "Tests").
 ## 1. Collect the failures
 
 - List the CI workflow's failed runs (`ci.yml`; `package.yml` runs it too before a release). Cloud sessions use the
-  GitHub tools; locally, `gh run list --workflow ci.yml --status failure`.
+  GitHub tools; locally, where `gh` isn't installed, GitHub's REST API:
+  `curl -s "https://api.github.com/repos/dotBunny/Claudette/actions/workflows/ci.yml/runs?status=failure&per_page=20"`,
+  and a run's jobs at `.../actions/runs/<id>/jobs`. Logs and artifacts need a sign-in, so ask the user for them.
 - A failed leg uploads `test-results-<os>`: its `.trx` files and any `*.received.txt`, kept for 7 days. Download and
   unzip each into a folder of its own and summarize it with `node .github/scripts/test-summary.mjs <folder>`.
 - Older runs have only their logs. Ask for the failed jobs' logs alone, save them rather than reading them whole, and
