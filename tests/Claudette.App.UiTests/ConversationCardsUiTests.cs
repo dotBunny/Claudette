@@ -132,6 +132,26 @@ public sealed class ConversationCardsUiTests
         UiText.Settle(window);
         Assert.Equal(2, VisibleTiles(window));
 
+        // The whole header line is the chevron's, as a thinking row's is: it lights from end to end under the pointer, and a
+        // click on its far end, past the count, folds the card and brings it back.
+        var line = first.GetVisualDescendants().OfType<Border>().First(b => b.Name == "PART_HeaderLine");
+        var end = line.TranslatePoint(new Point(line.Bounds.Width - 4, line.Bounds.Height / 2), window)!.Value;
+        window.MouseMove(end);
+        UiText.Settle(window);
+        Assert.Contains(":headerover", first.Classes);
+        Assert.False(line.Background is ISolidColorBrush { Color.A: 0 }, "The header line should be lit");
+        window.MouseDown(end, MouseButton.Left);
+        window.MouseUp(end, MouseButton.Left);
+        UiText.Settle(window);
+        Assert.True(first.IsCollapsed);
+        window.MouseDown(end, MouseButton.Left);
+        window.MouseUp(end, MouseButton.Left);
+        UiText.Settle(window);
+        Assert.False(first.IsCollapsed);
+        window.MouseMove(new Point(5, 5));
+        UiText.Settle(window);
+        Assert.DoesNotContain(":headerover", first.Classes);
+
         // The setting starts the cards to come collapsed, and leaves the ones there as they are, as thinking's does.
         h.Services.Settings.Appearance.CollapseToolCalls = true;
         h.Services.SaveSettings();
